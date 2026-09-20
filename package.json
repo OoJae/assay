@@ -1,0 +1,26 @@
+{
+  "name": "assay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Independent valuation integrity audit for agents on Robinhood Chain and IXS RWA vaults",
+  "scripts": {
+    "sweep": "tsx scripts/sweep.ts",
+    "probe": "tsx scripts/probe.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "dotenv": "^18.0.1",
+    "openai": "^7.20.0",
+    "viem": "^2.56.8",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.2",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}

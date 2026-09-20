@@ -1,0 +1,117 @@
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { z } from 'zod'
+import { readFileSync, existsSync } from 'node:fs'
+import { truePosition } from '../lib/position.js'
+import { sweep } from '../sweep/detect.js'
+import type { VerifiedFinding } from '../verify/index.js'
+
+/**
+ * ASSAY MCP server.
+ *
+ * Note on transport: OpenServ's own MCP support is SSE-only (docs: no-code/connect/mcps),
+ * so the hosted deployment exposes SSE. This module builds the server; the entrypoints
+ * pick stdio (local) or SSE (hosted).
+ */
+
+function loadFindings(): { findings: VerifiedFinding[]; blockNumber?: string; observedAt?: string } {
+  if (!existsSync('data/findings.json')) return { findings: [] }
+  return JSON.parse(readFileSync('data/findings.json', 'utf8'))
+}
+
+export function buildServer(): McpServer {
+  const server = new McpServer({ name: 'assay', version: '0.1.0' })
+
+  server.registerTool(
+    'assay_true_position',
+    {
+      title: 'True position for a Robinhood Chain Stock Token',
+      description:
+        'Return the corrected position for a holder of a Robinhood Chain Stock Token. ' +
+        'Robinhood Stock Tokens implement ERC-8056: a corporate action moves uiMultiplier(), not balances, ' +
+        'so balanceOf() is NOT a share count. This tool returns raw balance, uiMultiplier, share-equivalents, ' +
+        'the multiplier-adjusted Chainlink TOKEN price, the derived underlying SHARE price, the correct position ' +
+        'value, oracle-hygiene flags (feed age vs heartbeat, oraclePaused), and an explicit refusalReason when ' +
+        'the reading is not safe to act on. Call this before valuing, liquidating or collateralising a Stock Token.',
+      inputSchema: {
+        symbol: z.string().describe('Stock Token ticker, e.g. NVDA, SPY, CRWD'),
+        holder: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe('Holder address'),
+      },
+    },
+    async ({ symbol, holder }) => {
+      const p = await truePosition(symbol, holder as `0x${string}`)
+      return { content: [{ type: 'text', text: JSON.stringify(p, null, 2) }] }
+    },
+  )
+
+  server.registerTool(
+    'assay_findings',
+    {
+      title: 'Published valuation-integrity findings',
+      description:
+        'List verified findings from the latest ASSAY sweep of Robinhood Chain and IXS RWA vaults. ' +
+        'Every citation in every finding was re-fetched from chain state and byte-compared before publication. ' +
+        'Filter by symbol, defect class or minimum severity.',
+      inputSchema: {
+        symbol: z.string().optional().describe('Filter to one ticker'),
+        defectClass: z.string().optional().describe('e.g. STALE_ORACLE_PAST_HEARTBEAT, NO_PRICE_FEED'),
+        minSeverity: z.enum(['critical', 'high', 'medium', 'low', 'info']).optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+      },
+    },
+    async ({ symbol, defectClass, minSeverity, limit }) => {
+      const data = loadFindings()
+      const rank = { critical: 0, high: 1, medium: 2, low: 3, info: 4 } as Record<string, number>
+      let out = data.findings
+      if (symbol) out = out.filter((f) => f.subject.toUpperCase().startsWith(symbol.toUpperCase()))
+      if (defectClass) out = out.filter((f) => f.defectClass === defectClass)
+      if (minSeverity) out = out.filter((f) => rank[f.severity]! <= rank[minSeverity]!)
+      out = out.sort((a, b) => rank[a.severity]! - rank[b.severity]!).slice(0, limit ?? 25)
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              { sweepBlock: data.blockNumber, observedAt: data.observedAt, count: out.length, findings: out },
+              null,
+              2,
+            ),
+          },
+        ],
+      }
+    },
+  )
+
+  server.registerTool(
+    'assay_check_symbol',
+    {
+      title: 'Live integrity check for one Stock Token',
+      description:
+        'Run a fresh, live sweep for a single Robinhood Chain Stock Token and return verified findings ' +
+        'at the current block. Slower than assay_findings but always current. Use before acting on an asset.',
+      inputSchema: { symbol: z.string().describe('Stock Token ticker') },
+    },
+    async ({ symbol }) => {
+      const r = await sweep({ symbols: [symbol] })
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify(
+              {
+                block: r.blockNumber,
+                observedAt: r.observedAt,
+                published: r.findings.length,
+                rejectedByVerifier: r.rejected.length,
+                findings: r.findings,
+              },
+              null,
+              2,
+            ),
+          },
+        ],
+      }
+    },
+  )
+
+  return server
+}
