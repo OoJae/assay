@@ -5,3 +5,7 @@ data/*.json
 !data/.gitkeep
 .next
 dist
+
+web/node_modules
+web/.next
+*.png
