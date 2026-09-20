@@ -9,3 +9,5 @@ dist
 web/node_modules
 web/.next
 *.png
+
+.openserv.json

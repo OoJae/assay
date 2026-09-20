@@ -8,10 +8,18 @@
     "sweep": "tsx scripts/sweep.ts",
     "probe": "tsx scripts/probe.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "provision": "tsx scripts/provision.ts",
+    "buyer": "tsx scripts/make-buyer.ts",
+    "pay": "tsx scripts/pay.ts",
+    "prove": "tsx scripts/prove-settlement.ts",
+    "mcp": "tsx src/mcp/stdio.ts",
+    "web": "pnpm --filter assay-web dev"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",
+    "@openserv-labs/client": "^2.5.3",
+    "@openserv-labs/sdk": "^2.4.1",
     "dotenv": "^18.0.1",
     "openai": "^7.20.0",
     "viem": "^2.56.8",
