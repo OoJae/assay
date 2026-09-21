@@ -1,8 +1,9 @@
 node_modules
 .env
 .env.local
-data/*.json
-!data/.gitkeep
+# Trial artifacts and the published sweep ARE committed: they are the evidence the
+# README points at, and the wall reads findings.json at request time.
+data/*.tmp.json
 .next
 dist
 
