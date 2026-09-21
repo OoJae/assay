@@ -95,8 +95,18 @@ export async function verifyEvidence(e: Evidence): Promise<VerificationResult> {
   }
 }
 
-/** Why a finding was not published. 'mismatch' is fabrication; 'pruned' is merely uncheckable here. */
-export type RejectionReason = 'mismatch' | 'unverifiable_here'
+/**
+ * Why a finding was not published. These are NOT interchangeable and must never be collapsed:
+ *  - 'mismatch'          the citation contradicts chain state. This is the only one that impugns
+ *                        the finding itself.
+ *  - 'unverifiable_here' the node no longer serves that block. Unchecked, not disproven.
+ *  - 'unchecked'         the re-fetch failed (transient RPC error after retries). Says nothing
+ *                        about the finding's truth, only about our ability to confirm it.
+ *
+ * Reporting an RPC failure as 'mismatch' would be exactly the over-claim this tool exists to
+ * avoid — asserting a defect when the honest statement is "we could not check".
+ */
+export type RejectionReason = 'mismatch' | 'unverifiable_here' | 'unchecked'
 
 export interface RejectedFinding {
   finding: Finding
@@ -140,21 +150,18 @@ export async function verifyFindingDetailed(f: Finding): Promise<VerifyOutcome> 
     }
   }
 
-  // No reproducible evidence. CRUCIAL: distinguish "we cannot check here" from "it is false".
-  // Collapsing these silently discarded true findings whose block had simply aged out.
+  // No reproducible evidence. CRUCIAL: distinguish "we cannot check" from "it is false".
+  const errored = results.filter((r) => r.status === 'error').length
   if (kept.length === 0) {
-    return {
-      ok: false,
-      rejected: {
-        finding: f,
-        reason: pruned > 0 ? 'unverifiable_here' : 'mismatch',
-        detail:
-          pruned > 0
-            ? `${pruned} citation(s) reference a block this RPC no longer serves — unchecked, not disproven`
-            : 'no citation could be reproduced',
-        results,
-      },
-    }
+    const reason: RejectionReason =
+      pruned > 0 ? 'unverifiable_here' : errored > 0 ? 'unchecked' : 'mismatch'
+    const detail =
+      pruned > 0
+        ? `${pruned} citation(s) reference a block this RPC no longer serves — unchecked, not disproven`
+        : errored > 0
+          ? `${errored} citation(s) could not be re-fetched (RPC error after retries) — unchecked, not disproven`
+          : 'no citation could be reproduced'
+    return { ok: false, rejected: { finding: f, reason, detail, results } }
   }
 
   return {

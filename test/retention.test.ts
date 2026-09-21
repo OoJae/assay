@@ -71,3 +71,43 @@ describe('scheduled-closure corroboration', () => {
     expect(scheduledClosure(1, 2, true)).toBe(true)
   })
 })
+
+describe('rejection reasons are never conflated', () => {
+  it('an RPC failure is reported as unchecked, not as fabrication', async () => {
+    const head = await rhClient.getBlockNumber()
+    const f: Finding = {
+      id: 'rpc-fail',
+      defectClass: 'NO_PRICE_FEED',
+      severity: 'medium',
+      subject: 'X (0x0000000000000000000000000000000000000001)',
+      title: 'citation whose call cannot be re-executed',
+      statement: 'the finding may be perfectly true; we simply could not confirm it',
+      impact: { note: 'n/a' },
+      evidence: [
+        {
+          claim: 'someUnknownGetter() == 1e18',
+          chainId: 4663,
+          contract: CRWD,
+          // A signature the verifier has no ABI for. This is a genuine 'error' status: we cannot
+          // check the claim at all. Note that pointing at a non-contract address would NOT work
+          // here — that returns 0x, which is a real mismatch and should stay classified as one.
+          call: 'someUnknownGetter()',
+          rawReturn: '0x' + (10n ** 18n).toString(16).padStart(64, '0'),
+          blockNumber: head.toString(),
+          explorerUrl: '',
+          observedAt: new Date().toISOString(),
+        },
+      ],
+      methodologyVersion: 'test',
+      detectedAt: new Date().toISOString(),
+    }
+    const r = await verifyFindingDetailed(f)
+    expect(r.ok).toBe(false)
+    if (!r.ok) {
+      // The bug this guards: reporting "fabrication" when the truth is "we could not check".
+      expect(r.rejected.reason).toBe('unchecked')
+      expect(r.rejected.reason).not.toBe('mismatch')
+      expect(r.rejected.detail).toContain('unchecked, not disproven')
+    }
+  }, 30_000)
+})

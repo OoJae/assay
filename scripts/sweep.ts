@@ -18,8 +18,12 @@ console.log(`assets scanned: ${result.assetsScanned}   robinhood feeds available
 console.log(`stats:`, result.stats)
 const mismatch = result.rejected.filter((r) => r.reason === 'mismatch').length
 const unverifiable = result.rejected.filter((r) => r.reason === 'unverifiable_here').length
+const unchecked = result.rejected.filter((r) => r.reason === 'unchecked').length
 console.log(`findings published: ${result.findings.length}`)
-console.log(`rejected: ${result.rejected.length}  (mismatch/fabrication: ${mismatch}, unverifiable here: ${unverifiable})`)
+console.log(
+  `rejected: ${result.rejected.length}  (contradicted by chain state: ${mismatch}, ` +
+    `block pruned: ${unverifiable}, RPC failed: ${unchecked})`,
+)
 console.log(`sweep errors: ${result.errors.length}`)
 const totalCites = result.findings.reduce((n, f) => n + f.verification.checked, 0)
 const okCites = result.findings.reduce((n, f) => n + f.verification.reproduced, 0)
