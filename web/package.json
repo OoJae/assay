@@ -6,7 +6,7 @@
     "dev": "next dev -p 3111",
     "build": "next build",
     "start": "next start",
-    "prebuild": "node -e \"const fs=require('fs');fs.mkdirSync('data',{recursive:true});fs.copyFileSync('../data/findings.json','data/findings.json');console.log('copied findings.json into web/data')\""
+    "prebuild": "node -e \"const fs=require('fs');const s='../data/findings.json';fs.mkdirSync('data',{recursive:true});if(fs.existsSync(s)){fs.copyFileSync(s,'data/findings.json');console.log('copied findings.json from repo root')}else if(fs.existsSync('data/findings.json')){console.log('using bundled web/data/findings.json')}else{console.warn('WARNING: no findings.json found; the board will render empty')}\""
   },
   "dependencies": {
     "next": "^15.1.3",

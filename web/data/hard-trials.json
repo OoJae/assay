@@ -1,0 +1,183 @@
+{
+  "generatedAt": "2026-09-21T12:27:47.507Z",
+  "complete": true,
+  "methodologyVersion": "assay-methodology-v3.0.0",
+  "trialsPerCase": 2,
+  "block": "68794416",
+  "cases": [
+    {
+      "id": "explicit-op-no-handling",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "rationale": "Gate 3 passes: the mandate explicitly states the share count is computed from balanceOf(). Gate 4 fires MATERIAL_MISSTATEMENT because no conversion via uiMultiplier is documented."
+    },
+    {
+      "id": "explicit-op-correct-handling",
+      "expected": "BENIGN",
+      "rationale": "Gate 3 passes, then gate 4 fires BENIGN: correct handling via uiMultiplier is documented."
+    },
+    {
+      "id": "handling-on-wrong-surface",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "rationale": "Gate 3 passes for the P&L surface, which explicitly uses balanceOf(). Gate 4 fires MATERIAL_MISSTATEMENT: handling is documented for the holdings table but NOT for P&L, which is the surface the defect corrupts. Partial handling elsewhere is not a defence."
+    },
+    {
+      "id": "explicit-exclusion-moots-defect",
+      "expected": "BENIGN",
+      "rationale": "Gate 3 passes, then gate 4 fires BENIGN: the documented exclusion means the defect cannot reach a user-facing number. An exclusion IS correct handling."
+    },
+    {
+      "id": "adjacent-scope-only",
+      "expected": "BENIGN",
+      "rationale": "Gate 2 fires BENIGN: the mandate describes no activity in the affected area at all."
+    },
+    {
+      "id": "red-herring-handling",
+      "expected": "CONTROL_WEAKNESS",
+      "rationale": "Gate 2 passes (it values equity positions). Gate 3 fires CONTROL_WEAKNESS: decimals handling is documented but that is a DIFFERENT defect class, and the mandate never states that share counts are computed from balanceOf(). Documented care elsewhere does not establish the operation."
+    }
+  ],
+  "skippedCases": [
+    "threshold-documented-but-insufficient",
+    "stale-feed-no-freshness-check"
+  ],
+  "marketClosed": false,
+  "cohort": {
+    "size": 35,
+    "stale": 0,
+    "clockHint": false
+  },
+  "results": [
+    {
+      "id": "explicit-op-no-handling",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-on",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "explicit-op-no-handling",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-off",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "explicit-op-correct-handling",
+      "expected": "BENIGN",
+      "arm": "braid-on",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "explicit-op-correct-handling",
+      "expected": "BENIGN",
+      "arm": "braid-off",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "handling-on-wrong-surface",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-on",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "handling-on-wrong-surface",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-off",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "explicit-exclusion-moots-defect",
+      "expected": "BENIGN",
+      "arm": "braid-on",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "explicit-exclusion-moots-defect",
+      "expected": "BENIGN",
+      "arm": "braid-off",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "adjacent-scope-only",
+      "expected": "BENIGN",
+      "arm": "braid-on",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "adjacent-scope-only",
+      "expected": "BENIGN",
+      "arm": "braid-off",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "red-herring-handling",
+      "expected": "CONTROL_WEAKNESS",
+      "arm": "braid-on",
+      "verdicts": [
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS"
+      ],
+      "correct": 2
+    },
+    {
+      "id": "red-herring-handling",
+      "expected": "CONTROL_WEAKNESS",
+      "arm": "braid-off",
+      "verdicts": [
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS"
+      ],
+      "correct": 2
+    }
+  ],
+  "summary": {
+    "braidOn": {
+      "trials": 12,
+      "correct": 12,
+      "accuracy": 1
+    },
+    "braidOff": {
+      "trials": 12,
+      "correct": 12,
+      "accuracy": 1
+    }
+  }
+}
