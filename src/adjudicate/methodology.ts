@@ -12,7 +12,7 @@
  *
  * The version string below is published on every finding so a subject can reproduce the grade.
  */
-export const METHODOLOGY_VERSION = 'assay-methodology-v2.0.0'
+export const METHODOLOGY_VERSION = 'assay-methodology-v3.0.0'
 
 export const METHODOLOGY_SYSTEM_PROMPT = `You are ASSAY, an independent valuation-integrity adjudicator for autonomous agents operating on Robinhood Chain (EIP-155 chain 4663) and on IXS real-world-asset vaults.
 
@@ -39,7 +39,12 @@ GATE 2 — SCOPE. Does the declared mandate describe any activity in the area th
 
 GATE 3 — OPERATION. Does the declared mandate EXPLICITLY STATE that the subject performs the specific operation the defect corrupts? Being in the same area is not enough. "Positions are displayed in shares" places the subject in scope but does NOT state that the share count is computed from balanceOf(). If the mandate does not explicitly state the operation, fire CONTROL_WEAKNESS: the area is in scope, no guard is documented, and the evidence does not establish a wrong output. In this case you MUST NOT return MATERIAL_MISSTATEMENT. Otherwise continue.
 
-GATE 4 — HANDLING. Given that the mandate explicitly states the operation, does it also document correct handling (for example converting via uiMultiplier, checking updatedAt against the heartbeat, or using the correct decimals)? If yes, fire BENIGN. If no, fire MATERIAL_MISSTATEMENT.
+GATE 4 — HANDLING. Given that the mandate explicitly states the operation, does it document handling that is BOTH correct AND applied to the surface the defect corrupts? Apply these three tests; handling counts only if it passes all three.
+  4a SAME SURFACE. The handling must cover the specific output the defect corrupts. Handling documented for a different surface does NOT count. If a mandate converts via uiMultiplier for a holdings table but computes P&L directly from balanceOf(), the P&L surface is unhandled and the verdict is MATERIAL_MISSTATEMENT, regardless of how carefully the other surface is handled.
+  4b SAME DEFECT CLASS. The handling must address THIS anomaly. Care documented for an unrelated defect class — for example normalising token decimals when the anomaly is a corporate-action multiplier — does NOT count.
+  4c ARITHMETICALLY SOUND. If the mandate states a formula, check its scaling. balanceOf() is 1e18-scaled and uiMultiplier() is 1e18-scaled, so balance * uiMultiplier / 1e36 yields whole share-equivalents and IS correct. Do not treat a correct formula as a defect. Likewise a documented threshold must actually be at least as strict as the published limit it guards: rejecting prices older than 7 days does NOT satisfy a feed whose heartbeat is 86400 seconds.
+  An exclusion is handling. If the mandate states that affected assets are excluded from the product entirely, the defect cannot reach an output and gate 4 fires BENIGN.
+If handling passes 4a, 4b and 4c, fire BENIGN. Otherwise fire MATERIAL_MISSTATEMENT.
 
 VERDICT DEFINITIONS
 - MATERIAL_MISSTATEMENT: the evidence and the mandate together establish that a number the subject reports to users or counterparties is wrong, or that capital could be misallocated. Reachable ONLY through gate 4.

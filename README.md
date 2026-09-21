@@ -72,31 +72,57 @@ evidence does not support a conclusion.
 
 ---
 
-## The BRAID A/B
+## Does the reasoning layer help? We measured instead of assuming.
 
-Identical model, identical evidence, identical prompt. The only difference is the
-`x-openserv-disable-braid: true` header.
-
-The subject's mandate says positions are *"displayed to the user in shares"* — but never says they
-are **computed** from `balanceOf()`. So `MATERIAL_MISSTATEMENT` is the **unsafe** verdict here: it
-asserts a demonstrated defect in a *named third party* on an operation the evidence never
-establishes. The defensible band is `CONTROL_WEAKNESS` or `WITHHELD`.
-
-**A single run is an anecdote, so this is measured over repeated trials.** Two runs of
-`pnpm ab` produced two different BRAID-on verdicts (`WITHHELD`, then `CONTROL_WEAKNESS`) — both
-inside the defensible band, but different. `pnpm trials` runs N trials per arm and reports the
-distribution and the unsafe rate:
+ASSAY runs on SERV Reasoning. The interesting question is whether SERV's *feature layer* —
+BRAID, Kronos, Multipath, `serv_prompt_guard` — measurably improves adjudication on this task.
+We built a harness to find out rather than asserting it. Every arm is the same model
+(`gpt-5.6-luna-serv-kronos-multipath`), same evidence, same prompt; only the
+`x-openserv-disable-braid: true` header differs.
 
 ```bash
-pnpm trials --n=5        # writes data/braid-trials.json
+pnpm ab            # one A/B run        -> data/braid-ab.json
+pnpm trials --n=8  # N trials per arm   -> data/braid-trials.json
+pnpm inject --n=2  # prompt injection   -> data/injection-trials.json
+pnpm hard --n=2    # hard case set      -> data/hard-trials.json  (resumable)
 ```
 
-The claim being tested is **not** "BRAID returns an identical string every time". It is that BRAID
-keeps the verdict inside the defensible band when the mandate does not establish the operation —
-i.e. that it does not publish a critical finding against a named party on unestablished facts.
+### Results so far
 
-**An auditor that refuses, or downgrades to a control weakness, is more credible than one that
-always answers.**
+| test | braid-on | braid-off |
+|---|---|---|
+| Easy fixture, 8 trials/arm | 100% accuracy | 100% accuracy |
+| Prompt injection, 5 payloads × 2 arms | 0/10 compromised | 0/10 compromised |
+| **Hard set, two independent samples** | **17/23 = 74%** | **20/23 = 87%** |
+
+Median latency with BRAID on was **21.6s vs 4.2s** off.
+
+**On this task we could not measure a benefit from the feature layer, and on the hard set it was
+directionally worse.** At n≈23 per arm that difference is not statistically significant and we do
+not claim it is — but the direction is consistent across independent samples.
+
+### The more useful finding: specification dominated
+
+Three times we mistook our own under-specification for model inconsistency.
+
+1. **v1 rubric.** `WITHHELD` and `CONTROL_WEAKNESS` both fired on the same input, and a third
+   reading reached `MATERIAL_MISSTATEMENT`. Three defensible answers, so verdicts oscillated. The
+   single-run A/B that looked decisive (`WITHHELD` vs `MATERIAL_MISSTATEMENT`) was sampling noise:
+   repeated trials gave 40%/75%, then 38%/50% on the production model.
+2. **v2 ordered gates.** Rewriting the rubric as four strictly-ordered gates made exactly one
+   verdict correct per input. Oscillation vanished in **both** arms — 100%/100%.
+3. **v3 gate 4.** On harder cases, every remaining error landed on gate 4, which never said *which
+   surface* handling had to cover, that it had to address *this* defect class, or that a stated
+   formula should be checked for scaling. The worst case: a mandate documenting
+   `balanceOf() * uiMultiplier() / 1e36` — which is arithmetically correct — was called
+   `MATERIAL_MISSTATEMENT`, i.e. **the auditor falsely accusing a subject that did it right**.
+   Gate 4 now has explicit 4a/4b/4c sub-tests.
+
+The reliability in this system comes from deterministic verification and an unambiguous ordered
+rubric, not from the reasoning layer. We report that because it is what the data shows, and because
+an auditor that over-claims about its own dependencies has no business grading anyone else.
+
+Raw artifacts for every run are committed under `data/`.
 
 ## Usage
 

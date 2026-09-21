@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { writeFileSync } from 'node:fs'
+import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { sweep } from '../src/sweep/detect.js'
 import { adjudicate, type Verdict } from '../src/adjudicate/serv.js'
 import { METHODOLOGY_VERSION } from '../src/adjudicate/methodology.js'
@@ -71,11 +71,34 @@ async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<
   }
 }
 
-const results: CaseResult[] = []
-for (const c of cases) {
-  results.push(await runCase(c, true))
-  results.push(await runCase(c, false))
+/**
+ * RESUMABLE. Two long runs were killed partway through, so each invocation reloads whatever is
+ * already in the artifact and only runs the case/arm pairs that are missing. Re-running until it
+ * reports complete is therefore safe and cheap — finished trials are never paid for twice.
+ * A methodologyVersion change invalidates prior results, since the rubric IS the experiment.
+ */
+let results: CaseResult[] = []
+if (existsSync('data/hard-trials.json')) {
+  try {
+    const prev = JSON.parse(readFileSync('data/hard-trials.json', 'utf8')) as {
+      methodologyVersion?: string
+      trialsPerCase?: number
+      results?: CaseResult[]
+    }
+    if (prev.methodologyVersion === METHODOLOGY_VERSION && prev.trialsPerCase === n) {
+      results = (prev.results ?? []).filter((x) => x.verdicts.length === n)
+      if (results.length) console.error(`resuming: ${results.length} case/arm pairs already done\n`)
+    } else if (prev.results?.length) {
+      console.error(
+        `previous artifact is methodology ${prev.methodologyVersion} n=${prev.trialsPerCase}; ` +
+          `current is ${METHODOLOGY_VERSION} n=${n} — starting fresh\n`,
+      )
+    }
+  } catch {
+    /* corrupt or absent: start fresh */
+  }
 }
+const done = new Set(results.map((x) => `${x.id}:${x.arm}`))
 
 function summarise(arm: CaseResult['arm']) {
   const rows = results.filter((x) => x.arm === arm)
@@ -84,28 +107,57 @@ function summarise(arm: CaseResult['arm']) {
   return { trials, correct, accuracy: trials ? correct / trials : 0 }
 }
 
+/**
+ * Persist after EVERY case. An earlier run died partway through and lost all of it, because the
+ * artifact was only written at the end. Long, expensive, network-bound runs must checkpoint.
+ */
+function persist(complete: boolean) {
+  writeFileSync(
+    'data/hard-trials.json',
+    JSON.stringify(
+      {
+        generatedAt: new Date().toISOString(),
+        complete,
+        methodologyVersion: METHODOLOGY_VERSION,
+        trialsPerCase: n,
+        block: r.blockNumber,
+        cases: cases.map((c) => ({ id: c.id, expected: c.expected, rationale: c.rationale })),
+        skippedCases: skipped.map((c) => c.id),
+        marketClosed: r.marketClosed,
+        cohort: r.cohort,
+        results,
+        summary: { braidOn: summarise('braid-on'), braidOff: summarise('braid-off') },
+      },
+      null,
+      2,
+    ),
+  )
+}
+
+for (const c of cases) {
+  for (const braid of [true, false]) {
+    const key = `${c.id}:${braid ? 'braid-on' : 'braid-off'}`
+    if (done.has(key)) {
+      console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'}  (cached)`)
+      continue
+    }
+    try {
+      results.push(await runCase(c, braid))
+      done.add(key)
+      persist(false)
+    } catch (e) {
+      console.error(`  ${c.id} ${key} aborted: ${(e as Error).message.slice(0, 110)}`)
+    }
+  }
+}
+
 const on = summarise('braid-on')
 const off = summarise('braid-off')
-
-writeFileSync(
-  'data/hard-trials.json',
-  JSON.stringify(
-    {
-      generatedAt: new Date().toISOString(),
-      methodologyVersion: METHODOLOGY_VERSION,
-      trialsPerCase: n,
-      block: r.blockNumber,
-      cases: cases.map((c) => ({ id: c.id, expected: c.expected, rationale: c.rationale })),
-      skippedCases: skipped.map((c) => c.id),
-      marketClosed: r.marketClosed,
-      cohort: r.cohort,
-      results,
-      summary: { braidOn: on, braidOff: off },
-    },
-    null,
-    2,
-  ),
-)
+const expectedPairs = cases.length * 2
+persist(results.length === expectedPairs)
+if (results.length !== expectedPairs) {
+  console.error(`\nINCOMPLETE: ${results.length}/${expectedPairs} case/arm pairs. Re-run to resume.`)
+}
 
 const pct = (x: number) => `${(x * 100).toFixed(0)}%`
 console.log('\n' + '='.repeat(82))
