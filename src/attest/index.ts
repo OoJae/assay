@@ -54,6 +54,15 @@ export interface EvidenceDocument {
   issuedAt: string
 }
 
+/**
+ * Build the evidence document.
+ *
+ * DETERMINISTIC BY CONSTRUCTION. `issuedAt` is passed in, not stamped from the clock, and the
+ * block is passed in rather than re-swept. The earlier version stamped `new Date()` and re-swept
+ * per call, so no two runs produced the same bytes — which is how the on-chain responseHash came
+ * to disagree with the published document. The bytes MUST be reproducible, or responseHash proves
+ * nothing.
+ */
 export function buildEvidenceDocument(
   agentId: string,
   tag: AttestationTag,
@@ -61,6 +70,7 @@ export function buildEvidenceDocument(
   methodologyVersion: string,
   block: string,
   findings: VerifiedFinding[],
+  issuedAt: string,
 ): EvidenceDocument {
   return {
     agentId,
@@ -83,7 +93,7 @@ export function buildEvidenceDocument(
         blockNumber: e.blockNumber,
       })),
     })),
-    issuedAt: new Date().toISOString(),
+    issuedAt,
   }
 }
 

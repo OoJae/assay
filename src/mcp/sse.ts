@@ -48,8 +48,40 @@ function cors(res: ServerResponse) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
 }
 
+/**
+ * A crashed process is a denial of service on the one judge-facing endpoint, so nothing in the
+ * request path may throw out of the handler.
+ *
+ * The concrete bug this closes: the URL was parsed against `http://${req.headers.host}`, and Node's
+ * HTTP parser accepts hosts the WHATWG URL parser rejects. A single request with `Host: ]` threw
+ * ERR_INVALID_URL out of an unguarded async handler and killed the process; the next request got
+ * connection refused. The host is never used — only pathname and searchParams are read — so it is
+ * parsed against a fixed base instead.
+ */
+process.on('unhandledRejection', (err) => {
+  console.error('[mcp] unhandled rejection:', err instanceof Error ? err.message : err)
+})
+process.on('uncaughtException', (err) => {
+  console.error('[mcp] uncaught exception:', err instanceof Error ? err.message : err)
+})
+
 const http = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-  const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`)
+  try {
+    await handle(req, res)
+  } catch (err) {
+    console.error('[mcp] request failed:', err instanceof Error ? err.message : err)
+    if (!res.headersSent) {
+      res.writeHead(400, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ error: 'bad request' }))
+    } else {
+      res.end()
+    }
+  }
+})
+
+async function handle(req: IncomingMessage, res: ServerResponse) {
+  // Fixed base: the Host header is attacker-controlled and unused.
+  const url = new URL(req.url ?? '/', 'http://localhost')
   cors(res)
 
   if (req.method === 'OPTIONS') {
@@ -104,16 +136,33 @@ const http = createServer(async (req: IncomingMessage, res: ServerResponse) => {
 
     // Read the body ourselves so the tool name can be inspected BEFORE any work happens, then hand
     // the parsed body to the transport (its handlePostMessage accepts one, so nothing is re-read).
-    const raw = await new Promise<string>((resolve, reject) => {
+    // Meter BEFORE buffering. Previously only `tools/call` was metered, and only after the whole
+    // body had been read and parsed — so initialize/tools/list/ping and every notification were
+    // free, and the read itself was the cheapest way to make the server do work.
+    const entry = limiter.check(`post:${ip}`, LIMITS.cheapCall)
+    if (entry !== null) {
+      tooMany(res, entry, 'too many requests from this address')
+      req.destroy()
+      return
+    }
+
+    const MAX_BODY = 64 * 1024
+    const raw = await new Promise<string | null>((resolve) => {
       let buf = ''
-      req.on('data', (c) => {
+      const onData = (c: Buffer | string) => {
         buf += c
-        // Refuse absurd payloads rather than buffering them.
-        if (buf.length > 1_000_000) reject(new Error('payload too large'))
-      })
+        if (buf.length > MAX_BODY) {
+          // reject() alone left the listener attached and kept buffering to Content-Length;
+          // a 300MB body reached the heap limit. Detach and destroy the socket instead.
+          req.off('data', onData)
+          req.destroy()
+          resolve(null)
+        }
+      }
+      req.on('data', onData)
       req.on('end', () => resolve(buf))
-      req.on('error', reject)
-    }).catch(() => null)
+      req.on('error', () => resolve(null))
+    })
 
     if (raw === null) {
       res.writeHead(413, { 'content-type': 'application/json' })
@@ -150,7 +199,7 @@ const http = createServer(async (req: IncomingMessage, res: ServerResponse) => {
 
   res.writeHead(404, { 'content-type': 'application/json' })
   res.end(JSON.stringify({ error: 'not found', endpoints: ['/sse', '/messages', '/health'] }))
-})
+}
 
 http.listen(PORT, HOST, () => {
   console.log(`ASSAY MCP (SSE) listening on http://${HOST}:${PORT}/sse`)

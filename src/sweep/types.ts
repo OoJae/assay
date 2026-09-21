@@ -54,6 +54,15 @@ export interface Finding {
     note: string
   }
   evidence: Evidence[]
+  /**
+   * Off-chain inputs a finding relies on, disclosed with provenance.
+   *
+   * The byte-verified guarantee covers `evidence` ONLY. Where a claim also depends on a value that
+   * cannot be fetched from chain state — an off-chain quote, a published directory — it is listed
+   * here so a reader can tell which numbers carry the guarantee and which do not. Silence on this
+   * is what let an absence claim ship under a verification badge.
+   */
+  offChainSources?: Array<{ url: string; describes: string; fetchedAt: string }>
   methodologyVersion: string
   detectedAt: string
 }

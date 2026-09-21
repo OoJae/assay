@@ -26,7 +26,9 @@
     "serve:remote": "tsx scripts/serve-remote.ts",
     "trials": "tsx scripts/braid-trials.ts",
     "mcp:sse": "tsx src/mcp/sse.ts",
-    "attest": "tsx scripts/attest-self.ts"
+    "attest:build": "tsx scripts/attest-build.ts",
+    "attest:submit": "tsx scripts/attest-submit.ts",
+    "verify:attestation": "tsx scripts/verify-attestation.ts"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",

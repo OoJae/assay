@@ -23,6 +23,7 @@ export interface Finding {
   statement: string
   impact: { basisPoints?: number; percent?: number; note: string }
   evidence: Evidence[]
+  offChainSources?: Array<{ url: string; describes: string; fetchedAt: string }>
   methodologyVersion: string
   detectedAt: string
   verification: {

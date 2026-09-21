@@ -1,6 +1,9 @@
 import type { ChainNote, Finding, Severity } from './types.js'
 import { evidence, readFeed, readStockToken } from './oracle.js'
 import {
+  CHAINLINK_FEEDS_URL,
+  RH_ASSETS_URL,
+  RH_PRICES_URL,
   fetchChainlinkFeeds,
   fetchRhAssets,
   fetchRhUnderlyingPrice,
@@ -152,6 +155,8 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
   opts.onProgress?.(0, scope.length, `cohort: ${cohortStale}/${cohort.length} stale -> ${marketClosed ? 'MARKET CLOSED' : 'market open'}`)
 
   const findings: Finding[] = []
+  /** Assets with no published Chainlink feed. Reported as ChainNotes, never as Findings. */
+  const missingFeedAssets: Array<{ symbol: string; token: `0x${string}`; multiplier: number }> = []
   const stats = {
     divergentMultipliers: 0,
     staleFeeds: 0,
@@ -194,6 +199,16 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
     const feed: ChainlinkFeed | null = feedForSymbol(feeds, sym)
     const mult = reading.multiplierFloat
     const divergenceBps = Math.abs(mult - 1) * 10_000
+    /**
+     * How much a raw balanceOf() understates the true share count, as a percentage of the TRUE
+     * value. This is bounded by 100% by construction.
+     *
+     * The previous formulation reported `divergenceBps` as "understates by N bps", which for CRWD
+     * printed "understates it by 30000.0 bps" — i.e. 300%. An understatement cannot exceed 100%:
+     * that figure was the ratio expressed as a gain (true = 4x raw), not an understatement.
+     * It was the headline number on the wall and in the README.
+     */
+    const understatementPct = mult > 0 ? (1 - 1 / mult) * 100 : 0
 
     // --- Class 4: share-count misreport (only meaningful when multiplier != 1) ---
     if (divergenceBps > 0.01) {
@@ -210,12 +225,17 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
           `${sym} reports uiMultiplier() = ${reading.multiplier.toString()} (${mult.toFixed(9)}). ` +
           `Under ERC-8056 a corporate action moves this multiplier rather than balances, so ` +
           `balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. ` +
-          `Any surface presenting balanceOf() as a share count understates it by ${divergenceBps.toFixed(1)} bps. ` +
+          `Any surface presenting balanceOf() as a share count understates it by ${understatementPct.toFixed(4)}% ` +
+          `(the true count is ${mult.toFixed(4)}x the raw balance). ` +
           `Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.`,
         impact: {
           basisPoints: Number(divergenceBps.toFixed(2)),
-          percent: Number(((mult - 1) * 100).toFixed(4)),
-          note: `totalSupply raw ${rawShares.toFixed(4)} tokens vs ${trueShares.toFixed(4)} share-equivalents (delta ${(trueShares - rawShares).toFixed(4)})`,
+          /** Understatement as a share of the TRUE value. Bounded by 100% by construction. */
+          percent: Number(understatementPct.toFixed(4)),
+          note:
+            `totalSupply raw ${rawShares.toFixed(4)} tokens vs ${trueShares.toFixed(4)} share-equivalents ` +
+            `(delta ${(trueShares - rawShares).toFixed(4)}). Presenting the raw balance as a share count ` +
+            `understates by ${understatementPct.toFixed(4)}%; equivalently the true count is ${mult.toFixed(4)}x the raw.`,
         },
         evidence: [
           evidence(`uiMultiplier() == ${reading.multiplier}`, token, 'uiMultiplier()', reading.rawMultiplier, blockNumber, observedAt),
@@ -227,27 +247,21 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
     }
 
     // --- Class 3: no price feed at all ---
+    //
+    // This is an assertion of ABSENCE: "no Chainlink feed is published for this asset". An absence
+    // cannot be proven by an eth_call, so it MUST NOT be published as a Finding — a Finding carries
+    // the byte-verified guarantee, and the only citation available here (uiMultiplier()) does not
+    // test the claim at all.
+    //
+    // It previously was a Finding, and the consequence was severe: 159 of 201 published findings
+    // asserted an absence while citing an unrelated multiplier read, so 79% of the wall carried a
+    // "citations reproduced byte-for-byte" badge for a claim its citation could not support. The
+    // rule was already stated in types.ts and again above the ChainNote block below, and broken here.
+    //
+    // Collected and emitted as ChainNotes, which carry checkable `sources[]` instead of citations.
     if (!feed) {
       stats.missingFeeds++
-      findings.push({
-        id: `${sym}-no-feed`,
-        defectClass: 'NO_PRICE_FEED',
-        severity: divergenceBps > 100 ? 'high' : 'medium',
-        subject: `${sym} (${token})`,
-        title: `${sym}: no Chainlink price feed on Robinhood Chain`,
-        statement:
-          `No Chainlink feed for ${sym} is published in the Robinhood Chain reference-data directory. ` +
-          `Contracts or agents that assume a feed exists for every Stock Token cannot value this asset on-chain. ` +
-          (divergenceBps > 100
-            ? `This asset also carries uiMultiplier() = ${mult.toFixed(9)}, so off-chain share prices are ${mult.toFixed(4)}x away from token value.`
-            : ''),
-        impact: { note: 'On-chain valuation unavailable; off-chain price required, which reintroduces the cross-surface mixing risk.' },
-        evidence: [
-          evidence(`uiMultiplier() == ${reading.multiplier}`, token, 'uiMultiplier()', reading.rawMultiplier, blockNumber, observedAt),
-        ],
-        methodologyVersion: METHODOLOGY_VERSION,
-        detectedAt: observedAt,
-      })
+      missingFeedAssets.push({ symbol: sym, token, multiplier: mult })
     }
 
     // --- Classes 1 + 2: feed present -> staleness and cross-surface mixing ---
@@ -329,6 +343,15 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
                 evidence(`uiMultiplier() == ${reading.multiplier}`, token, 'uiMultiplier()', reading.rawMultiplier, blockNumber, observedAt),
                 evidence(`latestRoundData().answer == ${reading2.answer}`, feed.proxyAddress, 'latestRoundData()', reading2.raw, blockNumber, observedAt),
               ],
+              // The underlying mid is an off-chain quote and CANNOT be byte-verified. Disclosed
+              // with provenance so the verification badge is not read as covering it.
+              offChainSources: [
+                {
+                  url: RH_PRICES_URL(sym),
+                  describes: `underlying share bid/ask used for the mid ${under.mid.toFixed(4)} (not multiplier-adjusted)`,
+                  fetchedAt: under.generatedAt || observedAt,
+                },
+              ],
               methodologyVersion: METHODOLOGY_VERSION,
               detectedAt: observedAt,
             })
@@ -406,6 +429,35 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
         'https://docs.robinhood.com/chain/oracles-and-price-feeds/',
         'https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json',
         'https://docs.chain.link/data-feeds/l2-sequencer-feeds',
+      ],
+      observedAt,
+    })
+  }
+
+  if (missingFeedAssets.length) {
+    const withMultiplier = missingFeedAssets.filter((a) => Math.abs(a.multiplier - 1) > 1e-9)
+    chainNotes.push({
+      id: 'rh-chain-assets-without-price-feed',
+      severity: withMultiplier.length ? 'high' : 'medium',
+      title: `${missingFeedAssets.length} of ${scope.length} scanned Stock Tokens have no Chainlink price feed`,
+      statement:
+        `The Robinhood Chain Chainlink reference-data directory publishes ${feeds.length} feeds, of which ` +
+        `${cohort.length} are 24/5 equity feeds. ${missingFeedAssets.length} of the ${scope.length} Stock Tokens ` +
+        `scanned have no feed entry, so they cannot be priced on-chain at all and any valuation must come from ` +
+        `an off-chain source — which reintroduces the cross-surface mixing hazard. ` +
+        (withMultiplier.length
+          ? `${withMultiplier.length} of them also carry a uiMultiplier() other than 1.0, where an off-chain SHARE ` +
+            `price differs from token value by that multiplier: ` +
+            withMultiplier
+              .slice(0, 5)
+              .map((a) => `${a.symbol} (${a.multiplier.toFixed(4)}x)`)
+              .join(', ') +
+            (withMultiplier.length > 5 ? `, and ${withMultiplier.length - 5} more.` : '.')
+          : ''),
+      sources: [
+        CHAINLINK_FEEDS_URL,
+        'https://docs.robinhood.com/chain/oracles-and-price-feeds/',
+        RH_ASSETS_URL,
       ],
       observedAt,
     })

@@ -105,3 +105,42 @@ describe('evidence verifier', () => {
     expect(r.status).toBe('mismatch')
   }, 30_000)
 })
+
+describe('citations must actually bear on the claim', () => {
+  it('a Finding may never assert an ABSENCE, because no eth_call can prove one', async () => {
+    // The regression this guards: 159 of 201 published findings asserted "no Chainlink feed is
+    // published for X" while citing uiMultiplier(). The bytes reproduced perfectly, so the
+    // verifier passed them and the wall showed a byte-verified badge for a claim the citation
+    // could not support. verifyEvidence compares rawReturn only — it never reads .claim — so the
+    // guarantee has to be enforced by never minting such a Finding in the first place.
+    const { sweep } = await import('../src/sweep/detect.js')
+    const r = await sweep({ symbols: ['CRWD', 'NVDA'] })
+
+    // NO_PRICE_FEED is an absence and must not appear as a Finding.
+    expect(r.findings.some((f) => f.defectClass === 'NO_PRICE_FEED')).toBe(false)
+
+    // It must still be reported — as a ChainNote, which carries checkable sources instead.
+    const note = r.chainNotes.find((n) => n.id === 'rh-chain-assets-without-price-feed')
+    expect(note).toBeDefined()
+    expect(note!.sources.length).toBeGreaterThan(0)
+
+    // Every surviving Finding must cite at least one on-chain call.
+    for (const f of r.findings) {
+      expect(f.evidence.length).toBeGreaterThan(0)
+      for (const e of f.evidence) expect(e.call).toMatch(/\(\)$/)
+    }
+  }, 180_000)
+
+  it('the CRWD understatement is bounded by 100%', async () => {
+    // "understates it by 30000.0 bps" (300%) was the headline number on the wall and in the
+    // README. An understatement cannot exceed 100% — that figure was the ratio expressed as a
+    // gain, not an understatement.
+    const { sweep } = await import('../src/sweep/detect.js')
+    const r = await sweep({ symbols: ['CRWD'] })
+    const f = r.findings.find((x) => x.defectClass === 'SHARE_COUNT_MISREPORT')
+    expect(f).toBeDefined()
+    expect(f!.impact.percent).toBeGreaterThan(0)
+    expect(f!.impact.percent).toBeLessThanOrEqual(100)
+    expect(f!.statement).not.toMatch(/understates it by \d{5,}/)
+  }, 120_000)
+})

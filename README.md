@@ -34,15 +34,16 @@ Measured live on mainnet (chain 4663) on 2026-09-20:
 
 | | count |
 |---|---|
-| Stock Tokens with `uiMultiplier() != 1.0` | **28 of 194** |
-| Assets with **no Chainlink feed at all** | **159 of 194** |
-| Existing equity feeds **past their own 86400s heartbeat** | **35 of 35 — all of them** |
+| Stock Tokens with `uiMultiplier() != 1.0` | **33 of 195** |
+| Assets with **no Chainlink feed at all** | **160 of 195** (reported as a chain note, not a finding — see below) |
+| Equity feeds past their heartbeat | **all 35, but only while the market is closed** — inferred from cohort corroboration, not a calendar |
 
 Worked examples, all reproducible:
 
 - **CRWD** `uiMultiplier() = 4e18`. A real holder shows `balanceOf() = 13.0262` tokens, which is
-  **52.1046 share-equivalents**. CRWD has **no Chainlink feed**, so any valuation must come from an
-  off-chain share price — which is **300% away** from token value.
+  **52.1046 share-equivalents** — presenting the raw balance as a share count understates it by
+  **75%**. CRWD has **no Chainlink feed**, so any valuation must come from an off-chain share
+  price, which differs from token value by the 4.0x multiplier.
 - **NVDA** a real holder's position is **$7,399,189**, priced from a feed that is **50.4 hours stale**.
 
 ### What is *not* true
@@ -67,7 +68,18 @@ The defect is **cross-surface mixing**: the on-chain feed returns a *token* pric
 straight from chain state. Every value is kept as **raw hex** alongside the decoded form.
 
 **2. Verifier — deterministic, no model.** Re-executes every cited call and **byte-compares**.
-A single mismatched citation discredits the entire finding. It distinguishes:
+A single mismatched citation discredits the entire finding.
+
+> **What the guarantee covers, precisely.** It covers the `evidence` array: on-chain calls, re-run
+> and compared byte-for-byte. It does **not** cover off-chain inputs, which are listed separately
+> under `offChainSources` with their URL and fetch time and rendered in their own panel on the wall.
+> And a claim that cannot be proven by an `eth_call` at all — the **absence** of a published price
+> feed, say — is never published as a Finding; it is a `ChainNote` carrying checkable `sources[]`.
+> An earlier build got this wrong: 159 of 201 findings asserted an absence while citing an
+> unrelated `uiMultiplier()` read, so most of the wall carried a verification badge its citation
+> could not support. Fixed, and covered by a test.
+
+It distinguishes:
 
 - `reproduced` — byte-identical, publishable
 - `mismatch` — the citation is wrong → **the whole finding is dropped**

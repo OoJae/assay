@@ -40,6 +40,9 @@ interface Bucket {
   resetAt: number
 }
 
+/** Hard ceiling on tracked identities, so bucket growth is bounded even under a key-churn attack. */
+export const MAX_TRACKED_CLIENTS = 10_000
+
 export class RateLimiter {
   private buckets = new Map<string, Bucket>()
 
@@ -47,6 +50,11 @@ export class RateLimiter {
   check(key: string, limit: Limit, now = Date.now()): number | null {
     const bucket = this.buckets.get(key)
     if (!bucket || now >= bucket.resetAt) {
+      if (!bucket && this.buckets.size >= MAX_TRACKED_CLIENTS) {
+        // Reap first; if still full, fail CLOSED rather than growing without bound.
+        this.sweep(now)
+        if (this.buckets.size >= MAX_TRACKED_CLIENTS) return Math.ceil(limit.windowMs / 1000)
+      }
       this.buckets.set(key, { count: 1, resetAt: now + limit.windowMs })
       return null
     }
@@ -75,14 +83,54 @@ export class RateLimiter {
 }
 
 /**
- * Client IP, honouring x-forwarded-for only for its FIRST entry.
+ * Trusted proxy peers, as CIDR-less exact addresses, from MCP_TRUSTED_PROXIES.
  *
- * Trusting the whole header would let a caller spoof an arbitrary IP and defeat the limiter
- * entirely, so we take the left-most value and fall back to the socket address.
+ * EMPTY BY DEFAULT, and that default is the point: this service is exposed directly on a public
+ * IP with no proxy in front of it, so nothing should be trusted to tell us who the caller is.
  */
-export function clientIp(headers: Record<string, string | string[] | undefined>, socketAddr?: string): string {
+export function trustedProxies(env: string | undefined = process.env.MCP_TRUSTED_PROXIES): Set<string> {
+  return new Set(
+    (env ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  )
+}
+
+/** Normalise so ::ffff:1.2.3.4 and 1.2.3.4 are one identity, and collapse IPv6 to its /64. */
+export function normaliseIp(addr: string): string {
+  let a = addr.trim().toLowerCase()
+  if (a.startsWith('::ffff:')) a = a.slice(7)
+  if (a.includes(':')) {
+    // An IPv6 client trivially has a /64 to itself, so limiting per-address is no limit at all.
+    const parts = a.split(':')
+    return parts.slice(0, 4).join(':') + '::/64'
+  }
+  return a
+}
+
+/**
+ * Identify the client for rate-limiting purposes.
+ *
+ * x-forwarded-for is honoured ONLY when the immediate peer is an explicitly trusted proxy.
+ *
+ * The previous version took the header's first entry unconditionally, with a comment claiming it
+ * prevented spoofing. It did the opposite: with no proxy deployed, any caller could mint a fresh
+ * bucket per request by rotating the header. Measured against the real limits — rotating XFF over
+ * one socket: 200 allowed, 0 blocked, against a 30/min limit. Without the header: 30 allowed,
+ * 170 blocked. Every limit was a no-op for anyone who sent a header, while the README advertised
+ * the protection to third parties.
+ */
+export function clientIp(
+  headers: Record<string, string | string[] | undefined>,
+  socketAddr?: string,
+  trusted: Set<string> = trustedProxies(),
+): string {
+  const peer = normaliseIp(socketAddr ?? 'unknown')
+  if (!trusted.has(peer)) return peer
+
   const xff = headers['x-forwarded-for']
   const raw = Array.isArray(xff) ? xff[0] : xff
   const first = raw?.split(',')[0]?.trim()
-  return first || socketAddr || 'unknown'
+  return first ? normaliseIp(first) : peer
 }

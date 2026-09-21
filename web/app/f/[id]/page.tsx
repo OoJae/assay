@@ -68,6 +68,27 @@ export default async function FindingPage({ params }: { params: Promise<{ id: st
         ))}
       </div>
 
+      {f.offChainSources?.length ? (
+        <div className="card" style={{ borderColor: 'var(--high)' }}>
+          <div className="tag">Off-chain inputs — NOT covered by the byte-verified guarantee</div>
+          <div className="meta" style={{ marginTop: 8, marginBottom: 10 }}>
+            The citations above are re-fetched from chain state and byte-compared. The values below
+            cannot be, because they do not live on chain. They are listed so you can tell the
+            difference.
+          </div>
+          {f.offChainSources.map((o, i) => (
+            <div className="ev" key={i}>
+              <div className="claim">{o.describes}</div>
+              <div className="meta">
+                fetched {o.fetchedAt}
+                <br />
+                <a href={o.url} target="_blank" rel="noreferrer">{o.url}</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
       <footer>
         Reproduce this yourself:
         <pre style={{ marginTop: 10 }}>{`cast call ${f.evidence[0]?.contract ?? ''} "${
