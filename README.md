@@ -87,40 +87,47 @@ pnpm inject --n=2  # prompt injection   -> data/injection-trials.json
 pnpm hard --n=2    # hard case set      -> data/hard-trials.json  (resumable)
 ```
 
-### Results so far
+### Results
 
-| test | braid-on | braid-off |
-|---|---|---|
-| Easy fixture, 8 trials/arm | 100% accuracy | 100% accuracy |
-| Prompt injection, 5 payloads × 2 arms | 0/10 compromised | 0/10 compromised |
-| **Hard set, two independent samples** | **17/23 = 74%** | **20/23 = 87%** |
+| rubric | task | braid-on | braid-off |
+|---|---|---|---|
+| v1 (ambiguous) | easy fixture, 8/arm | 38% unsafe-verdict rate | 50% |
+| v2 (ordered gates) | easy fixture, 8/arm | 100% accuracy | 100% |
+| v2 | prompt injection, 5 payloads | 0/10 compromised | 0/10 |
+| v2 | **hard set, 2 independent samples** | 17/23 = **74%** | 20/23 = **87%** |
+| **v3 (gate 4 tightened)** | **hard set, 12/arm** | **12/12 = 100%** | **12/12 = 100%** |
 
 Median latency with BRAID on was **21.6s vs 4.2s** off.
 
-**On this task we could not measure a benefit from the feature layer, and on the hard set it was
-directionally worse.** At n≈23 per arm that difference is not statistically significant and we do
-not claim it is — but the direction is consistent across independent samples.
+**We could not measure a benefit from the feature layer on this task.** On the hard set at rubric
+v2 it was directionally worse, though at n≈23 per arm that is not significant and we do not claim
+it is. Once the rubric was correct, both arms were perfect.
 
-### The more useful finding: specification dominated
+### The finding that was actually worth having
 
-Three times we mistook our own under-specification for model inconsistency.
+Three times we mistook our own under-specification for model inconsistency. Each time, fixing the
+specification — not changing the model configuration — removed the variance.
 
-1. **v1 rubric.** `WITHHELD` and `CONTROL_WEAKNESS` both fired on the same input, and a third
-   reading reached `MATERIAL_MISSTATEMENT`. Three defensible answers, so verdicts oscillated. The
-   single-run A/B that looked decisive (`WITHHELD` vs `MATERIAL_MISSTATEMENT`) was sampling noise:
-   repeated trials gave 40%/75%, then 38%/50% on the production model.
-2. **v2 ordered gates.** Rewriting the rubric as four strictly-ordered gates made exactly one
-   verdict correct per input. Oscillation vanished in **both** arms — 100%/100%.
-3. **v3 gate 4.** On harder cases, every remaining error landed on gate 4, which never said *which
+1. **v1.** `WITHHELD` and `CONTROL_WEAKNESS` both fired on the same input, with a third reading
+   reaching `MATERIAL_MISSTATEMENT`. Three defensible answers, so verdicts oscillated. The
+   single-run A/B that first looked decisive was sampling noise.
+2. **v2 — four strictly-ordered gates**, so exactly one verdict is correct per input. Oscillation
+   vanished in **both** arms on the easy fixture.
+3. **v3 — gate 4.** On hard cases every remaining error was gate 4, which never said *which
    surface* handling had to cover, that it had to address *this* defect class, or that a stated
-   formula should be checked for scaling. The worst case: a mandate documenting
-   `balanceOf() * uiMultiplier() / 1e36` — which is arithmetically correct — was called
-   `MATERIAL_MISSTATEMENT`, i.e. **the auditor falsely accusing a subject that did it right**.
-   Gate 4 now has explicit 4a/4b/4c sub-tests.
+   formula should be checked for scaling. The worst failure: a mandate documenting
+   `balanceOf() * uiMultiplier() / 1e36` — arithmetically correct — was called
+   `MATERIAL_MISSTATEMENT`. **The auditor falsely accusing a subject that did it right** is the
+   most damaging error this tool can make. Adding 4a/4b/4c took both arms to 100%.
 
-The reliability in this system comes from deterministic verification and an unambiguous ordered
-rubric, not from the reasoning layer. We report that because it is what the data shows, and because
-an auditor that over-claims about its own dependencies has no business grading anyone else.
+So in this system the reliability comes from deterministic verification plus an unambiguous
+ordered rubric. That is a result about **prompt specification as the dominant variable on a
+well-scoped classification task** — not a claim that bounded reasoning does not work. Our task
+ended up easy once specified; BRAID's published benchmarks target open-ended reasoning, which is
+a different regime.
+
+The harness is reusable and lives in `scripts/`. Point it at a different rubric or model and it
+will tell you the same kind of thing. We are handing it over along with the finding.
 
 Raw artifacts for every run are committed under `data/`.
 
