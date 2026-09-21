@@ -1,0 +1,56 @@
+{
+  "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
+  "name": "ASSAY Valuation Integrity",
+  "description": "Independent valuation-integrity audit for agents on Robinhood Chain (EIP-155 chain 4663). Detects ERC-8056 corporate-action multiplier defects, missing and stale Chainlink feeds, and cross-surface price mixing between off-chain share prices and on-chain multiplier-adjusted token prices. Every published citation is re-fetched from chain state and byte-compared before publication; anything that does not reproduce is never published. ASSAY never moves capital and has no control path over anything it grades.",
+  "services": [
+    {
+      "name": "http",
+      "endpoint": "https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6",
+      "method": "POST",
+      "schema": {
+        "type": "object",
+        "required": ["buyerAddress", "payload"],
+        "properties": {
+          "buyerAddress": {
+            "type": "string",
+            "description": "Address paying for the call"
+          },
+          "payload": {
+            "type": "object",
+            "required": ["symbol", "holder"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "description": "Robinhood Chain Stock Token ticker, e.g. NVDA, SPY, CRWD"
+              },
+              "holder": {
+                "type": "string",
+                "description": "0x-prefixed holder address on Robinhood Chain"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "web",
+      "endpoint": "https://assay-steel.vercel.app"
+    },
+    {
+      "name": "repository",
+      "endpoint": "https://github.com/OoJae/assay"
+    },
+    {
+      "name": "agentWallet",
+      "endpoint": "eip155:8453:0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5"
+    }
+  ],
+  "active": true,
+  "x402support": true,
+  "x402": {
+    "network": "base",
+    "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "price": "0.01",
+    "payTo": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5"
+  }
+}

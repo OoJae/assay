@@ -1,0 +1,9 @@
+{
+  "agentId": "95265",
+  "agentURI": "https://assay-steel.vercel.app/agent-card.json",
+  "owner": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5",
+  "txHash": "0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a",
+  "chainId": 8453,
+  "duplicates": ["95266"],
+  "note": "95265 is canonical. 95266 was minted by an accidental re-run of a non-idempotent script; both are owned by the same wallet and carry the same agentURI. Recorded rather than hidden."
+}

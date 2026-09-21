@@ -6,6 +6,20 @@ Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP*.
 
 **Live wall:** <https://assay-steel.vercel.app> · **Repo:** <https://github.com/OoJae/assay>
 
+### On-chain proofs
+
+| | |
+|---|---|
+| **Settled x402 payment** | [`0x270adb4c…f50de`](https://basescan.org/tx/0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de) — 0.01 USDC, buyer `0x09f5…b5B5` → seller `0x0C3A…14B5`, method `transferWithAuthorization`, Base block 51,603,807. The buyer spent **zero ETH**: x402 settles via an EIP-3009 signature and a relayer pays the gas. |
+| **ERC-8004 identity** | agent **`8453:95265`** on the IdentityRegistry `0x8004A169…a432` — [tx](https://basescan.org/tx/0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a) · [8004scan](https://www.8004scan.io/agents/base/95265) · [agent card](https://assay-steel.vercel.app/agent-card.json) |
+| **Paid endpoint** | `https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6` at $0.01/call |
+
+The paid call returned real work, leading with the refusal it is designed to produce:
+
+> `refusalReason: No Chainlink feed is published for CRWD on Robinhood Chain; no on-chain price is
+> available. Using an off-chain SHARE price here would introduce a 300.000% error, because the
+> multiplier is 4.000000000.` — with `shareEquivalents: 52.1075` against `tokenUnits: 13.0269`.
+
 ---
 
 ## The finding

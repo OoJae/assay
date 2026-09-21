@@ -20,11 +20,23 @@ const buyerKey = process.env.BUYER_PRIVATE_KEY
 if (!buyerKey) throw new Error('BUYER_PRIVATE_KEY missing — run scripts/make-buyer.ts')
 const buyer = privateKeyToAccount(buyerKey as `0x${string}`)
 
-const state = JSON.parse(readFileSync('.openserv.json', 'utf8')) as {
-  workflows?: Array<{ id: number; triggerToken?: string }>
+/**
+ * .openserv.json nests workflows as { [agentName]: { [workflowName]: {...} } }, not as an array,
+ * and the id field is `workspaceId` rather than `id`. Walk it rather than index into it.
+ */
+interface WorkflowEntry {
+  workspaceId: number
+  triggerId?: string
+  triggerToken?: string
 }
-const wf = state.workflows?.[0]
-if (!wf) throw new Error('no workflow in .openserv.json — run scripts/provision.ts')
+const state = JSON.parse(readFileSync('.openserv.json', 'utf8')) as {
+  workflows?: Record<string, Record<string, WorkflowEntry>>
+}
+const wf = Object.values(state.workflows ?? {})
+  .flatMap((byName) => Object.values(byName))
+  .find((w) => w.triggerToken)
+if (!wf) throw new Error('no workflow with an x402 trigger in .openserv.json — run pnpm provision')
+console.log(`workflow ${wf.workspaceId}, trigger token ${wf.triggerToken}`)
 
 const pub = createPublicClient({ chain: base, transport: http() })
 const bal = await pub.readContract({
@@ -40,10 +52,21 @@ if (bal < 10_000n) {
   process.exit(1)
 }
 
+/**
+ * Pay via the PUBLIC trigger URL, not by workflowId.
+ *
+ * payWorkflow({workflowId}) makes PlatformClient fetch GET /workspaces/{id}, which requires the
+ * WORKSPACE OWNER's credentials and 401s without them. A genuine third-party buyer does not have
+ * those — and should not need them. The trigger URL is the public paywall endpoint, so paying
+ * through it is both the working path and the honest demo: an unrelated agent buying a service.
+ */
+const triggerUrl = `https://api.openserv.ai/webhooks/x402/trigger/${wf.triggerToken}`
+console.log(`paying ${triggerUrl}`)
+
 const client = new PlatformClient()
 const before = Date.now()
 const res = await client.payments.payWorkflow({
-  workflowId: wf.id,
+  triggerUrl,
   privateKey: buyerKey,
   input: { symbol: 'CRWD', holder: '0x8366a39CC670B4001A1121B8F6A443A643e40951' },
   network: 'base',
