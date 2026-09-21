@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev -p 3111",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "prebuild": "node -e \"const fs=require('fs');fs.mkdirSync('data',{recursive:true});fs.copyFileSync('../data/findings.json','data/findings.json');console.log('copied findings.json into web/data')\""
   },
   "dependencies": {
     "next": "^15.1.3",

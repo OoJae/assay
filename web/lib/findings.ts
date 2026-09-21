@@ -71,14 +71,27 @@ const EMPTY: SweepData = {
   errors: [],
 }
 
+/**
+ * Load the published sweep.
+ *
+ * Checks web/data first, then the repo-root data/. The prebuild step copies the root artifact
+ * into web/data because Vercel only bundles files inside the project root — reading '../data'
+ * works locally and silently yields an empty board once deployed.
+ */
 export function loadSweep(): SweepData {
-  const p = path.join(process.cwd(), '..', 'data', 'findings.json')
-  if (!existsSync(p)) return EMPTY
-  try {
-    return { ...EMPTY, ...(JSON.parse(readFileSync(p, 'utf8')) as Partial<SweepData>) }
-  } catch {
-    return EMPTY
+  const candidates = [
+    path.join(process.cwd(), 'data', 'findings.json'),
+    path.join(process.cwd(), '..', 'data', 'findings.json'),
+  ]
+  for (const p of candidates) {
+    if (!existsSync(p)) continue
+    try {
+      return { ...EMPTY, ...(JSON.parse(readFileSync(p, 'utf8')) as Partial<SweepData>) }
+    } catch {
+      /* try the next candidate */
+    }
   }
+  return EMPTY
 }
 
 export const SEV_RANK: Record<Severity, number> = {

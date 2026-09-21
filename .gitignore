@@ -12,3 +12,4 @@ web/.next
 *.png
 
 .openserv.json
+web/data/
