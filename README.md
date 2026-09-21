@@ -12,6 +12,7 @@ Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP*.
 |---|---|
 | **Settled x402 payment** | [`0x270adb4c…f50de`](https://basescan.org/tx/0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de) — 0.01 USDC, buyer `0x09f5…b5B5` → seller `0x0C3A…14B5`, method `transferWithAuthorization`, Base block 51,603,807. The buyer spent **zero ETH**: x402 settles via an EIP-3009 signature and a relayer pays the gas. |
 | **ERC-8004 identity** | agent **`8453:95265`** on the IdentityRegistry `0x8004A169…a432` — [tx](https://basescan.org/tx/0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a) · [8004scan](https://www.8004scan.io/agents/base/95265) · [agent card](https://assay-steel.vercel.app/agent-card.json) |
+| **On-chain attestation** | agent `95265` rated **CLEAN (100)** by validator `0x0C3A…14B5` — `getAgentValidations(95265)` returns one entry. The `responseHash` on-chain equals `keccak256` of the exact document served at [`/attestations/95265.json`](https://assay-steel.vercel.app/attestations/95265.json), so anyone can verify the attestation refers to the evidence we actually published. **Self-issued** — subject and validator are the same key, disclosed rather than dressed up as independent assurance. |
 | **Paid endpoint** | `https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6` at $0.01/call |
 
 The paid call returned real work, leading with the refusal it is designed to produce:

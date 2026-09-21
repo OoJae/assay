@@ -1,0 +1,9 @@
+{
+  "agentId": "95265",
+  "tag": "CLEAN",
+  "score": 100,
+  "requestHash": "0x18cdff93e8da064a74bc7c32b0895e3ecf55f060f507ca60b341bb16deb18078",
+  "responseURI": "https://assay-steel.vercel.app/attestations/95265.json",
+  "responseHash": "0xd218913c4d7ccac5db9dbd93891d4168fddbe2ffa9c2e1a81961171a48298180",
+  "responseTx": "0x96a6dc7b11f8f14bf4ea813fa3f2515d252391225962dceb135e99a26bf7a0ed"
+}

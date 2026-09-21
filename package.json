@@ -25,7 +25,8 @@
     "mint": "tsx scripts/mint-8004.ts",
     "serve:remote": "tsx scripts/serve-remote.ts",
     "trials": "tsx scripts/braid-trials.ts",
-    "mcp:sse": "tsx src/mcp/sse.ts"
+    "mcp:sse": "tsx src/mcp/sse.ts",
+    "attest": "tsx scripts/attest-self.ts"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
