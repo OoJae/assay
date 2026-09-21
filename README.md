@@ -4,6 +4,8 @@
 
 Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP*.
 
+**Live wall:** <https://assay-steel.vercel.app> · **Repo:** <https://github.com/OoJae/assay>
+
 ---
 
 ## The finding
