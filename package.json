@@ -6,7 +6,7 @@
   "description": "Independent valuation integrity audit for agents on Robinhood Chain and IXS RWA vaults",
   "scripts": {
     "sweep": "tsx scripts/sweep.ts",
-    "probe": "tsx scripts/probe.ts",
+    "probe": "tsx scripts/probe-ixs.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "provision": "tsx scripts/provision.ts",
@@ -23,7 +23,9 @@
     "serve": "tsx scripts/serve.ts",
     "register": "tsx scripts/register-8004.ts",
     "mint": "tsx scripts/mint-8004.ts",
-    "serve:remote": "tsx scripts/serve-remote.ts"
+    "serve:remote": "tsx scripts/serve-remote.ts",
+    "trials": "tsx scripts/braid-trials.ts",
+    "mcp:sse": "tsx src/mcp/sse.ts"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
