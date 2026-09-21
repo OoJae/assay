@@ -78,20 +78,25 @@ Identical model, identical evidence, identical prompt. The only difference is th
 `x-openserv-disable-braid: true` header.
 
 The subject's mandate says positions are *"displayed to the user in shares"* — but never says they
-are computed from `balanceOf()`.
+are **computed** from `balanceOf()`. So `MATERIAL_MISSTATEMENT` is the **unsafe** verdict here: it
+asserts a demonstrated defect in a *named third party* on an operation the evidence never
+establishes. The defensible band is `CONTROL_WEAKNESS` or `WITHHELD`.
 
-| | BRAID **on** | BRAID **off** |
-|---|---|---|
-| verdict | **WITHHELD** | **MATERIAL_MISSTATEMENT** |
-| severity | info | **critical** |
-| rationale | "does not establish that the subject performs the affected operation" | "presenting raw token balances as shares **would** understate…" |
+**A single run is an anecdote, so this is measured over repeated trials.** Two runs of
+`pnpm ab` produced two different BRAID-on verdicts (`WITHHELD`, then `CONTROL_WEAKNESS`) — both
+inside the defensible band, but different. `pnpm trials` runs N trials per arm and reports the
+distribution and the unsafe rate:
 
-BRAID-off reasons hypothetically — *"would"* — and then publishes a critical finding against a named
-third party anyway. BRAID-on catches precisely that gap and withholds.
+```bash
+pnpm trials --n=5        # writes data/braid-trials.json
+```
 
-**An auditor that refuses is more credible than one that always answers. Only SERV refused.**
+The claim being tested is **not** "BRAID returns an identical string every time". It is that BRAID
+keeps the verdict inside the defensible band when the mandate does not establish the operation —
+i.e. that it does not publish a critical finding against a named party on unestablished facts.
 
----
+**An auditor that refuses, or downgrades to a control weakness, is more credible than one that
+always answers.**
 
 ## Usage
 
@@ -103,8 +108,13 @@ pnpm sweep                    # full 194-asset sweep, verification fused in
 pnpm sweep -- --symbols=CRWD,NVDA,SPY
 
 npx tsx scripts/true-position.ts CRWD 0x8366a39CC670B4001A1121B8F6A443A643e40951
-npx tsx scripts/adjudicate-one.ts --id=CRWD-share-count --dev
-npx tsx scripts/adjudicate-one.ts --id=CRWD-share-count --dev --no-braid   # the A/B
+pnpm ab                       # one A/B run  -> data/braid-ab.json
+pnpm trials --n=5             # N trials per arm -> data/braid-trials.json
+
+pnpm balances                 # funding status for both wallets
+pnpm provision                # create agent + workflow + x402 paywall
+pnpm pay                      # buyer settles $0.01 over x402
+pnpm prove <payTo>            # prove settlement on Blockscout
 
 pnpm test                     # verifier tests, run against live chain
 ```

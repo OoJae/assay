@@ -147,7 +147,7 @@ export async function adjudicate(
             hint: {
               type: 'string',
               default:
-                'Every element of binding_evidence must quote a claim string that appears verbatim in the evidence bundle. The rationale must not contain any number absent from the evidence bundle. If the declared mandate does not establish that the subject performs the affected operation, the verdict must be WITHHELD.',
+                'Check the decision procedure was applied in order. Every element of binding_evidence must quote a claim string that appears verbatim in the evidence bundle, and the rationale must contain no number absent from that bundle. Critically: MATERIAL_MISSTATEMENT is reachable ONLY through gate 4, which requires the declared mandate to EXPLICITLY STATE that the subject performs the operation the defect corrupts. If the mandate only places the subject in the affected area without stating that operation, the correct verdict is CONTROL_WEAKNESS and MATERIAL_MISSTATEMENT is wrong.',
             },
             max_iterations: { type: 'integer', default: 5 },
           },

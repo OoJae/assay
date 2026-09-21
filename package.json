@@ -14,9 +14,12 @@
     "pay": "tsx scripts/pay.ts",
     "prove": "tsx scripts/prove-settlement.ts",
     "mcp": "tsx src/mcp/stdio.ts",
-    "web": "pnpm --filter assay-web dev"
+    "web": "pnpm --filter assay-web dev",
+    "balances": "tsx scripts/balances.ts",
+    "ab": "tsx scripts/braid-ab.ts"
   },
   "dependencies": {
+    "@coinbase/agentkit": "^0.10.4",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@openserv-labs/client": "^2.5.3",
     "@openserv-labs/sdk": "^2.4.1",

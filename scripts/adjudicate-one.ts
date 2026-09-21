@@ -23,13 +23,19 @@ if (!verified) {
 }
 console.error(`verified ${verified.verification.reproduced}/${verified.verification.checked} citations\n`)
 
-// A realistic declared mandate: this is what a graded agent says about itself.
-const MANDATE = `# alloc
-Alloc is a capital allocation agent. It watches a crypto position on Ethereum or Base and decides
-whether the capital should hold, move to a stablecoin, or move into a tokenized stock on Robinhood Chain.
-For each candidate we compute: on-chain price (DexScreener), Chainlink reference price read on-chain,
-premium/discount, and underlying stock momentum from Yahoo Finance. Positions and P&L are displayed
-to the user in shares.`
+// A representative declared mandate.
+//
+// Deliberately GENERIC. ASSAY grades named third parties, so its own test fixtures must not
+// single out a real project — a fixture that quotes a competitor's README reads as targeting,
+// which is exactly the posture the publication ethics rule out. The shape below is what matters:
+// it states that positions are DISPLAYED in shares, and it never states that they are COMPUTED
+// from balanceOf(). That gap is the whole point of the adjudication.
+const MANDATE = `# Capital allocation agent
+
+Watches a position and decides whether capital should hold, move to a stablecoin, or move into a
+tokenized stock on Robinhood Chain. For each candidate it computes on-chain price, a Chainlink
+reference price read on-chain, premium/discount, and underlying stock momentum from an off-chain
+equities data source. Positions and P&L are displayed to the user in shares.`
 
 const t0 = Date.now()
 const result = await adjudicate(verified, MANDATE, { dev, disableBraid: noBraid })
