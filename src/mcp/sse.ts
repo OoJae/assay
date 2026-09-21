@@ -1,6 +1,13 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
 import { buildServer } from './server.js'
+import {
+  RateLimiter,
+  clientIp,
+  LIMITS,
+  EXPENSIVE_TOOLS,
+  MAX_CONCURRENT_SESSIONS,
+} from './ratelimit.js'
 
 /**
  * ASSAY MCP server over SSE.
@@ -16,13 +23,24 @@ import { buildServer } from './server.js'
  *   POST /messages   client -> server JSON-RPC, routed by ?sessionId=
  *   GET  /health     liveness, so the VPS unit can be checked without an MCP client
  *
- * Safe to run with NO secrets: every tool is a public Robinhood Chain read.
+ * Safe to run with NO secrets: every tool is a public Robinhood Chain read. The exposure that
+ * matters on a public endpoint is therefore COST, not data — assay_check_symbol runs a live sweep
+ * per call — so per-IP rate limiting is applied before any work is done. See ./ratelimit.ts.
  */
 const PORT = Number(process.env.MCP_PORT ?? 7379)
 const HOST = process.env.MCP_HOST ?? '0.0.0.0'
 
 /** One transport per connected client, routed by sessionId on the POST leg. */
 const sessions = new Map<string, SSEServerTransport>()
+
+const limiter = new RateLimiter()
+// Reap expired buckets periodically; unref so this timer never holds the process open.
+setInterval(() => limiter.sweep(), 60_000).unref()
+
+function tooMany(res: ServerResponse, retryAfter: number, detail: string) {
+  res.writeHead(429, { 'content-type': 'application/json', 'retry-after': String(retryAfter) })
+  res.end(JSON.stringify({ error: 'rate limited', detail, retryAfterSeconds: retryAfter }))
+}
 
 function cors(res: ServerResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -39,13 +57,32 @@ const http = createServer(async (req: IncomingMessage, res: ServerResponse) => {
     return
   }
 
+  const ip = clientIp(req.headers as Record<string, string | string[] | undefined>, req.socket.remoteAddress)
+
   if (req.method === 'GET' && url.pathname === '/health') {
     res.writeHead(200, { 'content-type': 'application/json' })
-    res.end(JSON.stringify({ ok: true, transport: 'sse', sessions: sessions.size }))
+    res.end(
+      JSON.stringify({
+        ok: true,
+        transport: 'sse',
+        sessions: sessions.size,
+        maxSessions: MAX_CONCURRENT_SESSIONS,
+        trackedClients: limiter.size,
+      }),
+    )
     return
   }
 
   if (req.method === 'GET' && url.pathname === '/sse') {
+    if (sessions.size >= MAX_CONCURRENT_SESSIONS) {
+      tooMany(res, 30, `server is at its ${MAX_CONCURRENT_SESSIONS}-session cap`)
+      return
+    }
+    const wait = limiter.check(`conn:${ip}`, LIMITS.connection)
+    if (wait !== null) {
+      tooMany(res, wait, 'too many connections from this address')
+      return
+    }
     const transport = new SSEServerTransport('/messages', res)
     const server = buildServer()
     sessions.set(transport.sessionId, transport)
@@ -64,7 +101,50 @@ const http = createServer(async (req: IncomingMessage, res: ServerResponse) => {
       res.end(JSON.stringify({ error: 'unknown or expired sessionId — reopen GET /sse' }))
       return
     }
-    await transport.handlePostMessage(req, res)
+
+    // Read the body ourselves so the tool name can be inspected BEFORE any work happens, then hand
+    // the parsed body to the transport (its handlePostMessage accepts one, so nothing is re-read).
+    const raw = await new Promise<string>((resolve, reject) => {
+      let buf = ''
+      req.on('data', (c) => {
+        buf += c
+        // Refuse absurd payloads rather than buffering them.
+        if (buf.length > 1_000_000) reject(new Error('payload too large'))
+      })
+      req.on('end', () => resolve(buf))
+      req.on('error', reject)
+    }).catch(() => null)
+
+    if (raw === null) {
+      res.writeHead(413, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ error: 'payload too large' }))
+      return
+    }
+
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      res.writeHead(400, { 'content-type': 'application/json' })
+      res.end(JSON.stringify({ error: 'invalid JSON' }))
+      return
+    }
+
+    const msg = parsed as { method?: string; params?: { name?: string } }
+    if (msg.method === 'tools/call') {
+      const tool = msg.params?.name ?? ''
+      const expensive = EXPENSIVE_TOOLS.has(tool)
+      const wait = limiter.check(
+        `${expensive ? 'exp' : 'cheap'}:${ip}`,
+        expensive ? LIMITS.expensiveCall : LIMITS.cheapCall,
+      )
+      if (wait !== null) {
+        tooMany(res, wait, `rate limit for ${expensive ? 'sweep' : 'read'} tools`)
+        return
+      }
+    }
+
+    await transport.handlePostMessage(req, res, parsed)
     return
   }
 

@@ -26,6 +26,40 @@ export const METHODOLOGY_VERSION = 'assay-rh-v0.2.0'
  */
 const BLOCK_REFRESH_EVERY = 1
 
+/**
+ * Cohort pre-pass cache.
+ *
+ * Measured: reading the 35 24/5 feeds SEQUENTIALLY took ~50s of a 62s single-symbol sweep, which
+ * blew past the default MCP client timeout and made assay_check_symbol unusable over the wire.
+ *
+ * Two fixes. First, the reads now run in bounded-concurrency batches. Second, the result is cached:
+ * market open/close is a property of the clock, not of the symbol being swept, so re-deriving it
+ * per call was pure waste. The TTL is short because the whole point is catching the transition.
+ */
+const COHORT_TTL_MS = 60_000
+const COHORT_CONCURRENCY = 10
+let cohortCache: { at: number; stale: number; size: number; marketClosed: boolean } | null = null
+
+/** Run tasks with a bounded number in flight, preserving nothing but the count of truthy results. */
+async function countStale(
+  feeds: ChainlinkFeed[],
+  read: (f: ChainlinkFeed) => Promise<boolean>,
+  concurrency: number,
+): Promise<number> {
+  let index = 0
+  let stale = 0
+  const workers = Array.from({ length: Math.min(concurrency, feeds.length) }, async () => {
+    for (;;) {
+      const i = index++
+      const feed = feeds[i]
+      if (!feed) return
+      if (await read(feed)) stale++
+    }
+  })
+  await Promise.all(workers)
+  return stale
+}
+
 function sev(bps: number): Severity {
   if (bps >= 1000) return 'critical'
   if (bps >= 100) return 'high'
@@ -95,13 +129,26 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
   // Measure how many of the 24/5 equity feeds are stale RIGHT NOW. If nearly all of them
   // are, the market is shut and the staleness is scheduled — not 35 independent failures.
   const cohort = feeds.filter(is24x5)
-  let cohortStale = 0
-  for (const f of cohort) {
-    const r = await readFeed(f.proxyAddress, f.heartbeat, nowSeconds, blockNumber)
-    if (r?.stale) cohortStale++
-  }
   const clockHint = isEquityMarketClosed(nowSeconds)
-  const marketClosed = scheduledClosure(cohortStale, cohort.length, clockHint)
+
+  let cohortStale: number
+  let marketClosed: boolean
+  const fresh = cohortCache && Date.now() - cohortCache.at < COHORT_TTL_MS
+  if (fresh && cohortCache) {
+    cohortStale = cohortCache.stale
+    marketClosed = cohortCache.marketClosed
+  } else {
+    cohortStale = await countStale(
+      cohort,
+      async (f) => {
+        const r = await readFeed(f.proxyAddress, f.heartbeat, nowSeconds, blockNumber)
+        return Boolean(r?.stale)
+      },
+      COHORT_CONCURRENCY,
+    )
+    marketClosed = scheduledClosure(cohortStale, cohort.length, clockHint)
+    cohortCache = { at: Date.now(), stale: cohortStale, size: cohort.length, marketClosed }
+  }
   opts.onProgress?.(0, scope.length, `cohort: ${cohortStale}/${cohort.length} stale -> ${marketClosed ? 'MARKET CLOSED' : 'market open'}`)
 
   const findings: Finding[] = []
