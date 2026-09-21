@@ -9,7 +9,10 @@
       "method": "POST",
       "schema": {
         "type": "object",
-        "required": ["buyerAddress", "payload"],
+        "required": [
+          "buyerAddress",
+          "payload"
+        ],
         "properties": {
           "buyerAddress": {
             "type": "string",
@@ -17,7 +20,10 @@
           },
           "payload": {
             "type": "object",
-            "required": ["symbol", "holder"],
+            "required": [
+              "symbol",
+              "holder"
+            ],
             "properties": {
               "symbol": {
                 "type": "string",
@@ -31,6 +37,17 @@
           }
         }
       }
+    },
+    {
+      "name": "MCP",
+      "endpoint": "http://170.106.175.243:7379/sse",
+      "version": "2025-06-18",
+      "transport": "sse",
+      "tools": [
+        "assay_true_position",
+        "assay_findings",
+        "assay_check_symbol"
+      ]
     },
     {
       "name": "web",

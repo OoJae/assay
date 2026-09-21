@@ -14,6 +14,7 @@ Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP*.
 | **ERC-8004 identity** | agent **`8453:95265`** on the IdentityRegistry `0x8004A169…a432` — [tx](https://basescan.org/tx/0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a) · [8004scan](https://www.8004scan.io/agents/base/95265) · [agent card](https://assay-steel.vercel.app/agent-card.json) |
 | **On-chain attestation** | agent `95265` rated **CLEAN (100)** by validator `0x0C3A…14B5` — `getAgentValidations(95265)` returns one entry. The `responseHash` on-chain equals `keccak256` of the exact document served at [`/attestations/95265.json`](https://assay-steel.vercel.app/attestations/95265.json), so anyone can verify the attestation refers to the evidence we actually published. **Self-issued** — subject and validator are the same key, disclosed rather than dressed up as independent assurance. |
 | **Paid endpoint** | `https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6` at $0.01/call |
+| **Public MCP (SSE)** | `http://170.106.175.243:7379/sse` — verified from the public internet with a real MCP client. OpenServ's MCP support is SSE-only, so this is the transport that matters. Rate limited per IP: 30 connections/min, 60 cheap reads/min, 5 sweep calls/min, 50 concurrent sessions. Unauthenticated by design — every tool is a public chain read and the host holds no keys. |
 
 The paid call returned real work, leading with the refusal it is designed to produce:
 
@@ -171,8 +172,16 @@ pnpm test                     # verifier tests, run against live chain
 
 ### MCP
 
+Local, over stdio:
+
 ```json
 { "mcpServers": { "assay": { "command": "npx", "args": ["tsx", "src/mcp/stdio.ts"] } } }
+```
+
+Hosted, over SSE — this is the transport OpenServ supports:
+
+```
+http://170.106.175.243:7379/sse
 ```
 
 | tool | purpose |
