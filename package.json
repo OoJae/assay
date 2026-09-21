@@ -22,7 +22,8 @@
     "agentkit": "tsx scripts/agentkit-smoke.ts",
     "serve": "tsx scripts/serve.ts",
     "register": "tsx scripts/register-8004.ts",
-    "mint": "tsx scripts/mint-8004.ts"
+    "mint": "tsx scripts/mint-8004.ts",
+    "serve:remote": "tsx scripts/serve-remote.ts"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
