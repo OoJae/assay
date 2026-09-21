@@ -32,6 +32,9 @@ importers:
       zod:
         specifier: ^4.6.5
         version: 4.6.5
+      zod3:
+        specifier: npm:zod@^3.25.76
+        version: zod@3.25.76
     devDependencies:
       '@types/node':
         specifier: ^26.6.2
@@ -8113,7 +8116,7 @@ snapshots:
 
   '@zerodev/webauthn-key@5.5.0(viem@2.56.8(bufferutil@4.1.0)(typescript@7.0.2)(utf-8-validate@6.0.6)(zod@4.6.5))':
     dependencies:
-      '@noble/curves': 1.9.1
+      '@noble/curves': 1.9.7
       '@simplewebauthn/browser': 8.3.7
       '@simplewebauthn/types': 12.0.0
       viem: 2.56.8(bufferutil@4.1.0)(typescript@7.0.2)(utf-8-validate@6.0.6)(zod@4.6.5)

@@ -16,7 +16,8 @@
     "mcp": "tsx src/mcp/stdio.ts",
     "web": "pnpm --filter assay-web dev",
     "balances": "tsx scripts/balances.ts",
-    "ab": "tsx scripts/braid-ab.ts"
+    "ab": "tsx scripts/braid-ab.ts",
+    "inject": "tsx scripts/injection-trials.ts"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
@@ -26,7 +27,8 @@
     "dotenv": "^18.0.1",
     "openai": "^7.20.0",
     "viem": "^2.56.8",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "zod3": "npm:zod@^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^26.6.2",
