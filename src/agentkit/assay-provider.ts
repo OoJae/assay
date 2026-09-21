@@ -1,7 +1,31 @@
-import { ActionProvider, CreateAction, type Network } from '@coinbase/agentkit'
-import { z } from 'zod'
+import { customActionProvider, type WalletProvider } from '@coinbase/agentkit'
+import { z } from 'zod3'
 import { truePosition } from '../lib/position.js'
 import { sweep } from '../sweep/detect.js'
+
+/**
+ * ASSAY as a Coinbase AgentKit action provider.
+ *
+ * Why this exists: an AgentKit agent holds a wallet and takes onchain actions. If it touches a
+ * Robinhood Chain Stock Token it is exposed to ERC-8056 — a corporate action moves
+ * uiMultiplier(), not balances — and to Chainlink feeds that keep returning a price long after
+ * they pass their heartbeat. These actions give that agent the corrected number and an explicit
+ * refusal BEFORE it signs anything.
+ *
+ * Deliberately READ-ONLY. ASSAY audits; it has no control path over the agent that calls it and
+ * never moves capital.
+ *
+ * ── Two implementation notes, both forced by the toolchain ──
+ *
+ * 1. `customActionProvider` rather than the `@CreateAction` decorator. AgentKit's decorator reads
+ *    `design:paramtypes`, which requires `emitDecoratorMetadata` — and esbuild (which tsx uses)
+ *    does not implement it at all. Under tsx the decorator throws
+ *    "Failed to get parameters for action method". The functional API has no such dependency.
+ *
+ * 2. `zod3`, an alias for zod@3. @coinbase/agentkit@0.10.4 types its schemas against zod v3 while
+ *    this project is on v4; the zod-v4 upgrade only lands in the unreleased 0.11.0. Aliasing
+ *    contains the split to this one file rather than downgrading the whole project.
+ */
 
 const TruePositionSchema = z.object({
   symbol: z.string().describe('Robinhood Chain Stock Token ticker, e.g. NVDA, SPY, CRWD'),
@@ -15,28 +39,9 @@ const CheckSymbolSchema = z.object({
   symbol: z.string().describe('Robinhood Chain Stock Token ticker'),
 })
 
-/**
- * ASSAY as a Coinbase AgentKit action provider.
- *
- * Why this exists: an AgentKit agent holds a wallet and takes onchain actions. If it touches a
- * Robinhood Chain Stock Token, it is exposed to ERC-8056 — a corporate action moves
- * uiMultiplier(), not balances — and to Chainlink feeds that keep returning a price long after
- * they go stale. These actions give that agent the corrected number and an explicit refusal
- * BEFORE it signs anything.
- *
- * Deliberately READ-ONLY. ASSAY audits; it has no control path over the agent that calls it and
- * never moves capital. `supportsNetwork` returns true everywhere because these are pure reads
- * against Robinhood Chain regardless of which network the calling agent's wallet is on — an
- * agent on Base can perfectly well hold a position on 4663.
- */
-export class AssayActionProvider extends ActionProvider {
-  constructor() {
-    super('assay', [])
-  }
-
-  @CreateAction({
-    name: 'true_position',
-    description: `
+export const assayTruePosition = customActionProvider<WalletProvider>({
+  name: 'assay_true_position',
+  description: `
 Get the CORRECTED position for a holder of a Robinhood Chain Stock Token, plus the oracle-hygiene
 checks Robinhood's own documentation requires. Call this before valuing, liquidating or
 collateralising a tokenized equity position.
@@ -49,26 +54,25 @@ Returns raw balance, uiMultiplier, share-equivalents, token price, the derived u
 price, the correct position value, feed age against its published heartbeat, oraclePaused(), and a
 refusalReason that is non-null when the reading is NOT safe to act on. When refusalReason is set,
 do not trade on this position.
-`,
-    schema: TruePositionSchema,
-  })
-  async trueUsdPosition(args: z.infer<typeof TruePositionSchema>): Promise<string> {
+`.trim(),
+  schema: TruePositionSchema,
+  invoke: async (_wallet, args: z.infer<typeof TruePositionSchema>) => {
     const p = await truePosition(args.symbol, args.holder as `0x${string}`)
     return JSON.stringify(p, null, 2)
-  }
+  },
+})
 
-  @CreateAction({
-    name: 'check_symbol',
-    description: `
+export const assayCheckSymbol = customActionProvider<WalletProvider>({
+  name: 'assay_check_symbol',
+  description: `
 Run a fresh valuation-integrity sweep for one Robinhood Chain Stock Token at the current block and
 return the verified findings. Every citation is re-fetched from chain state and byte-compared
 before it is returned; anything that does not reproduce is never published.
 
 Use this to decide whether an asset is safe to price before taking a position in it.
-`,
-    schema: CheckSymbolSchema,
-  })
-  async checkSymbol(args: z.infer<typeof CheckSymbolSchema>): Promise<string> {
+`.trim(),
+  schema: CheckSymbolSchema,
+  invoke: async (_wallet, args: z.infer<typeof CheckSymbolSchema>) => {
     const r = await sweep({ symbols: [args.symbol] })
     return JSON.stringify(
       {
@@ -88,9 +92,8 @@ Use this to decide whether an asset is safe to price before taking a position in
       null,
       2,
     )
-  }
+  },
+})
 
-  supportsNetwork = (_network: Network): boolean => true
-}
-
-export const assayActionProvider = () => new AssayActionProvider()
+/** Both ASSAY actions, ready to drop into an AgentKit config's `actionProviders`. */
+export const assayActionProviders = () => [assayTruePosition, assayCheckSymbol]

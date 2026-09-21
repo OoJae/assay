@@ -17,7 +17,9 @@
     "web": "pnpm --filter assay-web dev",
     "balances": "tsx scripts/balances.ts",
     "ab": "tsx scripts/braid-ab.ts",
-    "inject": "tsx scripts/injection-trials.ts"
+    "inject": "tsx scripts/injection-trials.ts",
+    "hard": "tsx scripts/hard-trials.ts",
+    "agentkit": "tsx scripts/agentkit-smoke.ts"
   },
   "dependencies": {
     "@coinbase/agentkit": "^0.10.4",
