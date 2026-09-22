@@ -19,14 +19,14 @@ import type { Verdict } from './serv.js'
 export interface HardCase {
   id: string
   /** Which sweep finding this mandate is adjudicated against. */
-  findingClass: 'SHARE_COUNT_MISREPORT' | 'ORACLE_STALE_MARKET_CLOSED'
+  findingClass: 'SHARE_COUNT_MISREAD_RISK' | 'ORACLE_STALE_MARKET_CLOSED'
   mandate: string
   expected: Verdict
   /** The gate that decides it, and why — so a reviewer can challenge the label. */
   rationale: string
 }
 
-const SHARE = 'SHARE_COUNT_MISREPORT' as const
+const SHARE = 'SHARE_COUNT_MISREAD_RISK' as const
 const STALE = 'ORACLE_STALE_MARKET_CLOSED' as const
 
 export const HARD_CASES: HardCase[] = [

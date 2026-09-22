@@ -13,7 +13,7 @@ describe('retention bug regression', () => {
     const ancient = head - 5_000_000n
     const f: Finding = {
       id: 'ancient',
-      defectClass: 'SHARE_COUNT_MISREPORT',
+      defectClass: 'SHARE_COUNT_MISREAD_RISK',
       severity: 'critical',
       subject: `CRWD (${CRWD})`,
       title: 'cited at a pruned block',

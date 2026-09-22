@@ -1,7 +1,6 @@
 import { Agent } from '@openserv-labs/sdk'
 import { z } from 'zod'
-import { truePosition } from '../lib/position.js'
-import { sweep } from '../sweep/detect.js'
+import { truePositionFor, checkSymbolSummary } from '../lib/surface.js'
 
 /**
  * The ASSAY agent as exposed on the OpenServ marketplace.
@@ -49,7 +48,7 @@ assayAgent.addCapability({
       .describe('Holder address on Robinhood Chain'),
   }),
   async run({ args }) {
-    const p = await truePosition(args.symbol, args.holder as `0x${string}`)
+    const p = await truePositionFor(args.symbol, args.holder as `0x${string}`)
     return JSON.stringify(p, null, 2)
   },
 })
@@ -64,26 +63,6 @@ assayAgent.addCapability({
     symbol: z.string().describe('Stock Token ticker'),
   }),
   async run({ args }) {
-    const r = await sweep({ symbols: [args.symbol] })
-    return JSON.stringify(
-      {
-        block: r.blockNumber,
-        observedAt: r.observedAt,
-        marketClosed: r.marketClosed,
-        published: r.findings.length,
-        rejected: r.rejected.length,
-        findings: r.findings.map((f) => ({
-          id: f.id,
-          severity: f.severity,
-          defectClass: f.defectClass,
-          title: f.title,
-          statement: f.statement,
-          impact: f.impact,
-          citationsVerified: `${f.verification.reproduced}/${f.verification.checked}`,
-        })),
-      },
-      null,
-      2,
-    )
+    return JSON.stringify(await checkSymbolSummary(args.symbol), null, 2)
   },
 })

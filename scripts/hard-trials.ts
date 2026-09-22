@@ -20,18 +20,18 @@ const n = Number(process.argv.find((a) => a.startsWith('--n='))?.split('=')[1] ?
 
 console.error('sweeping for base findings…')
 const r = await sweep({ symbols: ['CRWD', 'NVDA'] })
-const share = r.findings.find((f) => f.defectClass === 'SHARE_COUNT_MISREPORT')
+const share = r.findings.find((f) => f.defectClass === 'SHARE_COUNT_MISREAD_RISK')
 const stale = r.findings.find((f) => f.defectClass.startsWith('ORACLE_STALE'))
 if (!share) {
-  console.error('no SHARE_COUNT_MISREPORT finding available — cannot run the hard set')
+  console.error('no SHARE_COUNT_MISREAD_RISK finding available — cannot run the hard set')
   process.exit(1)
 }
 
 // Stale-feed findings only exist while a feed is actually past its heartbeat. Equity feeds are
 // 24/5, so outside a closure window there is nothing to adjudicate — and fabricating one would
 // break the rule that every citation must reproduce against chain state. Skip, and say so.
-const skipped = stale ? [] : HARD_CASES.filter((c) => c.findingClass !== 'SHARE_COUNT_MISREPORT')
-const cases = stale ? HARD_CASES : HARD_CASES.filter((c) => c.findingClass === 'SHARE_COUNT_MISREPORT')
+const skipped = stale ? [] : HARD_CASES.filter((c) => c.findingClass !== 'SHARE_COUNT_MISREAD_RISK')
+const cases = stale ? HARD_CASES : HARD_CASES.filter((c) => c.findingClass === 'SHARE_COUNT_MISREAD_RISK')
 if (skipped.length) {
   console.error(
     `NOTE: no stale-feed finding at this block (market ${r.marketClosed ? 'closed' : 'open'}, ` +
@@ -50,7 +50,7 @@ interface CaseResult {
 }
 
 async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<CaseResult> {
-  const finding = c.findingClass === 'SHARE_COUNT_MISREPORT' ? share! : stale!
+  const finding = c.findingClass === 'SHARE_COUNT_MISREAD_RISK' ? share! : stale!
   const verdicts: Verdict[] = []
   for (let i = 0; i < n; i++) {
     try {

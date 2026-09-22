@@ -92,19 +92,84 @@ export function scheduledClosure(staleCount: number, cohortSize: number, clockHi
   return clockHint // ambiguous middle -> defer to the clock
 }
 
+/**
+ * Every outbound fetch is bounded.
+ *
+ * undici's default leaves a hung connection open for ~300s. These calls sit in the PAID request
+ * path — assay_true_position resolves the asset registry and the Chainlink directory before it
+ * reads anything — so one slow upstream pinned a buyer's call and held an MCP session slot for
+ * five minutes. A bounded failure the caller can see beats an unbounded wait it cannot.
+ */
+const FETCH_TIMEOUT_MS = 5_000
+
 async function getJson<T>(url: string, label: string): Promise<T> {
-  const res = await fetch(url, { headers: { accept: 'application/json' } })
+  let res: Response
+  try {
+    res = await fetch(url, {
+      headers: { accept: 'application/json' },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    })
+  } catch (err) {
+    const e = err as Error
+    throw new Error(
+      e.name === 'TimeoutError' || e.name === 'AbortError'
+        ? `${label}: timed out after ${FETCH_TIMEOUT_MS}ms fetching ${url}`
+        : `${label}: ${e.message} fetching ${url}`,
+    )
+  }
   if (!res.ok) throw new Error(`${label}: HTTP ${res.status} from ${url}`)
   return (await res.json()) as T
 }
 
-export async function fetchRhAssets(): Promise<RhAsset[]> {
+/**
+ * Memoised directory fetches.
+ *
+ * These two are ~238 KB combined and effectively static — the asset registry changes on corporate
+ * actions, the Chainlink directory on a new feed listing. Re-fetching both on every paid call put
+ * a ~1.5s floor under a request that is otherwise a handful of eth_calls. The TTL is short enough
+ * that a newly listed feed or a changed multiplier is picked up within the minute.
+ *
+ * In-flight requests are shared rather than duplicated, so a burst of concurrent calls after a
+ * cold start makes one request, not one per caller.
+ */
+const DIRECTORY_TTL_MS = 60_000
+
+function memoise<T>(fetcher: () => Promise<T>): () => Promise<T> {
+  let at = 0
+  let value: T | null = null
+  let inFlight: Promise<T> | null = null
+  return async () => {
+    if (value !== null && Date.now() - at < DIRECTORY_TTL_MS) return value
+    if (inFlight) return inFlight
+    inFlight = fetcher()
+      .then((v) => {
+        value = v
+        at = Date.now()
+        return v
+      })
+      .finally(() => {
+        inFlight = null
+      })
+    try {
+      return await inFlight
+    } catch (err) {
+      // Serve a stale directory rather than failing the call outright: a 10-minute-old feed list
+      // is far better than refusing to price anything because a CDN blipped.
+      if (value !== null) return value
+      throw err
+    }
+  }
+}
+
+async function fetchRhAssetsUncached(): Promise<RhAsset[]> {
   const raw = await getJson<unknown>(RH_ASSETS_URL, 'rh/assets')
   const list = Array.isArray(raw)
     ? raw
     : ((raw as Record<string, unknown>).assets as unknown[]) ?? []
   return list as RhAsset[]
 }
+
+export const fetchRhAssets = memoise(fetchRhAssetsUncached)
 
 /** Raw UNDERLYING equity bid/ask. NOT multiplier-adjusted — this is the whole point. */
 export async function fetchRhUnderlyingPrice(
@@ -131,10 +196,9 @@ export async function fetchRhUnderlyingPrice(
   }
 }
 
-export async function fetchChainlinkFeeds(): Promise<ChainlinkFeed[]> {
-  const feeds = await getJson<ChainlinkFeed[]>(CHAINLINK_FEEDS_URL, 'chainlink/feeds')
-  return feeds
-}
+export const fetchChainlinkFeeds = memoise(() =>
+  getJson<ChainlinkFeed[]>(CHAINLINK_FEEDS_URL, 'chainlink/feeds'),
+)
 
 /**
  * Map a Robinhood ticker to its Chainlink feed. Feed names in the directory are

@@ -1,0 +1,17 @@
+# Install to /etc/systemd/system/assay-sweep.timer, then:
+#   sudo systemctl enable --now assay-sweep.timer
+[Unit]
+Description=Re-sweep Robinhood Chain every 30 minutes
+Documentation=https://github.com/OoJae/assay
+
+[Timer]
+OnBootSec=5min
+# 30 minutes is chosen against RPC retention, not against taste: citations must be re-minted
+# faster than the node prunes the blocks they cite.
+OnUnitActiveSec=30min
+# Stagger, so 195 assets are not swept at the same second as every other timer on the box.
+RandomizedDelaySec=3min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

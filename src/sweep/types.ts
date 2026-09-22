@@ -10,8 +10,20 @@ export type DefectClass =
   | 'ORACLE_STALE_MARKET_CLOSED'
   /** Past heartbeat when it should NOT be: a crypto feed, or an equity feed during market hours. */
   | 'ORACLE_STALE_UNEXPECTED'
+  /**
+   * Past heartbeat, and we could not read enough of the 24/5 cohort to say whether that is a
+   * scheduled closure or an incident. Deliberately its own class: silently picking either
+   * answer would let our own RPC flakiness decide a subject's severity.
+   */
+  | 'ORACLE_STALE_INDETERMINATE'
   | 'NO_PRICE_FEED'
-  | 'SHARE_COUNT_MISREPORT'
+  /**
+   * Renamed from SHARE_COUNT_MISREPORT. Nothing MISREPORTS anything here: a Stock Token that
+   * moves uiMultiplier() is doing exactly what ERC-8056 specifies. The exposure is a RISK borne
+   * by an integrator that reads balanceOf() as a share count. The old name screenshotted as
+   * "ASSAY flags CRWD critical", which is an accusation against a compliant contract.
+   */
+  | 'SHARE_COUNT_MISREAD_RISK'
   | 'ORACLE_PAUSED'
   /** Robinhood's docs require an L2 sequencer-uptime check, but no such feed is published. */
   | 'SEQUENCER_FEED_UNAVAILABLE'
@@ -43,7 +55,18 @@ export interface Finding {
   id: string
   defectClass: DefectClass
   severity: Severity
+  /**
+   * WHAT WAS READ — the contract or feed whose state produced this finding.
+   *
+   * Naming it "subject" invited the reading that it is the accused. For most classes here it is
+   * not: an ERC-8056 token that moves its multiplier is spec-compliant, and the party carrying
+   * the exposure is whoever reads it wrongly. `affectedParty` says who that is, and the README's
+   * own standard — that falsely accusing a subject which did it right is the most damaging error
+   * this tool can make — is what forced the split.
+   */
   subject: string
+  /** WHO CARRIES THE EXPOSURE. Usually the integrator, not the contract named in `subject`. */
+  affectedParty: string
   title: string
   /** Strictly factual, neutral engineering language. No accusation, no intent. */
   statement: string

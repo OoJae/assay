@@ -18,7 +18,10 @@ export interface Finding {
   id: string
   defectClass: string
   severity: Severity
+  /** The contract or feed whose state was READ. Not an accusation against it. */
   subject: string
+  /** Who carries the exposure — usually the integrator, not the contract in `subject`. */
+  affectedParty?: string
   title: string
   statement: string
   impact: { basisPoints?: number; percent?: number; note: string }
@@ -50,7 +53,18 @@ export interface SweepData {
   assetsScanned: number
   feedsAvailable: number
   marketClosed: boolean
-  cohort: { size: number; stale: number; clockHint: boolean }
+  cohort: {
+    size: number
+    stale: number
+    clockHint: boolean
+    /** Reads that came back — the only honest denominator. Absent in pre-v0.3.0 snapshots. */
+    read?: number
+    /** Reads that failed after retries. Previously counted as fresh. */
+    failed?: number
+    /** False when too little of the cohort was read to conclude anything. */
+    quorum?: boolean
+    blockNumber?: string
+  }
   findings: Finding[]
   rejected: Array<{
     reason: 'mismatch' | 'unverifiable_here' | 'unchecked' | 'no_evidence' | string

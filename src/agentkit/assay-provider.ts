@@ -1,7 +1,6 @@
 import { customActionProvider, type WalletProvider } from '@coinbase/agentkit'
 import { z } from 'zod3'
-import { truePosition } from '../lib/position.js'
-import { sweep } from '../sweep/detect.js'
+import { truePositionFor, checkSymbolSummary } from '../lib/surface.js'
 
 /**
  * ASSAY as a Coinbase AgentKit action provider.
@@ -57,7 +56,7 @@ do not trade on this position.
 `.trim(),
   schema: TruePositionSchema,
   invoke: async (_wallet, args: z.infer<typeof TruePositionSchema>) => {
-    const p = await truePosition(args.symbol, args.holder as `0x${string}`)
+    const p = await truePositionFor(args.symbol, args.holder as `0x${string}`)
     return JSON.stringify(p, null, 2)
   },
 })
@@ -73,25 +72,7 @@ Use this to decide whether an asset is safe to price before taking a position in
 `.trim(),
   schema: CheckSymbolSchema,
   invoke: async (_wallet, args: z.infer<typeof CheckSymbolSchema>) => {
-    const r = await sweep({ symbols: [args.symbol] })
-    return JSON.stringify(
-      {
-        block: r.blockNumber,
-        observedAt: r.observedAt,
-        marketClosed: r.marketClosed,
-        published: r.findings.length,
-        rejected: r.rejected.length,
-        findings: r.findings.map((f) => ({
-          severity: f.severity,
-          defectClass: f.defectClass,
-          title: f.title,
-          impact: f.impact,
-          citationsVerified: `${f.verification.reproduced}/${f.verification.checked}`,
-        })),
-      },
-      null,
-      2,
-    )
+    return JSON.stringify(await checkSymbolSummary(args.symbol), null, 2)
   },
 })
 

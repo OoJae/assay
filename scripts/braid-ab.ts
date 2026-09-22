@@ -27,9 +27,9 @@ equities data source. Positions and P&L are displayed to the user in shares.`
 
 console.error('sweeping CRWD at head…')
 const r = await sweep({ symbols: ['CRWD'] })
-const finding = r.findings.find((f) => f.defectClass === 'SHARE_COUNT_MISREPORT')
+const finding = r.findings.find((f) => f.defectClass === 'SHARE_COUNT_MISREAD_RISK')
 if (!finding) {
-  console.error('no SHARE_COUNT_MISREPORT finding for CRWD — cannot run the A/B')
+  console.error('no SHARE_COUNT_MISREAD_RISK finding for CRWD — cannot run the A/B')
   process.exit(1)
 }
 console.error(

@@ -1,0 +1,37 @@
+# ASSAY agent runtime. Install to /etc/systemd/system/assay-agent.service
+#
+# WHY THIS FILE IS IN THE REPO. The production host's configuration used to exist only on the
+# host. The README described a minimal-privilege posture -- no wallet key, no inference key, read
+# -only capabilities -- and nothing in version control could confirm or refute it. For a project
+# whose whole thesis is that a claim is worth what you can check, the security posture being an
+# unfalsifiable code comment was the wrong place to make an exception.
+[Unit]
+Description=ASSAY valuation-integrity agent (OpenServ)
+Documentation=https://github.com/OoJae/assay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ubuntu
+# Explicit, because ExecStart runs pnpm from here and a wrong cwd silently resolves the wrong
+# package.json and the wrong data/ directory.
+WorkingDirectory=/home/ubuntu/assay
+ExecStart=/usr/bin/env pnpm serve:remote
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/ubuntu/assay/agent.log
+StandardError=append:/home/ubuntu/assay/agent.log
+
+# The agent only reads public chain state and answers tasks. Lock the rest down.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ubuntu/assay
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

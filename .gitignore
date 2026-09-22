@@ -16,3 +16,5 @@ web/.next
 docs/scratch/*.png
 
 .openserv.json
+web/tsconfig.tsbuildinfo
+data/findings.scoped.json

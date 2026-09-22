@@ -40,7 +40,7 @@
     },
     {
       "name": "MCP",
-      "endpoint": "http://170.106.175.243:7379/sse",
+      "endpoint": "https://assay-mcp.sonar.my.id/sse",
       "version": "2025-06-18",
       "transport": "sse",
       "tools": [
@@ -69,5 +69,12 @@
     "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     "price": "0.01",
     "payTo": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5"
+  },
+  "erc8004": {
+    "canonicalAgentId": "8453:95265",
+    "duplicateAgentIds": [
+      "8453:95266"
+    ],
+    "note": "95265 is canonical. 95266 was minted by an accidental re-run of a non-idempotent script; both are owned by the same wallet and carry this same agentURI. Disclosed here so a reader of either token resolves to the same, correct identity rather than concluding one of them is an impostor."
   }
 }

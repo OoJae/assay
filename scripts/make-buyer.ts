@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readEnv, appendEnvSecret, assertEnvPrivate, ENV_PATH } from '../src/lib/envfile.js'
 
 /**
  * Wallet B — the buyer agent.
@@ -9,15 +9,27 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs'
  * genuinely distinct payer address on-chain. Needs USDC only: x402 settles via an EIP-3009
  * signed authorization and a relayer submits the transaction, so the buyer never pays gas.
  */
-const env = existsSync('.env') ? readFileSync('.env', 'utf8') : ''
-let key = /^BUYER_PRIVATE_KEY=(0x[0-9a-fA-F]{64})$/m.exec(env)?.[1]
+assertEnvPrivate()
 
-if (!key) {
-  key = generatePrivateKey()
-  writeFileSync('.env', `${env.trimEnd()}\nBUYER_PRIVATE_KEY=${key}\n`)
-  console.log('generated a new buyer wallet and saved it to .env')
+const env = readEnv()
+const existing = env.BUYER_PRIVATE_KEY?.trim()
+
+let key: string
+if (existing) {
+  if (!/^0x[0-9a-fA-F]{64}$/.test(existing)) {
+    console.error(
+      `BUYER_PRIVATE_KEY exists in ${ENV_PATH} but is not a 32-byte hex key. Fix or remove it by ` +
+        `hand — generating another one here would append a second assignment, and dotenv takes ` +
+        `the last, which would strand whatever is funded.`,
+    )
+    process.exit(1)
+  }
+  key = existing
+  console.log(`reusing the existing buyer wallet from ${ENV_PATH}`)
 } else {
-  console.log('reusing the existing buyer wallet from .env')
+  key = generatePrivateKey()
+  appendEnvSecret('BUYER_PRIVATE_KEY', key)
+  console.log(`generated a new buyer wallet and saved it to ${ENV_PATH} (mode 600)`)
 }
 
 console.log('\n=== WALLET B (buyer agent) — fund with ~$0.50 USDC on Base 8453 ===')

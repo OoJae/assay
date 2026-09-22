@@ -2,7 +2,6 @@ import { createPublicClient, createWalletClient, http, keccak256, toHex } from '
 import { base } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
 import { VALIDATION_REGISTRY, validationRegistryAbi } from './registry.js'
-import type { VerifiedFinding } from '../verify/index.js'
 
 /**
  * SOLICITED-ONLY ATTESTATION.
@@ -36,21 +35,75 @@ export function scoreFor(tag: AttestationTag): number {
   }
 }
 
+export interface SelfAssessmentCriterion {
+  /** The question asked. */
+  question: string
+  /** What was found, about ASSAY and nothing else. */
+  finding: string
+  /** Where a reader checks it. A path in the public repo, not a claim. */
+  source: string
+}
+
+/**
+ * What ASSAY attests about ITSELF.
+ *
+ * WHY THIS NO LONGER CARRIES FINDINGS. The previous document embedded whole third-party findings
+ * — CRWD, SPY and NVDA by symbol, contract address, severity and full accusatory statement — into
+ * the artifact hashed into an on-chain ValidationRegistry response. ASSAY's own publication rule
+ * is that unsolicited statements about a named party are never written on-chain, and this was the
+ * single on-chain write it had ever made. It also made the subject of a SELF-attestation ambiguous:
+ * a reader resolving responseHash found a document mostly about other people.
+ *
+ * The corpus those findings came from is still described, as AGGREGATE COUNTS with a block number.
+ * That is what supports the claim "the machine ran and reproduced its citations" without restating
+ * anything about anyone else. The findings themselves live on the wall, which is off-chain, where
+ * the publication rule allows them.
+ */
 export interface EvidenceDocument {
-  agentId: string
+  schema: 'assay-self-attestation-v2'
+  subject: { agentId: string; name: string; agentURI: string }
+  validator: { address: string; agentId: string }
+  /**
+   * SELF-ISSUED, stated in the artifact rather than inferred from the fact that two fields match.
+   * This is not third-party assurance and must never be read as any.
+   */
+  selfIssued: boolean
+  independence: string
+  /**
+   * How the tag was reached. 'documented-self-assessment' means a human compared ASSAY's own
+   * handling against the published gates and recorded the result — NOT that the SERV adjudicator
+   * returned this verdict. The earlier document carried a rationale written in adjudicator
+   * vocabulary ("under gate 4…") for a verdict the adjudicator never produced, which read as a
+   * machine determination it was not.
+   */
+  basis: 'documented-self-assessment'
   tag: AttestationTag
   score: number
   methodologyVersion: string
-  rationale: string
-  observedAtBlock: string
-  findings: Array<{
-    id: string
-    defectClass: string
-    severity: string
-    title: string
-    statement: string
-    citations: Array<{ claim: string; contract: string; call: string; rawReturn: string; blockNumber: string }>
-  }>
+  assessment: SelfAssessmentCriterion[]
+  /** Aggregate evidence that the machine ran. No third party is named. */
+  corpus: {
+    sweptAtBlock: string
+    assetsScanned: number
+    findingsPublished: number
+    citationsChecked: number
+    citationsReproduced: number
+    findingsWithheld: number
+  }
+  limitations: string[]
+  issuedAt: string
+}
+
+export interface SelfAttestationInput {
+  agentId: string
+  agentName: string
+  agentURI: string
+  validatorAddress: string
+  tag: AttestationTag
+  methodologyVersion: string
+  assessment: SelfAssessmentCriterion[]
+  corpus: EvidenceDocument['corpus']
+  limitations: string[]
   issuedAt: string
 }
 
@@ -63,37 +116,25 @@ export interface EvidenceDocument {
  * to disagree with the published document. The bytes MUST be reproducible, or responseHash proves
  * nothing.
  */
-export function buildEvidenceDocument(
-  agentId: string,
-  tag: AttestationTag,
-  rationale: string,
-  methodologyVersion: string,
-  block: string,
-  findings: VerifiedFinding[],
-  issuedAt: string,
-): EvidenceDocument {
+export function buildEvidenceDocument(input: SelfAttestationInput): EvidenceDocument {
   return {
-    agentId,
-    tag,
-    score: scoreFor(tag),
-    methodologyVersion,
-    rationale,
-    observedAtBlock: block,
-    findings: findings.map((f) => ({
-      id: f.id,
-      defectClass: f.defectClass,
-      severity: f.severity,
-      title: f.title,
-      statement: f.statement,
-      citations: f.evidence.map((e) => ({
-        claim: e.claim,
-        contract: e.contract,
-        call: e.call,
-        rawReturn: e.rawReturn,
-        blockNumber: e.blockNumber,
-      })),
-    })),
-    issuedAt,
+    schema: 'assay-self-attestation-v2',
+    subject: { agentId: input.agentId, name: input.agentName, agentURI: input.agentURI },
+    validator: { address: input.validatorAddress, agentId: input.agentId },
+    selfIssued: true,
+    independence:
+      'NONE. The subject and the validator are the same key, so this carries no independent ' +
+      'assurance whatsoever. It is published to exercise the solicited-attestation mechanism ' +
+      'against a subject that consented — ASSAY — and to demonstrate the rule that ASSAY grades ' +
+      'itself before it grades anyone else. Treat it as a disclosure, not as a rating.',
+    basis: 'documented-self-assessment',
+    tag: input.tag,
+    score: scoreFor(input.tag),
+    methodologyVersion: input.methodologyVersion,
+    assessment: input.assessment,
+    corpus: input.corpus,
+    limitations: input.limitations,
+    issuedAt: input.issuedAt,
   }
 }
 
@@ -116,8 +157,58 @@ export function walletFor(pk: `0x${string}`) {
   return createWalletClient({ account: privateKeyToAccount(pk), chain: base, transport: http() })
 }
 
-/** Requests addressed to us that we have not yet answered. */
-export async function pendingRequests(validator: `0x${string}`) {
+const ZERO_HASH = `0x${'0'.repeat(64)}` as const
+
+export interface ValidationRequestStatus {
+  requestHash: `0x${string}`
+  agentId: bigint
+  answered: boolean
+  tag: string
+  response: number
+  responseHash: `0x${string}`
+  lastUpdate: bigint
+}
+
+/**
+ * Decide whether a validation request has been ANSWERED.
+ *
+ * `lastUpdate` is stamped when the REQUEST is created, not when the response is written —
+ * confirmed on-chain against our own request, whose lastUpdate was non-zero from the moment it
+ * was made. Keying "answered" off it therefore reported every request as already handled, which
+ * would have made the validator silently ignore every inbound request it ever received.
+ *
+ * `responseHash` is the honest signal: it is the zero word until a response is written, and
+ * responses always carry a non-zero document hash.
+ */
+export function isAnswered(responseHash: `0x${string}`): boolean {
+  return responseHash.toLowerCase() !== ZERO_HASH
+}
+
+export async function validationStatus(
+  requestHash: `0x${string}`,
+): Promise<ValidationRequestStatus> {
+  const pub = publicBase()
+  const status = (await pub.readContract({
+    address: VALIDATION_REGISTRY,
+    abi: validationRegistryAbi,
+    functionName: 'getValidationStatus',
+    args: [requestHash],
+  })) as readonly [`0x${string}`, bigint, number, `0x${string}`, string, bigint]
+  return {
+    requestHash,
+    agentId: status[1],
+    response: status[2],
+    responseHash: status[3],
+    tag: status[4],
+    lastUpdate: status[5],
+    answered: isAnswered(status[3]),
+  }
+}
+
+/** Every request addressed to us, with whether it has actually been answered. */
+export async function validatorRequests(
+  validator: `0x${string}`,
+): Promise<ValidationRequestStatus[]> {
   const pub = publicBase()
   const hashes = (await pub.readContract({
     address: VALIDATION_REGISTRY,
@@ -125,17 +216,14 @@ export async function pendingRequests(validator: `0x${string}`) {
     functionName: 'getValidatorRequests',
     args: [validator],
   })) as readonly `0x${string}`[]
-
-  const out: Array<{ requestHash: `0x${string}`; agentId: bigint; answered: boolean }> = []
-  for (const requestHash of hashes) {
-    const status = (await pub.readContract({
-      address: VALIDATION_REGISTRY,
-      abi: validationRegistryAbi,
-      functionName: 'getValidationStatus',
-      args: [requestHash],
-    })) as readonly [`0x${string}`, bigint, number, `0x${string}`, string, bigint]
-    // lastUpdate is non-zero once a response has been written.
-    out.push({ requestHash, agentId: status[1], answered: status[5] > 0n })
-  }
+  const out: ValidationRequestStatus[] = []
+  for (const requestHash of hashes) out.push(await validationStatus(requestHash))
   return out
+}
+
+/** Requests addressed to us that we have not yet answered. */
+export async function pendingRequests(
+  validator: `0x${string}`,
+): Promise<ValidationRequestStatus[]> {
+  return (await validatorRequests(validator)).filter((r) => !r.answered)
 }

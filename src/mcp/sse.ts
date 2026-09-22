@@ -28,7 +28,15 @@ import {
  * per call — so per-IP rate limiting is applied before any work is done. See ./ratelimit.ts.
  */
 const PORT = Number(process.env.MCP_PORT ?? 7379)
-const HOST = process.env.MCP_HOST ?? '0.0.0.0'
+/**
+ * Loopback by default.
+ *
+ * The default was '0.0.0.0', so the public deployment served the whole MCP surface directly on
+ * an IP literal with no TLS. nginx terminates TLS and proxies to 127.0.0.1 (see
+ * deploy/assay-mcp.nginx.conf); binding wide is now an explicit opt-in rather than what happens
+ * if nobody thinks about it.
+ */
+const HOST = process.env.MCP_HOST ?? '127.0.0.1'
 
 /** One transport per connected client, routed by sessionId on the POST leg. */
 const sessions = new Map<string, SSEServerTransport>()

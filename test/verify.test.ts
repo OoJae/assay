@@ -58,7 +58,7 @@ describe('evidence verifier', () => {
     const b = await head()
     const bogus: Finding = {
       id: 'bogus',
-      defectClass: 'SHARE_COUNT_MISREPORT',
+      defectClass: 'SHARE_COUNT_MISREAD_RISK',
       severity: 'critical',
       subject: 'fabricated',
       title: 'fabricated finding',
@@ -75,7 +75,7 @@ describe('evidence verifier', () => {
     const b = await head()
     const mixed: Finding = {
       id: 'mixed',
-      defectClass: 'SHARE_COUNT_MISREPORT',
+      defectClass: 'SHARE_COUNT_MISREAD_RISK',
       severity: 'critical',
       subject: `CRWD (${CRWD})`,
       title: 'one true, one false',
@@ -137,7 +137,7 @@ describe('citations must actually bear on the claim', () => {
     // gain, not an understatement.
     const { sweep } = await import('../src/sweep/detect.js')
     const r = await sweep({ symbols: ['CRWD'] })
-    const f = r.findings.find((x) => x.defectClass === 'SHARE_COUNT_MISREPORT')
+    const f = r.findings.find((x) => x.defectClass === 'SHARE_COUNT_MISREAD_RISK')
     expect(f).toBeDefined()
     expect(f!.impact.percent).toBeGreaterThan(0)
     expect(f!.impact.percent).toBeLessThanOrEqual(100)

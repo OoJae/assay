@@ -84,6 +84,8 @@ export function evidence(
 }
 
 export interface OracleReading {
+  roundId: bigint
+  answeredInRound: bigint
   answer: bigint
   updatedAt: bigint
   decimals: number
@@ -91,6 +93,8 @@ export interface OracleReading {
   ageSeconds: number
   heartbeat: number
   stale: boolean
+  /** False when the answer is non-positive or the round never completed. */
+  usable: boolean
   raw: string
 }
 
@@ -103,12 +107,19 @@ export async function readFeed(
   const r = await rawCall(aggregatorV3Abi, proxy, 'latestRoundData', blockNumber)
   if (!r) return null
   const tuple = r.decoded as readonly [bigint, bigint, bigint, bigint, bigint]
+  const roundId = tuple[0]
   const answer = tuple[1]
   const updatedAt = tuple[3]
+  const answeredInRound = tuple[4]
   const d = await rawCall(aggregatorV3Abi, proxy, 'decimals', blockNumber)
-  const decimals = d ? Number(d.decoded as number) : 8
+  // A missing decimals() read is NOT 8 by assumption — a wrong exponent is a 10^n price error.
+  // Returning null makes the caller treat this as an unread feed instead of a confident number.
+  if (!d) return null
+  const decimals = Number(d.decoded as number)
   const ageSeconds = nowSeconds - Number(updatedAt)
   return {
+    roundId,
+    answeredInRound,
     answer,
     updatedAt,
     decimals,
@@ -116,6 +127,8 @@ export async function readFeed(
     ageSeconds,
     heartbeat,
     stale: ageSeconds > heartbeat,
+    /** A non-positive answer is not a price, and an incomplete round carries an older one. */
+    usable: answer > 0n && answeredInRound >= roundId,
     raw: r.raw,
   }
 }
@@ -130,6 +143,21 @@ export interface TokenReading {
   effectiveAt: bigint | null
   rawMultiplier: string
   rawTotalSupply: string
+  /**
+   * The RAW bytes each of these calls actually returned.
+   *
+   * These exist because findings used to cite the wrong call's bytes. PENDING_CORPORATE_ACTION
+   * claimed `newUIMultiplier() == X` and attached rawMultiplier — the bytes of uiMultiplier().
+   * Those two are byte-identical only while NO corporate action is pending, so the citation
+   * reproduced right up until the moment the finding became true, and then the verifier
+   * mismatched and discarded the single highest-value early warning this tool can emit as
+   * fabrication. ORACLE_PAUSED was worse: it SYNTHESISED its rawReturn in source as a hand-built
+   * word of 31 zeros and a 1, which made "every raw byte was published after being fetched from
+   * chain state" false on its face.
+   */
+  rawPendingMultiplier: string | null
+  rawEffectiveAt: string | null
+  rawOraclePaused: string | null
 }
 
 export async function readStockToken(
@@ -154,5 +182,8 @@ export async function readStockToken(
     effectiveAt: eff ? (eff.decoded as bigint) : null,
     rawMultiplier: m.raw,
     rawTotalSupply: ts?.raw ?? '0x',
+    rawPendingMultiplier: pend?.raw ?? null,
+    rawEffectiveAt: eff?.raw ?? null,
+    rawOraclePaused: paused?.raw ?? null,
   }
 }

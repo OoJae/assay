@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import * as dotenv from 'dotenv'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
 import { privateKeyToAccount } from 'viem/accounts'
 import { createPublicClient, createWalletClient, http, formatEther, parseEventLogs } from 'viem'
 import { base } from 'viem/chains'
@@ -64,7 +66,15 @@ const wallet = createWalletClient({ account, chain: base, transport: http() })
  * accident minted a duplicate identity (95265 then 95266). So the canonical id is recorded
  * locally and re-runs refuse unless --force is passed.
  */
-const STATE = 'data/erc8004.json'
+/**
+ * Resolved against THIS FILE, not the process cwd.
+ *
+ * The idempotence guard below is the only thing standing between a re-run and a fourth mainnet
+ * identity NFT — two already exist because of one accidental re-run. A cwd-relative path means
+ * running `tsx assay/scripts/mint-8004.ts` from the parent directory finds no state file,
+ * concludes nothing has been minted, and mints. The guard has to be anchored to the repo.
+ */
+const STATE = join(dirname(fileURLToPath(import.meta.url)), '..', 'data', 'erc8004.json')
 interface Erc8004State {
   agentId: string
   agentURI: string
@@ -72,9 +82,14 @@ interface Erc8004State {
   txHash: string
   chainId: number
   duplicates?: string[]
+  note?: string
 }
-if (existsSync(STATE) && !process.argv.includes('--force')) {
-  const prev = JSON.parse(readFileSync(STATE, 'utf8')) as Erc8004State
+const previous: Erc8004State | null = existsSync(STATE)
+  ? (JSON.parse(readFileSync(STATE, 'utf8')) as Erc8004State)
+  : null
+
+if (previous && !process.argv.includes('--force')) {
+  const prev = previous
   console.log('already registered — refusing to mint a duplicate\n')
   console.log('agentId  ', `${prev.chainId}:${prev.agentId}`)
   console.log('agentURI ', prev.agentURI)
@@ -143,12 +158,41 @@ for (let i = 0; i < 5; i++) {
 }
 console.log('tokenURI   ', uri || '(not yet readable — state lag, retry shortly)')
 
+/**
+ * A forced re-mint APPENDS to the duplicate record; it never erases it.
+ *
+ * The previous version wrote a fresh object, so `--force` silently dropped the `duplicates` and
+ * `note` fields — the disclosure that two identities exist and why. Quietly deleting the record
+ * of one's own mistake is precisely the behaviour this project grades other people for, and it
+ * would have happened on the one code path taken while already knowing about the duplicate.
+ */
+const duplicates = previous
+  ? [...(previous.duplicates ?? []), previous.agentId].filter((id) => id !== agentId.toString())
+  : []
+
 writeFileSync(
   STATE,
   JSON.stringify(
-    { agentId: agentId.toString(), agentURI: AGENT_URI, owner: account.address, txHash: hash, chainId: 8453 },
+    {
+      agentId: agentId.toString(),
+      agentURI: AGENT_URI,
+      owner: account.address,
+      txHash: hash,
+      chainId: 8453,
+      ...(duplicates.length ? { duplicates } : {}),
+      ...(previous?.note || duplicates.length
+        ? {
+            note:
+              previous?.note ??
+              `${agentId} is canonical. ${duplicates.join(', ')} ${duplicates.length > 1 ? 'were' : 'was'} ` +
+                `minted earlier by this script; all are owned by the same wallet and carry the same ` +
+                `agentURI. Recorded rather than hidden.`,
+          }
+        : {}),
+    },
     null,
     2,
   ),
 )
 console.log(`\nrecorded in ${STATE}`)
+if (duplicates.length) console.log(`duplicate identities disclosed: ${duplicates.join(', ')}`)

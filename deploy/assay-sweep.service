@@ -1,0 +1,30 @@
+# Regenerate the published findings. Install to /etc/systemd/system/assay-sweep.service
+#
+# WHY THIS EXISTS. Nothing regenerated findings.json. Every published citation carries a block
+# number and a "reproduce this yourself" cast command, and this RPC serves roughly head-5000 to
+# head-20000 at ~100ms per block -- so every citation on the wall became permanently
+# unreproducible within about half an hour of the sweep that produced it. The evidence was not
+# wrong, it was unavailable, which for a tool selling reproducibility is close to the same thing.
+[Unit]
+Description=ASSAY findings sweep
+Documentation=https://github.com/OoJae/assay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/assay
+ExecStart=/usr/bin/env pnpm sweep
+# The sweep refuses to overwrite a good board with a degraded one and exits 2. That is a correct
+# outcome, not a unit failure, so do not let it mark the service failed.
+SuccessExitStatus=0 2
+StandardOutput=append:/home/ubuntu/assay/sweep.log
+StandardError=append:/home/ubuntu/assay/sweep.log
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/ubuntu/assay
+RestrictSUIDSGID=true

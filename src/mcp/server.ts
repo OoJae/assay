@@ -1,22 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { readFileSync, existsSync } from 'node:fs'
-import { truePosition } from '../lib/position.js'
-import { sweep } from '../sweep/detect.js'
-import type { VerifiedFinding } from '../verify/index.js'
+import { checkSymbol, findingsPayload, truePositionFor } from '../lib/surface.js'
+import type { DefectClass } from '../sweep/types.js'
 
 /**
  * ASSAY MCP server.
  *
- * Note on transport: OpenServ's own MCP support is SSE-only (docs: no-code/connect/mcps),
- * so the hosted deployment exposes SSE. This module builds the server; the entrypoints
- * pick stdio (local) or SSE (hosted).
+ * Note on transport: OpenServ's own MCP support is SSE-only (docs: no-code/connect/mcps), so the
+ * hosted deployment exposes SSE. This module builds the server; `stdio.ts` and `sse.ts` are the
+ * entrypoints. Every answer here comes from lib/surface.ts, which is also what the AgentKit
+ * action provider and the OpenServ agent serve — so a buyer can use one endpoint to check another.
  */
-
-function loadFindings(): { findings: VerifiedFinding[]; blockNumber?: string; observedAt?: string } {
-  if (!existsSync('data/findings.json')) return { findings: [] }
-  return JSON.parse(readFileSync('data/findings.json', 'utf8'))
-}
 
 export function buildServer(): McpServer {
   const server = new McpServer({ name: 'assay', version: '0.1.0' })
@@ -38,7 +32,7 @@ export function buildServer(): McpServer {
       },
     },
     async ({ symbol, holder }) => {
-      const p = await truePosition(symbol, holder as `0x${string}`)
+      const p = await truePositionFor(symbol, holder as `0x${string}`)
       return { content: [{ type: 'text', text: JSON.stringify(p, null, 2) }] }
     },
   )
@@ -48,36 +42,44 @@ export function buildServer(): McpServer {
     {
       title: 'Published valuation-integrity findings',
       description:
-        'List verified findings from the latest ASSAY sweep of Robinhood Chain and IXS RWA vaults. ' +
-        'Every citation in every finding was re-fetched from chain state and byte-compared before publication. ' +
-        'Filter by symbol, defect class or minimum severity.',
+        'List verified findings from the latest ASSAY sweep of Robinhood Chain. Every citation in ' +
+        'every finding was re-fetched from chain state and byte-compared before publication. The ' +
+        'reply also carries snapshotAgeSeconds, because cited blocks stop being re-fetchable on ' +
+        'this RPC within roughly half an hour. Filter by symbol, defect class or minimum severity.',
       inputSchema: {
         symbol: z.string().optional().describe('Filter to one ticker'),
-        defectClass: z.string().optional().describe('e.g. STALE_ORACLE_PAST_HEARTBEAT, NO_PRICE_FEED'),
+        // Typed to the real union rather than a free string: the description used to name
+        // STALE_ORACLE_PAST_HEARTBEAT, a class that does not exist, so a caller filtering by the
+        // documented value got an empty list and no error.
+        defectClass: z
+          .enum([
+            'CROSS_SURFACE_PRICE_MIX',
+            'ORACLE_STALE_MARKET_CLOSED',
+            'ORACLE_STALE_UNEXPECTED',
+            'ORACLE_STALE_INDETERMINATE',
+            'NO_PRICE_FEED',
+            'SHARE_COUNT_MISREAD_RISK',
+            'ORACLE_PAUSED',
+            'SEQUENCER_FEED_UNAVAILABLE',
+            'PENDING_CORPORATE_ACTION',
+            'VAULT_DECIMAL_SCALE',
+            'VAULT_WHITELIST',
+            'VAULT_ASYNC_SETTLEMENT',
+          ])
+          .optional()
+          .describe('Exact defect class'),
         minSeverity: z.enum(['critical', 'high', 'medium', 'low', 'info']).optional(),
         limit: z.number().int().min(1).max(100).optional(),
       },
     },
     async ({ symbol, defectClass, minSeverity, limit }) => {
-      const data = loadFindings()
-      const rank = { critical: 0, high: 1, medium: 2, low: 3, info: 4 } as Record<string, number>
-      let out = data.findings
-      if (symbol) out = out.filter((f) => f.subject.toUpperCase().startsWith(symbol.toUpperCase()))
-      if (defectClass) out = out.filter((f) => f.defectClass === defectClass)
-      if (minSeverity) out = out.filter((f) => rank[f.severity]! <= rank[minSeverity]!)
-      out = out.sort((a, b) => rank[a.severity]! - rank[b.severity]!).slice(0, limit ?? 25)
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              { sweepBlock: data.blockNumber, observedAt: data.observedAt, count: out.length, findings: out },
-              null,
-              2,
-            ),
-          },
-        ],
-      }
+      const payload = findingsPayload({
+        symbol,
+        defectClass: defectClass as DefectClass | undefined,
+        minSeverity,
+        limit,
+      })
+      return { content: [{ type: 'text', text: JSON.stringify(payload, null, 2) }] }
     },
   )
 
@@ -91,24 +93,12 @@ export function buildServer(): McpServer {
       inputSchema: { symbol: z.string().describe('Stock Token ticker') },
     },
     async ({ symbol }) => {
-      const r = await sweep({ symbols: [symbol] })
+      const r = await checkSymbol(symbol)
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                block: r.blockNumber,
-                observedAt: r.observedAt,
-                published: r.findings.length,
-                rejectedByVerifier: r.rejected.length,
-                findings: r.findings,
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify(r, null, 2) }],
+        // An unknown ticker is an error, not a clean bill of health. CRWDD is one keystroke from
+        // the only 4.0x asset on the chain, and it used to come back as {published: 0}.
+        isError: Boolean(r.error),
       }
     },
   )

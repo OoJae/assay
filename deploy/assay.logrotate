@@ -1,0 +1,18 @@
+# Install to /etc/logrotate.d/assay
+#
+# The units append to plain files with no rotation at all. agent.log and mcp.log grow without
+# bound on a 3.7GB box with ~1GB available, and the failure mode -- a full disk -- takes down the
+# paid endpoint and the MCP server together, with no signal beforehand.
+/home/ubuntu/assay/agent.log
+/home/ubuntu/assay/mcp.log
+/home/ubuntu/assay/sweep.log {
+    daily
+    rotate 7
+    maxsize 50M
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    su ubuntu ubuntu
+}
