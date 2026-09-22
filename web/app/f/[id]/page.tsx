@@ -155,7 +155,9 @@ export default async function FindingPage({ params }: { params: Promise<{ id: st
         }" \\
   --block ${f.evidence[0]?.blockNumber ?? ''} \\
   --rpc-url https://rpc.mainnet.chain.robinhood.com`}</pre>
-        Note: the public RPC prunes state within roughly 1k–10k blocks, so an older block may no
+        Note: the public RPC serves state for 5,000–10,000 blocks at 0.101s each — measured, not
+        estimated — so a citation stops being re-fetchable 8 to 17 minutes after it is minted. An
+        older block may no
         longer be served. That makes a citation unchecked here, not disproven — ASSAY reports those
         two cases separately and never publishes a finding whose citation contradicts chain state.
       </footer>

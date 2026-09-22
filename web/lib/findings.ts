@@ -123,7 +123,7 @@ export const LIVE_SNAPSHOT_URL = 'https://sonar.my.id/assay-mcp/findings.json'
  * The sweep runs on a 30-minute timer on the VPS, but this is a separate deployment reading a file
  * baked in at build time — so regenerating the artifact only fixed half the staleness. Every
  * citation on this wall carries a "reproduce this yourself" command against a block the public RPC
- * serves for roughly 5k-20k blocks at ~100ms each, which means a board that only moves when someone
+ * serves for 5,000-10,000 blocks at 0.101s each (measured), which means a board that only moves when someone
  * redeploys is publishing commands that stopped working hours earlier.
  *
  * The committed copy is the fallback rather than the source, so the sweeper host being unreachable

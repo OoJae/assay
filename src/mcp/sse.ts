@@ -155,7 +155,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
    * WHY THIS EXISTS. The sweep timer on this host regenerates data/findings.json every 30 minutes,
    * but the WALL is a separate deployment reading a copy committed at build time — so fixing the
    * regeneration only fixed half the staleness. Every citation carries a "reproduce this yourself"
-   * command against a block this RPC serves for roughly 5k-20k blocks, so a wall that only updates
+   * command against a block this RPC serves for 5,000-10,000 blocks (~8-17 minutes), so a wall that only updates
    * when someone redeploys is publishing commands that stopped working hours ago.
    *
    * The wall fetches this at request time and falls back to its committed copy when this host is

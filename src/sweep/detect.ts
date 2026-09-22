@@ -32,7 +32,7 @@ export const METHODOLOGY_VERSION = 'assay-rh-v0.3.0'
 /**
  * How often to re-read the chain head during a sweep.
  *
- * The public RPC prunes state at roughly 1k-10k blocks and Robinhood Chain produces ~100ms
+ * The public RPC serves state for 5,000-10,000 blocks (measured) and Robinhood Chain produces 0.101s
  * blocks, so a single block captured at sweep start is unusable by the end of a 194-asset run.
  * Refreshing per asset keeps every citation inside the retention window, which is what makes
  * inline verification possible at all.
@@ -141,7 +141,7 @@ export interface SweepOptions {
   onProgress?: (done: number, total: number, symbol: string) => void
   /**
    * Verify every citation before returning. ON BY DEFAULT and strongly recommended:
-   * the public RPC prunes state within ~1k-10k blocks, so verification MUST happen in
+   * the public RPC serves state for only 5,000-10,000 blocks, so verification MUST happen in
    * the same window as detection or citations become permanently uncheckable.
    */
   verify?: boolean

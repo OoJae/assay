@@ -14,13 +14,28 @@ Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP*.
 | **ERC-8004 identity** | agent **`8453:95265`** on the IdentityRegistry `0x8004A169…a432` — [tx](https://basescan.org/tx/0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a) · [8004scan](https://www.8004scan.io/agents/base/95265) · [agent card](https://assay-steel.vercel.app/agent-card.json) |
 | **On-chain attestation** | agent `95265` rated **CLEAN (100)** by validator `0x0C3A…14B5` — `getAgentValidations(95265)` returns one entry. The `responseHash` on-chain equals `keccak256` of the exact document served at [`/attestations/95265.json`](https://assay-steel.vercel.app/attestations/95265.json); `pnpm verify:attestation` checks that live, and it is in the test suite. **Self-issued and not machine-adjudicated** — subject and validator are the same key, and the tag is a documented self-assessment rather than an output of the SERV adjudicator. The document says both on its face and carries no third-party findings, because ASSAY's own rule is that unsolicited statements about a named party stay off-chain. |
 | **Paid endpoint** | `https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6` at $0.01/call |
-| **Public MCP (SSE)** | `https://sonar.my.id/assay-mcp/sse` — **TLS**, verified from the public internet with a real MCP client; the cleartext `:7379` it used to be published on is now closed. — verified from the public internet with a real MCP client. OpenServ's MCP support is SSE-only, so this is the transport that matters. Rate limited per IP: 30 connections/min, 60 cheap reads/min, 5 sweep calls/min, 50 concurrent sessions. Unauthenticated by design — every tool is a public chain read and the host holds no keys, which is enforced at startup rather than described: `serve-remote.ts` refuses to boot if a signing key is present in its environment. |
+| **Public MCP (SSE)** | `https://sonar.my.id/assay-mcp/sse` — **TLS**, verified from the public internet with a real MCP client; the cleartext `:7379` it was previously published on is now closed. OpenServ's MCP support is SSE-only, so this is the transport that matters. Rate limited per IP: 30 connections/min, 60 cheap reads/min, 5 sweep calls/min, 50 concurrent sessions. Unauthenticated by design — every tool is a public chain read and the host holds no keys, which is enforced at startup rather than described: `serve-remote.ts` refuses to boot if a signing key is present in its environment. |
 
-The paid call returned real work, leading with the refusal it is designed to produce:
+The paid call returns real work, and leads with the refusal it is designed to produce. Verbatim
+from the settled call above, at block 69261737:
 
-> `refusalReason: No Chainlink feed is published for CRWD on Robinhood Chain; no on-chain price is
-> available. Using an off-chain SHARE price here would introduce a 300.000% error, because the
-> multiplier is 4.000000000.` — with `shareEquivalents: 52.1075` against `tokenUnits: 13.0269`.
+```json
+{
+  "refusalReason": "No Chainlink feed is published for CRWD on Robinhood Chain; no on-chain price
+                    is available. Using an off-chain SHARE price here would introduce a 300.000%
+                    error, because the multiplier is 4.000000000.",
+  "tokenUnits": 12.697759045880602,
+  "shareEquivalents": 50.79103618352241,
+  "positionValueUsd": null,
+  "checks": { "pauseChecked": true, "feedRead": false, "priceSane": false, "roundComplete": false },
+  "confidence": "refuse"
+}
+```
+
+`checks` is the part worth looking at. `false` means **unknown, not fine** — it says which safety
+checks actually completed. An earlier version of this call returned `confidence: "high"` with
+`refusalReason: null` when the feed read had *failed*, which is the most dangerous thing a paid
+valuation primitive can do: sell a check that did not happen as a check that passed.
 
 ---
 
@@ -73,7 +88,7 @@ The defect is **cross-surface mixing**: the on-chain feed returns a *token* pric
 There are **two paths**, and only one of them involves a model.
 
 ```
-UNSOLICITED (the wall — 195 assets, every 30 min)
+UNSOLICITED (the wall — 195 assets, every 8 min)
   Sweeper  ──▶  Verifier  ──▶  publish, UNADJUDICATED
  (no model)    (no model)
 
@@ -122,9 +137,19 @@ It distinguishes:
 Everything withheld is rendered on the wall with its reason. A verification claim is only worth
 something if the misses are visible too.
 
-> The public RPC is **not an archive node** — measured, it serves roughly 1k–10k blocks, and
-> Robinhood Chain produces ~100ms blocks. Verification is therefore **fused into the sweep** at the
-> same block, never run as a later pass.
+> **The public RPC is not an archive node, and this number is measured rather than guessed.**
+> Binary-searching for the oldest block still serving state puts retention between **5,000 and
+> 10,000 blocks**, at **0.101s per block** — so a citation stops being re-fetchable **8 to 17
+> minutes** after it is minted.
+>
+> Three things follow, and all three are consequences of that one number. Verification is **fused
+> into the sweep** at each asset's own block, never run as a later pass. The sweep timer runs every
+> **8 minutes**, not the 30 it used to, because the board otherwise spends most of its life
+> carrying "reproduce this yourself" commands that have already expired. And `assay_findings`
+> returns `citationsReproducible` and `citationLifetimeSeconds`, so a caller can see the constraint
+> instead of inferring it.
+>
+> A citation past that window is **unchecked, not disproven** — and the wall says which.
 
 **3. Adjudicator — SERV Reasoning.** The only place a model is allowed. It never computes a fact;
 it decides **materiality against the subject's own declared mandate**, and it refuses when the
