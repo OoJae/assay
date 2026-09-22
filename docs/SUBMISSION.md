@@ -22,11 +22,20 @@ terminal · the Basescan `transferWithAuthorization` · the withheld table (or `
 > Robinhood put 450+ tokenized stocks on its own chain. Under ERC-8056 a corporate action moves a
 > multiplier, not your balance — so `balanceOf()` is not a share count.
 >
-> ASSAY swept all 195 live assets and published 45 findings. Every citation re-fetched from chain
-> state and byte-compared: 90/90 reproduced.
+> ASSAY sweeps all 195 live assets every 8 minutes. Every citation is re-fetched from chain state
+> and byte-compared before it is published.
 >
-> The part I'd actually defend: it refuses. CRWD has no Chainlink feed, so the paid call returns
-> no price and says why, instead of guessing and being 300% wrong.
+> But all 195 assets are innocent — they do exactly what the spec says. So I went looking for who
+> actually carries the risk, and found it: **~80% of the addresses holding these tokens are
+> contracts, and of the ones holding a divergent multiplier, zero reference `uiMultiplier()`
+> anywhere in their bytecode.**
+>
+> The wall publishes that as a count and a dollar figure. It names nobody — absence of a call isn't
+> proof of a mistake, and a contract that just custodies a token isn't wrong to lack it.
+>
+> Then the part I'd defend hardest: a **free** contract on Robinhood Chain that does the correction
+> for you, and refuses — with a reason — when the feed is stale or the oracle is paused. ASSAY never
+> holds a key and never blocks anything. It publishes something executable and you choose to read it.
 >
 > The wall also shows what it **withheld**, and names the asset it *read* separately from the party
 > who carries the risk — CRWD's contract is spec-perfect; the exposure is on whoever reads it wrong.
@@ -166,13 +175,40 @@ reading on its own — the interesting content is the three times I was wrong.
 > My sweep timer was set to 30. The board spent most of its life publishing "reproduce this
 > yourself" commands that had already expired.
 
+**15b/**
+> The last thing I built is the one I'd keep.
+>
+> ASSAY was auditing 195 assets that are all *correct*. The exposure is on whoever reads them. So I
+> pulled the Transfer logs, fetched the bytecode of every holder, and checked for the
+> `uiMultiplier()` selector.
+>
+> ~80% of holders are contracts. Of the ones holding a divergent multiplier: zero have it.
+
+**15c/**
+> That nearly went very wrong. A proxy's bytecode is a delegatecall stub with no selectors in it —
+> so a naive check calls every proxy on the chain "not multiplier aware."
+>
+> The Stock Tokens are *themselves* beacon proxies. My first version accused the very contracts
+> that implement the function.
+>
+> Proxies are now resolved, or the finding is withheld. No guess.
+
+**15d/**
+> And detection is worth less than prevention, so there's a free ownerless contract on 4663 that
+> does the correction and refuses when the feed is stale.
+>
+> Tested by forking the real chain, warping 3 days forward, and watching it say no.
+>
+> ASSAY holds no key and blocks nothing. It emits something executable; you opt in.
+
 **16/**
 > Where it landed:
 >
-> 45 findings, 90/90 citations byte-verified, 195 assets swept every 8 minutes, MCP over SSE
-> behind TLS, x402 settled on Base, ERC-8004 identity, 96 tests of which 78 need no network at
-> all, and a self-attestation that says on its face it carries zero independent assurance —
-> because it's me grading me.
+> 195 assets swept every 8 minutes plus the contracts holding them, every citation byte-verified,
+> a free guard contract and npm package so the mistake is preventable, MCP over SSE behind TLS,
+> x402 settled on Base, ERC-8004 identity, 112 tests of which 94 need no network at all, and a
+> self-attestation that says on its face it carries zero independent assurance — because it's me
+> grading me.
 
 **17/**
 > The wall also shows what it WITHHELD, and every finding names the asset it READ separately from
@@ -195,6 +231,8 @@ reading on its own — the interesting content is the three times I was wrong.
 ## Checklist before posting
 
 - [ ] `pnpm sweep && pnpm readme:stats`, then re-check every number above
+- [ ] `pnpm test:guard` passes (needs `anvil`)
+- [ ] guard deployed on 4663 and its address published on the wall and in the README
 - [ ] `pnpm verify:attestation` returns VERIFIES
 - [ ] wall loads, `/pricing` loads, a finding page loads, 404 page is styled
 - [ ] `curl -s https://sonar.my.id/assay-mcp/health` returns ok

@@ -1,6 +1,6 @@
 # Demo video — shot list
 
-**Target: 1:50.** Judges are not obliged to watch past 2:00, so the strongest beat goes first and
+**Target: 2:00.** Judges are not obliged to watch past 2:00, so the strongest beat goes first and
 nothing is explained that the screen already shows.
 
 Record at 1920×1080. Terminal at ~16pt, dark. Browser with no bookmark bar, no extensions.
@@ -88,25 +88,70 @@ refusalReason     No Chainlink feed is published for CRWD on Robinhood Chain...
 
 ---
 
-## 1:05–1:25 — Money moves, and it is checkable
+## 1:05–1:22 — The other side of the trade
 
-**Show:** the Basescan tab, already loaded.
+**Show:** the wall, scrolled to the orange integrator panel.
 
 **Say:**
-> A second agent paid for that call over x402. Point-oh-one USDC, EIP-3009, on Base. The buyer
-> spent zero ETH — a relayer pays the gas.
+> Here's the part I'd defend hardest. Every finding above names the asset that was *read* — and all
+> hundred and ninety-five of them are behaving exactly as the spec says. Nobody's at fault.
+>
+> So we audited the other side. Of the addresses moving these tokens, about eighty percent are
+> contracts. We fetch their bytecode and look for the `uiMultiplier` selector. Right now, of the
+> contracts holding a divergent-multiplier token, **not one of them references it.**
 
-**On screen:** point at `transferWithAuthorization`, the amount, and the two distinct addresses.
+**On screen:** point at the count and the dollar figure.
 
-**Then, immediately — do not let this land as a revenue claim:**
-> Four payments have settled, between two wallets I control. That proves the rail works end to
-> end. It is plumbing, not demand, and the pricing page says so in those words.
-
-**Show:** flick to `/pricing`, let the `roadmap` badges be visible for a second.
+**Then — say this, it matters:**
+> And notice there's no address on the page. What we've proven is the *absence of a call*, not the
+> presence of a mistake — a contract that just custodies a token never needs the multiplier. So the
+> wall gets a count; the name costs twenty-five cents. We also resolve proxies before we judge
+> anything, because the Stock Tokens are themselves beacon proxies, and the first version of this
+> cheerfully accused the very tokens that implement the function.
 
 ---
 
-## 1:25–1:42 — Reproduce it yourself
+## 1:22–1:40 — The mistake becomes impossible
+
+**Run:**
+
+```bash
+pnpm test:guard
+```
+
+Talk over the fork spinning up.
+
+**Say:**
+> Detecting this is worth less than preventing it. So there's a free contract on Robinhood Chain
+> that does the correction for you — ownerless, no storage, view-only. One call, the right number.
+>
+> This forks the real chain, deploys it, and checks it against live state. Watch the last two lines:
+> we jump three days forward, the Chainlink feed goes stale, and the guard **refuses**.
+
+**On screen:** let these land.
+
+```
+ok  CRWD shares == balance x 4.0 — 50.79103618352241
+ok  after +3 days the feed is REFUSED — stale, non-positive, incomplete round, or unreadable
+ok  positionValue refuses rather than pricing off a stale feed
+```
+
+**Say:**
+> That's the whole product in one line. It returns nothing instead of returning something wrong.
+> And ASSAY never holds a key or blocks anything — it just publishes something executable and you
+> choose to read it.
+
+---
+
+## 1:40–1:50 — It settles, and you can check it
+
+**Show:** the Basescan tab.
+
+**Say:**
+> A second agent paid for this over x402 — a cent, EIP-3009, zero ETH from the buyer. Between two
+> wallets I control, so it's plumbing, not demand, and the pricing page says exactly that.
+
+## 1:50–2:00 — Reproduce it yourself
 
 **Show:** a finding page, scrolled to the evidence block.
 
@@ -157,3 +202,7 @@ cast call 0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931 "uiMultiplier()" \
   `data/findings.scoped.json` and deliberately leave the published board alone.
 - Keep every claim on screen matched by something on screen. The one thing this project cannot
   afford in a demo is a number nobody can check.
+- **`pnpm test:guard` needs `anvil`** (Foundry) and takes ~20s to fork. Run it once before
+  recording so the fork is warm and the dependency is not discovered on camera.
+- If asked "isn't this just a scanner" — the answer is the guard. A scanner tells you; this makes
+  the mistake unavailable to anyone who calls it, and gives the number away for free.
