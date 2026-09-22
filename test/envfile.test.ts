@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { mkdtempSync, writeFileSync, readFileSync, rmSync, statSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { mkdtempSync, writeFileSync, readFileSync, rmSync, statSync, existsSync, readdirSync } from 'node:fs'
+import { tmpdir, homedir } from 'node:os'
 import { join } from 'node:path'
 import {
   appendEnvSecret,
   assertNoSecretLoss,
   backupEnv,
+  ENV_BACKUP_PATH,
   hasEnvKey,
   hasEnvValue,
   populatedSecretCount,
@@ -147,5 +148,34 @@ describe('template placeholders are slots, not values', () => {
     expect(readEnv(env).SERV_API_KEY).toBe('serv_' + 'x'.repeat(40))
     expect(body.match(/SERV_API_KEY=/g)).toHaveLength(1)
     expect(readEnv(env).WALLET_PRIVATE_KEY).toBe(KEY)
+  })
+})
+
+describe('the real backup is out of the suite\'s reach', () => {
+  it('the suite runs against a scratch backup path, never ~/.assay/env.backup', () => {
+    expect(ENV_BACKUP_PATH).not.toBe(join(homedir(), '.assay', 'env.backup'))
+    expect(ENV_BACKUP_PATH.startsWith(tmpdir())).toBe(true)
+  })
+
+  it('appendEnvSecret on any file but the project .env backs up nothing', () => {
+    // The regression: fixture files were backed up over the real key backup on every run.
+    rmSync(ENV_BACKUP_PATH, { force: true })
+    appendEnvSecret('WALLET_PRIVATE_KEY', KEY, env)
+    expect(existsSync(ENV_BACKUP_PATH)).toBe(false)
+  })
+
+  it('a write after an incident cannot destroy the surviving backup', () => {
+    const dest = join(dir, 'backup', 'env.backup')
+    writeFileSync(env, `WALLET_PRIVATE_KEY=${KEY}\nBUYER_PRIVATE_KEY=${OTHER}\n`)
+    backupEnv(env, dest)
+
+    // .env wiped to the template, then a fresh key generated: the scenario that froze 95265.
+    writeFileSync(env, `WALLET_PRIVATE_KEY=0x${'c'.repeat(64)}\nBUYER_PRIVATE_KEY=\n`)
+    backupEnv(env, dest)
+
+    expect(readEnv(dest).WALLET_PRIVATE_KEY).toBe(KEY)   // rolling copy kept the old keys
+    expect(readEnv(dest).BUYER_PRIVATE_KEY).toBe(OTHER)
+    const dated = readdirSync(join(dir, 'backup')).filter((f) => f.startsWith('env.backup.'))
+    expect(dated).toHaveLength(2)                          // and both states are on disk
   })
 })

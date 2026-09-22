@@ -9,7 +9,7 @@ import {
   mkdirSync,
 } from 'node:fs'
 import { homedir } from 'node:os'
-import { join, dirname } from 'node:path'
+import { join, dirname, resolve } from 'node:path'
 import { parse } from 'dotenv'
 
 /**
@@ -38,7 +38,18 @@ export const ENV_PATH = '.env'
  * A single copy of an unrecoverable secret, inside a directory full of test fixtures and template
  * files with nearly the same name, is not storage. It is a countdown.
  */
-export const ENV_BACKUP_PATH = join(homedir(), '.assay', 'env.backup')
+/**
+ * Overridable so the test suite can never touch the real backup. It did: appendEnvSecret backed up
+ * whatever file it was given, the tests gave it fixture files, and every run replaced the only
+ * off-tree copy of the wallet that owns identity 95374 with a key derived from 0xaaaa…aaaa.
+ */
+export const ENV_BACKUP_PATH =
+  process.env.ASSAY_ENV_BACKUP_PATH || join(homedir(), '.assay', 'env.backup')
+
+/** The backup mirrors the project's own .env and nothing else — never a fixture or a copy. */
+function isCanonicalEnv(path: string): boolean {
+  return resolve(path) === resolve(ENV_PATH)
+}
 
 /** A value that looks like a real secret rather than a placeholder. */
 function isPopulated(v: string | undefined): boolean {
@@ -72,12 +83,34 @@ export function assertNoSecretLoss(path: string, nextBody: string, allowSecretLo
   }
 }
 
-/** Mirror the current secrets outside the working tree. Best effort; never blocks the caller. */
+/**
+ * Mirror the current secrets outside the working tree. Best effort; never blocks the caller.
+ *
+ * Two copies. A dated one that is never overwritten, and a rolling one that is replaced only when
+ * the replacement keeps every secret it already holds. A single rolling slot is destroyed by the
+ * first write after an incident: wipe .env, generate a fresh key, and the backup that had survived
+ * becomes a file holding only the fresh key.
+ */
 export function backupEnv(path = ENV_PATH, to = ENV_BACKUP_PATH): string | null {
   if (!existsSync(path) || populatedSecretCount(path) === 0) return null
   try {
     mkdirSync(dirname(to), { recursive: true, mode: 0o700 })
-    writeFileSync(to, readFileSync(path, 'utf8'), { mode: 0o600 })
+    const body = readFileSync(path, 'utf8')
+    writeFileSync(`${to}.${new Date().toISOString().replace(/[:.]/g, '-')}`, body, { mode: 0o600 })
+
+    const next = parse(body)
+    const lost = existsSync(to)
+      ? Object.entries(readEnv(to)).filter(([k, v]) => isPopulated(v) && next[k] !== v).map(([k]) => k)
+      : []
+    if (lost.length) {
+      console.error(
+        `backup: NOT replacing ${to} — the new content drops or changes ${lost.join(', ')}. ` +
+          `The new content is in the dated copy beside it.`,
+      )
+      return to
+    }
+    writeFileSync(to, body, { mode: 0o600 })
+    chmodSync(to, 0o600)
     return to
   } catch {
     return null
@@ -157,7 +190,7 @@ export function appendEnvSecret(name: string, value: string, path = ENV_PATH): v
   renameSync(tmp, path)
   if (existsSync(tmp)) unlinkSync(tmp)
   secureEnv(path)
-  backupEnv(path)
+  if (isCanonicalEnv(path)) backupEnv(path)
 }
 
 /**

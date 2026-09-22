@@ -1,4 +1,6 @@
 import { defineConfig } from 'vitest/config'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 /**
  * Two suites, split by whether they need the network.
@@ -31,6 +33,8 @@ const LIVE = [
 
 export default defineConfig({
   test: {
+    // Never the real ~/.assay/env.backup. See ENV_BACKUP_PATH in src/lib/envfile.ts.
+    env: { ASSAY_ENV_BACKUP_PATH: join(tmpdir(), `assay-test-${process.pid}`, 'env.backup') },
     // 60s: the live tests do real sweeps against a ~100ms-block chain.
     testTimeout: 60_000,
     exclude: [

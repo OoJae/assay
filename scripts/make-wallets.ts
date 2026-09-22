@@ -55,5 +55,5 @@ console.log('   Base 8453            : ~0.001 ETH, to mint the ERC-8004 identity
 console.log(`Wallet B · buyer agent    ${buyer.address}`)
 console.log('   Base 8453            : ~$0.50 USDC. NO ETH needed — a relayer pays the gas.')
 console.log(`\nRPC 4663: https://rpc.mainnet.chain.robinhood.com   USDC on Base: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`)
-console.log(`\nThese keys exist in exactly two places: ${ENV_PATH} and ${ENV_BACKUP_PATH}.`)
+console.log(`\nThese keys exist in ${ENV_PATH}, ${ENV_BACKUP_PATH}, and a dated copy beside it.`)
 console.log('Neither is in git. Copy them somewhere durable now.')

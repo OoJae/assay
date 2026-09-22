@@ -332,7 +332,7 @@ server are public chain reads against Robinhood Chain 4663 and run on a fresh cl
 
 ```bash
 pnpm install
-cp .env.example .env && chmod 600 .env   # every variable says which command needs it
+cp -n .env.example .env; chmod 600 .env  # -n: never overwrite an existing .env (that is how a key was lost)
 
 pnpm sweep                    # full 195-asset sweep, verification fused in
 pnpm sweep --symbols=CRWD,NVDA,SPY       # scoped: writes data/findings.scoped.json,
