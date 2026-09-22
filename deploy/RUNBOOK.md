@@ -55,9 +55,10 @@ behind nginx. `ufw` on the instance is a second layer, not the effective one.
 
 ## Checks
 
-**Does the host still match version control?** Run this first — the units drifted once, with
-`MCP_PUBLIC_PATH` set on the box and absent from the repo, which quietly falsified the claim at the
-top of this file.
+**Does the host still match version control?** Run this first. The units drifted once, with
+`MCP_PUBLIC_PATH` set on the box and absent from the repo, and a superseded
+`assay-mcp-tunnel.service` — a Cloudflare quick tunnel from before TLS — survived on the host with
+no counterpart here. Both quietly falsified the claim at the top of this file.
 
 ```bash
 cd /home/ubuntu/assay
@@ -65,7 +66,16 @@ for u in assay-agent assay-mcp assay-sweep; do
   diff -q /etc/systemd/system/$u.service deploy/$u.service || echo "DRIFT: $u"
 done
 diff -q /etc/logrotate.d/assay deploy/assay.logrotate || echo "DRIFT: logrotate"
+
+# Nothing should be listed here that is not in deploy/.
+ls /etc/systemd/system/assay*
 ```
+
+⚠️ **Do not reinstate a tunnel to expose 7379.** The endpoint is served through nginx so that TLS
+terminates in one place and `MCP_TRUSTED_PROXIES` can name that one peer. A second path in — a
+Cloudflare quick tunnel, ngrok, anything — arrives from an address the limiter does not trust, so
+`X-Forwarded-For` is ignored and every caller through it collapses into a single bucket. The per-IP
+limit silently becomes a global one.
 
 ```bash
 systemctl is-active assay-agent assay-mcp
