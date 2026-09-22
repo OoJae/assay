@@ -4,7 +4,7 @@ import { loadSweepLive } from '@/lib/findings'
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pricing — ASSAY' }
 
-const SETTLED_TX = '0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de'
+const SETTLED_TX = '0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b'
 const REPO = 'https://github.com/OoJae/assay'
 
 /**
@@ -70,7 +70,7 @@ export default async function Pricing() {
       </header>
 
       <div className="banner">
-        <strong>What the revenue evidence actually is.</strong> Three x402 payments of $0.01 have
+        <strong>What the revenue evidence actually is.</strong> Four x402 payments of $0.01 have
         settled on Base, between two wallets this project controls.{' '}
         <a href={`https://basescan.org/tx/${SETTLED_TX}`}>The most recent one is on-chain</a>. That
         proves the <em>rail works end to end</em> — discovery, EIP-3009 authorization, relayed

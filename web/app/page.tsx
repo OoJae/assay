@@ -5,9 +5,9 @@ export const dynamic = 'force-dynamic'
 
 const MCP_URL = 'https://sonar.my.id/assay-mcp/sse'
 const REPO = 'https://github.com/OoJae/assay'
-const SETTLED_TX = '0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de'
+const SETTLED_TX = '0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b'
 const IDENTITY_TX = '0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a'
-const ATTEST_TX = '0x5bed792da2865470c967173399c5b3f97148ef853d0346a920b13b8e7668e021'
+const ATTEST_TX = '0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669'
 
 function fmtAge(iso: string) {
   const s = (Date.now() - new Date(iso).getTime()) / 1000

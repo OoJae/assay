@@ -10,7 +10,7 @@ Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP*.
 
 | | |
 |---|---|
-| **Settled x402 payment** | [`0x270adb4c…f50de`](https://basescan.org/tx/0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de) — 0.01 USDC, buyer `0x09f5…b5B5` → seller `0x0C3A…14B5`, method `transferWithAuthorization`, Base block 51,603,807. The buyer spent **zero ETH**: x402 settles via an EIP-3009 signature and a relayer pays the gas. |
+| **Settled x402 payment** | [`0x50124847…6b96b`](https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b) — 0.01 USDC, buyer `0x09f5…b5B5` → seller `0x0C3A…14B5`, method `transferWithAuthorization`. The buyer spent **zero ETH**: x402 settles via an EIP-3009 signature and a relayer pays the gas. **Four** have settled; this is the one whose reply carries the `checks` block, so the refusal-completeness fix is visible in the thing a buyer actually pays for. Between two wallets I control — that is a working rail, not demand, and [/pricing](https://assay-steel.vercel.app/pricing) says so. |
 | **ERC-8004 identity** | agent **`8453:95265`** on the IdentityRegistry `0x8004A169…a432` — [tx](https://basescan.org/tx/0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a) · [8004scan](https://www.8004scan.io/agents/base/95265) · [agent card](https://assay-steel.vercel.app/agent-card.json) |
 | **On-chain attestation** | agent `95265` rated **CLEAN (100)** by validator `0x0C3A…14B5` — `getAgentValidations(95265)` returns one entry. The `responseHash` on-chain equals `keccak256` of the exact document served at [`/attestations/95265.json`](https://assay-steel.vercel.app/attestations/95265.json); `pnpm verify:attestation` checks that live, and it is in the test suite. **Self-issued and not machine-adjudicated** — subject and validator are the same key, and the tag is a documented self-assessment rather than an output of the SERV adjudicator. The document says both on its face and carries no third-party findings, because ASSAY's own rule is that unsolicited statements about a named party stay off-chain. |
 | **Paid endpoint** | `https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6` at $0.01/call |
@@ -221,7 +221,7 @@ pnpm sweep                    # full 195-asset sweep, verification fused in
 pnpm sweep --symbols=CRWD,NVDA,SPY       # scoped: writes data/findings.scoped.json,
                                          # NOT the published board (pass --publish to overwrite)
 pnpm readme:stats             # regenerate this README's numbers from the artifact
-pnpm test                     # 67 tests; the chain-dependent ones are marked
+pnpm test                     # 72 tests; the chain-dependent ones are marked
 pnpm typecheck
 
 npx tsx scripts/true-position.ts CRWD 0x8366a39CC670B4001A1121B8F6A443A643e40951

@@ -11,7 +11,7 @@ Record at 1920×1080. Terminal at ~16pt, dark. Browser with no bookmark bar, no 
 cd ~/Desktop/Openserv/assay
 pnpm sweep                       # warm data/findings.json; takes ~10 min, do NOT film this
 open https://assay-steel.vercel.app
-open https://basescan.org/tx/0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de
+open https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b
 ```
 
 Have four tabs ready in this order: wall · a finding page · Basescan · 8004scan.
@@ -99,7 +99,7 @@ refusalReason     No Chainlink feed is published for CRWD on Robinhood Chain...
 **On screen:** point at `transferWithAuthorization`, the amount, and the two distinct addresses.
 
 **Then, immediately — do not let this land as a revenue claim:**
-> Three payments have settled, between two wallets I control. That proves the rail works end to
+> Four payments have settled, between two wallets I control. That proves the rail works end to
 > end. It is plumbing, not demand, and the pricing page says so in those words.
 
 **Show:** flick to `/pricing`, let the `roadmap` badges be visible for a second.

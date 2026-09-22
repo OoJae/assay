@@ -6,7 +6,7 @@ sweep at block 69217928 (2026-09-22) — re-run `pnpm readme:stats` and re-check
 Links used throughout:
 - wall — <https://assay-steel.vercel.app>
 - repo — <https://github.com/OoJae/assay>
-- settled payment — <https://basescan.org/tx/0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de>
+- settled payment — <https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b>
 - attestation — <https://basescan.org/tx/0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669>
 - identity — <https://www.8004scan.io/agents/base/95265>
 
