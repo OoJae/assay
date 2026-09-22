@@ -38,6 +38,20 @@ const PORT = Number(process.env.MCP_PORT ?? 7379)
  */
 const HOST = process.env.MCP_HOST ?? '127.0.0.1'
 
+/**
+ * Public path prefix, when nginx mounts this under a sub-path of an existing TLS host rather than
+ * on its own subdomain.
+ *
+ * The SSE transport tells the client where to POST its side of the JSON-RPC conversation, and it
+ * sends that as an ABSOLUTE path. Behind `location /assay-mcp/` with a prefix-stripping
+ * proxy_pass, a bare '/messages' would send the client to the origin root — some other
+ * application — so the advertised path has to carry the prefix even though this process still
+ * sees the stripped one.
+ *
+ * Empty (the default) means mounted at the root, which is what a dedicated subdomain gives.
+ */
+const PUBLIC_PATH = (process.env.MCP_PUBLIC_PATH ?? '').replace(/\/$/, '')
+
 /** One transport per connected client, routed by sessionId on the POST leg. */
 const sessions = new Map<string, SSEServerTransport>()
 
@@ -99,7 +113,11 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 
   const ip = clientIp(req.headers as Record<string, string | string[] | undefined>, req.socket.remoteAddress)
 
-  if (req.method === 'GET' && url.pathname === '/health') {
+  // Suffix matching, so one build works whether nginx strips a prefix or not.
+  const route = url.pathname.replace(/\/+$/, '') || '/'
+  const is = (p: string) => route === p || route.endsWith(p)
+
+  if (req.method === 'GET' && is('/health')) {
     res.writeHead(200, { 'content-type': 'application/json' })
     res.end(
       JSON.stringify({
@@ -113,7 +131,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     return
   }
 
-  if (req.method === 'GET' && url.pathname === '/sse') {
+  if (req.method === 'GET' && is('/sse')) {
     if (sessions.size >= MAX_CONCURRENT_SESSIONS) {
       tooMany(res, 30, `server is at its ${MAX_CONCURRENT_SESSIONS}-session cap`)
       return
@@ -123,7 +141,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       tooMany(res, wait, 'too many connections from this address')
       return
     }
-    const transport = new SSEServerTransport('/messages', res)
+    const transport = new SSEServerTransport(`${PUBLIC_PATH}/messages`, res)
     const server = buildServer()
     sessions.set(transport.sessionId, transport)
     // Drop the session when the client disconnects, or the map leaks one entry per connection.
@@ -133,7 +151,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     return
   }
 
-  if (req.method === 'POST' && url.pathname === '/messages') {
+  if (req.method === 'POST' && is('/messages')) {
     const sessionId = url.searchParams.get('sessionId')
     const transport = sessionId ? sessions.get(sessionId) : undefined
     if (!transport) {
@@ -210,6 +228,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 }
 
 http.listen(PORT, HOST, () => {
-  console.log(`ASSAY MCP (SSE) listening on http://${HOST}:${PORT}/sse`)
+  console.log(`ASSAY MCP (SSE) listening on http://${HOST}:${PORT}${PUBLIC_PATH}/sse`)
+  if (PUBLIC_PATH) console.log(`clients are told to POST to ${PUBLIC_PATH}/messages`)
   console.log('tools: assay_true_position, assay_findings, assay_check_symbol')
 })
