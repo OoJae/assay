@@ -136,3 +136,37 @@ describe('classifyIntegrator — never accuse a contract that is fine', () => {
     }
   })
 })
+
+describe('named integrators never reach a public surface', () => {
+  const snap = {
+    findings: [
+      { defectClass: 'SHARE_COUNT_MISREAD_RISK', subject: 'CRWD (0xea72)', severity: 'critical' },
+      { defectClass: 'INTEGRATOR_NOT_MULTIPLIER_AWARE', subject: '0xfab520… (holds SGOV)', severity: 'low' },
+      { defectClass: 'CROSS_SURFACE_PRICE_MIX', subject: 'SPY (0x117c)', severity: 'medium' },
+    ],
+  } as never
+
+  it('strips them from the payload the wall and the free feed consume', async () => {
+    const { findingsPayload, withoutNamedIntegrators } = await import('../src/lib/surface.js')
+    expect(withoutNamedIntegrators(snap.findings)).toHaveLength(2)
+
+    const p = findingsPayload({}, snap)
+    expect(p.findings.some((f: { defectClass: string }) => f.defectClass === 'INTEGRATOR_NOT_MULTIPLIER_AWARE')).toBe(false)
+    expect(p.namedIntegratorsWithheld).toBe(1)
+  })
+
+  it('answers an explicit filter with a note, not silently with nothing', async () => {
+    // A caller who asks for the class deserves to know the names exist and where to get them,
+    // rather than receiving an empty list that reads as "there are none".
+    const { findingsPayload } = await import('../src/lib/surface.js')
+    const p = findingsPayload({ defectClass: 'INTEGRATOR_NOT_MULTIPLIER_AWARE' as never }, snap)
+    expect(p.findings).toHaveLength(0)
+    expect((p as { note?: string }).note).toMatch(/assay_check_contract/)
+  })
+
+  it('leaves every other class alone', async () => {
+    const { findingsPayload } = await import('../src/lib/surface.js')
+    const p = findingsPayload({ defectClass: 'SHARE_COUNT_MISREAD_RISK' as never }, snap)
+    expect(p.findings).toHaveLength(1)
+  })
+})

@@ -111,8 +111,27 @@ export interface FindingsQuery {
   limit?: number
 }
 
+/**
+ * The class whose findings name a third-party CONTRACT rather than an asset.
+ *
+ * These are withheld from every public surface and returned only through the paid/MCP call, which
+ * is the decision taken when the integrator audit was built: the wall states a COUNT and a DOLLAR
+ * FIGURE, and a name costs $0.25. The reason is not squeamishness — it is that a NOT_AWARE verdict
+ * establishes the absence of a call, not the presence of a mistake, and a contract that merely
+ * custodies a token should not be findable by name on a public page over a risk it may not carry.
+ */
+const NAMED_INTEGRATOR_CLASS = 'INTEGRATOR_NOT_MULTIPLIER_AWARE'
+
+/** Strip named-integrator findings. Applied wherever a payload can reach the public. */
+export function withoutNamedIntegrators<T extends { defectClass: string }>(findings: T[]): T[] {
+  return findings.filter((f) => f.defectClass !== NAMED_INTEGRATOR_CLASS)
+}
+
 export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
-  let out = snap.findings
+  // Public by default. A caller that explicitly filters for the class gets an empty list and the
+  // note below, rather than silently receiving names it did not pay for.
+  const publiclyNamed = q.defectClass === NAMED_INTEGRATOR_CLASS
+  let out = withoutNamedIntegrators(snap.findings)
   if (q.symbol) {
     // EXACT ticker, not a prefix. `subject` is formatted "SYM (0x…)" or "SYM feed (0x…)", and
     // startsWith meant a caller asking about NVDA was handed findings for NVDAX — someone else's
@@ -159,6 +178,19 @@ export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
     cohort: snap.cohort,
     count: out.length,
     findings: out,
+    /**
+     * Named integrator findings exist but are not served here. The aggregate is public; the name
+     * is the paid assay_check_contract call.
+     */
+    namedIntegratorsWithheld: snap.findings.length - withoutNamedIntegrators(snap.findings).length,
+    ...(publiclyNamed
+      ? {
+          note:
+            'INTEGRATOR_NOT_MULTIPLIER_AWARE findings name a third-party contract and are not ' +
+            'returned on this endpoint. Use assay_check_contract(address) for a named audit with ' +
+            'its bytecode evidence.',
+        }
+      : {}),
   }
 }
 

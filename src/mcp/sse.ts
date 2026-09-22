@@ -1,7 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
 import { buildServer } from './server.js'
-import { loadSnapshot } from '../lib/surface.js'
+import { loadSnapshot, withoutNamedIntegrators } from '../lib/surface.js'
 import {
   RateLimiter,
   clientIp,
@@ -213,7 +213,10 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       return
     }
     const snap = loadSnapshot()
-    const body = JSON.stringify(snap)
+    // PUBLIC FEED. Named integrator findings are stripped here too, not only from the MCP tool:
+    // this endpoint is what the wall renders, so leaving them in would publish by the back door
+    // exactly the names the wall is designed not to show.
+    const body = JSON.stringify({ ...snap, findings: withoutNamedIntegrators(snap.findings) })
     res.writeHead(200, {
       'content-type': 'application/json',
       'content-length': Buffer.byteLength(body),

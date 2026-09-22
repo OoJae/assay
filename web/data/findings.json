@@ -1,6 +1,6 @@
 {
-  "blockNumber": "69217928",
-  "observedAt": "2026-09-22T00:12:26.000Z",
+  "blockNumber": "69605769",
+  "observedAt": "2026-09-22T11:06:19.000Z",
   "marketClosed": false,
   "cohort": {
     "size": 35,
@@ -10,7 +10,7 @@
     "quorum": true,
     "clockHint": false,
     "marketClosed": false,
-    "blockNumber": "69217928"
+    "blockNumber": "69605769"
   },
   "chainNotes": [
     {
@@ -23,7 +23,7 @@
         "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
         "https://docs.chain.link/data-feeds/l2-sequencer-feeds"
       ],
-      "observedAt": "2026-09-22T00:12:26.000Z"
+      "observedAt": "2026-09-22T11:06:19.000Z"
     },
     {
       "id": "rh-chain-assets-without-price-feed",
@@ -35,7 +35,7 @@
         "https://docs.robinhood.com/chain/oracles-and-price-feeds/",
         "https://api.robinhood.com/rhj/assets"
       ],
-      "observedAt": "2026-09-22T00:12:26.000Z"
+      "observedAt": "2026-09-22T11:06:19.000Z"
     }
   ],
   "assetsScanned": 195,
@@ -61,9 +61,9 @@
           "contract": "0xd95B44124e475743a7589e68F3D74008A5536D44",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4cb186403c235",
-          "blockNumber": "69218010",
+          "blockNumber": "69605853",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd95B44124e475743a7589e68F3D74008A5536D44",
-          "observedAt": "2026-09-22T00:12:34.000Z"
+          "observedAt": "2026-09-22T11:06:27.000Z"
         },
         {
           "claim": "totalSupply() == 302643028120000000000",
@@ -71,20 +71,20 @@
           "contract": "0xd95B44124e475743a7589e68F3D74008A5536D44",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000106804069a8927f000",
-          "blockNumber": "69218010",
+          "blockNumber": "69605853",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd95B44124e475743a7589e68F3D74008A5536D44",
-          "observedAt": "2026-09-22T00:12:34.000Z"
+          "observedAt": "2026-09-22T11:06:27.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:12:34.000Z",
+      "detectedAt": "2026-09-22T11:06:27.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:12:39.608Z"
+        "verifiedAt": "2026-09-22T11:06:31.879Z"
       }
     },
     {
@@ -107,9 +107,9 @@
           "contract": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0f0a4f90ff185",
-          "blockNumber": "69218495",
+          "blockNumber": "69606303",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
-          "observedAt": "2026-09-22T00:13:23.000Z"
+          "observedAt": "2026-09-22T11:07:12.000Z"
         },
         {
           "claim": "totalSupply() == 647745952970000000000",
@@ -117,20 +117,20 @@
           "contract": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000231d47e85231bb6400",
-          "blockNumber": "69218495",
+          "blockNumber": "69606303",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
-          "observedAt": "2026-09-22T00:13:23.000Z"
+          "observedAt": "2026-09-22T11:07:12.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:13:23.000Z",
+      "detectedAt": "2026-09-22T11:07:12.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:13:30.245Z"
+        "verifiedAt": "2026-09-22T11:07:19.533Z"
       }
     },
     {
@@ -153,9 +153,9 @@
           "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000003782dace9d900000",
-          "blockNumber": "69218790",
+          "blockNumber": "69606564",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "observedAt": "2026-09-22T00:13:53.000Z"
+          "observedAt": "2026-09-22T11:07:39.000Z"
         },
         {
           "claim": "totalSupply() == 19506750000000000000",
@@ -163,20 +163,20 @@
           "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000010eb5e5c61859e000",
-          "blockNumber": "69218790",
+          "blockNumber": "69606564",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "observedAt": "2026-09-22T00:13:53.000Z"
+          "observedAt": "2026-09-22T11:07:39.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:13:53.000Z",
+      "detectedAt": "2026-09-22T11:07:39.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:13:58.599Z"
+        "verifiedAt": "2026-09-22T11:07:48.071Z"
       }
     },
     {
@@ -190,7 +190,7 @@
       "impact": {
         "basisPoints": 12.57,
         "percent": 0.1256,
-        "note": "totalSupply raw 570.8574 tokens vs 571.5752 share-equivalents (delta 0.7178). Presenting the raw balance as a share count understates by 0.1256%; equivalently the true count is 1.0013x the raw."
+        "note": "totalSupply raw 573.8936 tokens vs 574.6152 share-equivalents (delta 0.7216). Presenting the raw balance as a share count understates by 0.1256%; equivalently the true count is 1.0013x the raw."
       },
       "evidence": [
         {
@@ -199,30 +199,30 @@
           "contract": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de52e39f7a00bf4",
-          "blockNumber": "69218840",
+          "blockNumber": "69606648",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
-          "observedAt": "2026-09-22T00:13:58.000Z"
+          "observedAt": "2026-09-22T11:07:47.000Z"
         },
         {
-          "claim": "totalSupply() == 570857480240000000000",
+          "claim": "totalSupply() == 573893662800000000000",
           "chainId": 4663,
           "contract": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000001ef23d2dbee7c5e000",
-          "blockNumber": "69218840",
+          "rawReturn": "0x00000000000000000000000000000000000000000000001f1c5fddb299cf2000",
+          "blockNumber": "69606648",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
-          "observedAt": "2026-09-22T00:13:58.000Z"
+          "observedAt": "2026-09-22T11:07:47.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:13:58.000Z",
+      "detectedAt": "2026-09-22T11:07:47.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:14:04.043Z"
+        "verifiedAt": "2026-09-22T11:07:52.242Z"
       }
     },
     {
@@ -236,7 +236,7 @@
       "impact": {
         "basisPoints": 17.18,
         "percent": 0.1715,
-        "note": "totalSupply raw 27305.1689 tokens vs 27352.0789 share-equivalents (delta 46.9100). Presenting the raw balance as a share count understates by 0.1715%; equivalently the true count is 1.0017x the raw."
+        "note": "totalSupply raw 26976.4780 tokens vs 27022.8233 share-equivalents (delta 46.3453). Presenting the raw balance as a share count understates by 0.1715%; equivalently the true count is 1.0017x the raw."
       },
       "evidence": [
         {
@@ -245,30 +245,30 @@
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69218896",
+          "blockNumber": "69606648",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-22T00:14:03.000Z"
+          "observedAt": "2026-09-22T11:07:47.000Z"
         },
         {
-          "claim": "totalSupply() == 27305168940420000000000",
+          "claim": "totalSupply() == 26976478018540000000000",
           "chainId": 4663,
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000005c837573253a3522800",
-          "blockNumber": "69218896",
+          "rawReturn": "0x0000000000000000000000000000000000000000000005b665d6765b22403800",
+          "blockNumber": "69606648",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-22T00:14:03.000Z"
+          "observedAt": "2026-09-22T11:07:47.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:14:03.000Z",
+      "detectedAt": "2026-09-22T11:07:47.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:14:11.320Z"
+        "verifiedAt": "2026-09-22T11:07:56.855Z"
       }
     },
     {
@@ -278,11 +278,11 @@
       "subject": "SPY (0x117cc2133c37B721F49dE2A7a74833232B3B4C0C)",
       "affectedParty": "Any caller that values SPY with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "SPY: off-chain share price and on-chain token price differ by 0.172%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (773.0897), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 774.1200). These are different quantities related by uiMultiplier(): underlying x 1.001717991 = 775.4499, leaving a residual of -0.304% against the observed feed price. That residual is NOT small relative to the 0.172% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.172%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (773.0897), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 774.1350). These are different quantities related by uiMultiplier(): underlying x 1.001717991 = 775.4650, leaving a residual of -0.306% against the observed feed price. That residual is NOT small relative to the 0.172% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.172%.",
       "impact": {
         "basisPoints": 17.18,
         "percent": 0.1718,
-        "note": "feed 773.0897 vs underlying-mid 774.1200 x multiplier 1.001717991 = 775.4499"
+        "note": "feed 773.0897 vs underlying-mid 774.1350 x multiplier 1.001717991 = 775.4650"
       },
       "evidence": [
         {
@@ -291,9 +291,9 @@
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69218896",
+          "blockNumber": "69606648",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-22T00:14:03.000Z"
+          "observedAt": "2026-09-22T11:07:47.000Z"
         },
         {
           "claim": "latestRoundData().answer == 77308968340",
@@ -301,27 +301,27 @@
           "contract": "0x319724394D3A0e3669269846abE664Cd621f9f6A",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000008d00000000000000000000000000000000000000000000000000000011fff93d94000000000000000000000000000000000000000000000000000000006ab1570d000000000000000000000000000000000000000000000000000000006ab15719000000000000000000000000000000000000000000000001000000000000008d",
-          "blockNumber": "69218896",
+          "blockNumber": "69606648",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x319724394D3A0e3669269846abE664Cd621f9f6A",
-          "observedAt": "2026-09-22T00:14:03.000Z"
+          "observedAt": "2026-09-22T11:07:47.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/SPY",
-          "describes": "underlying share bid/ask used for the mid 774.1200 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:14:01.006153888Z"
+          "describes": "underlying share bid/ask used for the mid 774.1350 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:07:54.926738032Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:14:03.000Z",
+      "detectedAt": "2026-09-22T11:07:47.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:14:11.831Z"
+        "verifiedAt": "2026-09-22T11:07:57.347Z"
       }
     },
     {
@@ -344,9 +344,9 @@
           "contract": "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000e2d0c827078a208",
-          "blockNumber": "69218959",
+          "blockNumber": "69606739",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9651342CeA770aE9a2969Ba2A52611523146aef9",
-          "observedAt": "2026-09-22T00:14:11.000Z"
+          "observedAt": "2026-09-22T11:07:56.000Z"
         },
         {
           "claim": "totalSupply() == 2117547414450000000000",
@@ -354,20 +354,20 @@
           "contract": "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000072cadfaa31fb1e7400",
-          "blockNumber": "69218959",
+          "blockNumber": "69606739",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9651342CeA770aE9a2969Ba2A52611523146aef9",
-          "observedAt": "2026-09-22T00:14:11.000Z"
+          "observedAt": "2026-09-22T11:07:56.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:14:11.000Z",
+      "detectedAt": "2026-09-22T11:07:56.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:14:16.744Z"
+        "verifiedAt": "2026-09-22T11:08:05.463Z"
       }
     },
     {
@@ -390,9 +390,9 @@
           "contract": "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df09f5dd70b2d96",
-          "blockNumber": "69219130",
+          "blockNumber": "69606998",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
-          "observedAt": "2026-09-22T00:14:28.000Z"
+          "observedAt": "2026-09-22T11:08:23.000Z"
         },
         {
           "claim": "totalSupply() == 573337000000000000000",
@@ -400,20 +400,20 @@
           "contract": "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000001f14a633d494228000",
-          "blockNumber": "69219130",
+          "blockNumber": "69606998",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
-          "observedAt": "2026-09-22T00:14:28.000Z"
+          "observedAt": "2026-09-22T11:08:23.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:14:28.000Z",
+      "detectedAt": "2026-09-22T11:08:23.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:14:34.008Z"
+        "verifiedAt": "2026-09-22T11:08:27.570Z"
       }
     },
     {
@@ -427,7 +427,7 @@
       "impact": {
         "basisPoints": 7.01,
         "percent": 0.07,
-        "note": "totalSupply raw 6771.1320 tokens vs 6775.8771 share-equivalents (delta 4.7451). Presenting the raw balance as a share count understates by 0.0700%; equivalently the true count is 1.0007x the raw."
+        "note": "totalSupply raw 6518.4758 tokens vs 6523.0439 share-equivalents (delta 4.5681). Presenting the raw balance as a share count understates by 0.0700%; equivalently the true count is 1.0007x the raw."
       },
       "evidence": [
         {
@@ -436,30 +436,30 @@
           "contract": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de33411546573f1",
-          "blockNumber": "69219180",
+          "blockNumber": "69606998",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
-          "observedAt": "2026-09-22T00:14:33.000Z"
+          "observedAt": "2026-09-22T11:08:23.000Z"
         },
         {
-          "claim": "totalSupply() == 6771132000000000000000",
+          "claim": "totalSupply() == 6518475889200000000000",
           "chainId": 4663,
           "contract": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000016f1055470150460000",
-          "blockNumber": "69219180",
+          "rawReturn": "0x0000000000000000000000000000000000000000000001615e0674dcaa89e000",
+          "blockNumber": "69606998",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
-          "observedAt": "2026-09-22T00:14:33.000Z"
+          "observedAt": "2026-09-22T11:08:23.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:14:33.000Z",
+      "detectedAt": "2026-09-22T11:08:23.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:14:40.712Z"
+        "verifiedAt": "2026-09-22T11:08:35.404Z"
       }
     },
     {
@@ -469,11 +469,11 @@
       "subject": "QQQ (0xD5f3879160bc7c32ebb4dC785F8a4F505888de68)",
       "affectedParty": "Any caller that values QQQ with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "QQQ: off-chain share price and on-chain token price differ by 0.070%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (741.8701), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 743.7100). These are different quantities related by uiMultiplier(): underlying x 1.000700791 = 744.2312, leaving a residual of -0.317% against the observed feed price. That residual is NOT small relative to the 0.070% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.070%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (741.8701), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 741.9750). These are different quantities related by uiMultiplier(): underlying x 1.000700791 = 742.4950, leaving a residual of -0.084% against the observed feed price. That residual is NOT small relative to the 0.070% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.070%.",
       "impact": {
         "basisPoints": 7.01,
         "percent": 0.0701,
-        "note": "feed 741.8701 vs underlying-mid 743.7100 x multiplier 1.000700791 = 744.2312"
+        "note": "feed 741.8701 vs underlying-mid 741.9750 x multiplier 1.000700791 = 742.4950"
       },
       "evidence": [
         {
@@ -482,9 +482,9 @@
           "contract": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de33411546573f1",
-          "blockNumber": "69219180",
+          "blockNumber": "69606998",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
-          "observedAt": "2026-09-22T00:14:33.000Z"
+          "observedAt": "2026-09-22T11:08:23.000Z"
         },
         {
           "claim": "latestRoundData().answer == 74187010000",
@@ -492,27 +492,27 @@
           "contract": "0x80901d846d5D7B030F26B480776EE3b29374C2ae",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000016d0000000000000000000000000000000000000000000000000000001145e3efd0000000000000000000000000000000000000000000000000000000006ab18412000000000000000000000000000000000000000000000000000000006ab1841f000000000000000000000000000000000000000000000001000000000000016d",
-          "blockNumber": "69219180",
+          "blockNumber": "69606998",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x80901d846d5D7B030F26B480776EE3b29374C2ae",
-          "observedAt": "2026-09-22T00:14:33.000Z"
+          "observedAt": "2026-09-22T11:08:23.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/QQQ",
-          "describes": "underlying share bid/ask used for the mid 743.7100 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:14:34.073354354Z"
+          "describes": "underlying share bid/ask used for the mid 741.9750 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:08:23.367557776Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:14:33.000Z",
+      "detectedAt": "2026-09-22T11:08:23.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:14:41.243Z"
+        "verifiedAt": "2026-09-22T11:08:35.969Z"
       }
     },
     {
@@ -526,7 +526,7 @@
       "impact": {
         "basisPoints": 14.63,
         "percent": 0.1461,
-        "note": "totalSupply raw 3407.8944 tokens vs 3412.8802 share-equivalents (delta 4.9858). Presenting the raw balance as a share count understates by 0.1461%; equivalently the true count is 1.0015x the raw."
+        "note": "totalSupply raw 3318.6300 tokens vs 3323.4852 share-equivalents (delta 4.8552). Presenting the raw balance as a share count understates by 0.1461%; equivalently the true count is 1.0015x the raw."
       },
       "evidence": [
         {
@@ -535,30 +535,30 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de5e95082ba0f3a",
-          "blockNumber": "69219506",
+          "blockNumber": "69607424",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-22T00:15:06.000Z"
+          "observedAt": "2026-09-22T11:09:06.000Z"
         },
         {
-          "claim": "totalSupply() == 3407894428120000000000",
+          "claim": "totalSupply() == 3318630024100000000000",
           "chainId": 4663,
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000b8be0926939d947000",
-          "blockNumber": "69219506",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000b3e73e481042876800",
+          "blockNumber": "69607424",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-22T00:15:06.000Z"
+          "observedAt": "2026-09-22T11:09:06.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:15:06.000Z",
+      "detectedAt": "2026-09-22T11:09:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:15:17.209Z"
+        "verifiedAt": "2026-09-22T11:09:12.706Z"
       }
     },
     {
@@ -568,11 +568,11 @@
       "subject": "TSM (0x58FfE4a942d3885bAa22D7520691F611EF09e7AA)",
       "affectedParty": "Any caller that values TSM with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "TSM: off-chain share price and on-chain token price differ by 0.146%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (445.8463), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 447.1100). These are different quantities related by uiMultiplier(): underlying x 1.001463024 = 447.7641, leaving a residual of -0.428% against the observed feed price. That residual is NOT small relative to the 0.146% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.146%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (442.7164), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 441.6400). These are different quantities related by uiMultiplier(): underlying x 1.001463024 = 442.2861, leaving a residual of 0.097% against the observed feed price. That residual is NOT small relative to the 0.146% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.146%.",
       "impact": {
         "basisPoints": 14.63,
         "percent": 0.1463,
-        "note": "feed 445.8463 vs underlying-mid 447.1100 x multiplier 1.001463024 = 447.7641"
+        "note": "feed 442.7164 vs underlying-mid 441.6400 x multiplier 1.001463024 = 442.2861"
       },
       "evidence": [
         {
@@ -581,37 +581,37 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de5e95082ba0f3a",
-          "blockNumber": "69219506",
+          "blockNumber": "69607424",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-22T00:15:06.000Z"
+          "observedAt": "2026-09-22T11:09:06.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 44584633104",
+          "claim": "latestRoundData().answer == 44271635850",
           "chainId": 4663,
           "contract": "0x874cF94aa8eC88Fd9560094dD065f2fB3E41Fc2F",
           "call": "latestRoundData()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000005830000000000000000000000000000000000000000000000000000000a61738310000000000000000000000000000000000000000000000000000000006ab182f7000000000000000000000000000000000000000000000000000000006ab183040000000000000000000000000000000000000000000000010000000000000583",
-          "blockNumber": "69219506",
+          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000058a0000000000000000000000000000000000000000000000000000000a4ecb8d8a000000000000000000000000000000000000000000000000000000006ab251bf000000000000000000000000000000000000000000000000000000006ab251cc000000000000000000000000000000000000000000000001000000000000058a",
+          "blockNumber": "69607424",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x874cF94aa8eC88Fd9560094dD065f2fB3E41Fc2F",
-          "observedAt": "2026-09-22T00:15:06.000Z"
+          "observedAt": "2026-09-22T11:09:06.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/TSM",
-          "describes": "underlying share bid/ask used for the mid 447.1100 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:15:13.941997578Z"
+          "describes": "underlying share bid/ask used for the mid 441.6400 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:09:00.663732817Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:15:06.000Z",
+      "detectedAt": "2026-09-22T11:09:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:15:17.790Z"
+        "verifiedAt": "2026-09-22T11:09:13.056Z"
       }
     },
     {
@@ -625,7 +625,7 @@
       "impact": {
         "basisPoints": 4.13,
         "percent": 0.0413,
-        "note": "totalSupply raw 5843.4567 tokens vs 5845.8698 share-equivalents (delta 2.4131). Presenting the raw balance as a share count understates by 0.0413%; equivalently the true count is 1.0004x the raw."
+        "note": "totalSupply raw 5684.7572 tokens vs 5687.1048 share-equivalents (delta 2.3476). Presenting the raw balance as a share count understates by 0.0413%; equivalently the true count is 1.0004x the raw."
       },
       "evidence": [
         {
@@ -634,30 +634,30 @@
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de22e47ab01248c",
-          "blockNumber": "69219702",
+          "blockNumber": "69607564",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-22T00:15:25.000Z"
+          "observedAt": "2026-09-22T11:09:20.000Z"
         },
         {
-          "claim": "totalSupply() == 5843456729490000000000",
+          "claim": "totalSupply() == 5684757264850000000000",
           "chainId": 4663,
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000013cc640a782b1513400",
-          "blockNumber": "69219702",
+          "rawReturn": "0x0000000000000000000000000000000000000000000001342bdae53f0973b400",
+          "blockNumber": "69607564",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-22T00:15:25.000Z"
+          "observedAt": "2026-09-22T11:09:20.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:15:25.000Z",
+      "detectedAt": "2026-09-22T11:09:20.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:15:32.806Z"
+        "verifiedAt": "2026-09-22T11:09:25.955Z"
       }
     },
     {
@@ -667,11 +667,11 @@
       "subject": "MSFT (0xe93237C50D904957Cf27E7B1133b510C669c2e74)",
       "affectedParty": "Any caller that values MSFT with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "MSFT: off-chain share price and on-chain token price differ by 0.041%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (499.9864), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 501.5950). These are different quantities related by uiMultiplier(): underlying x 1.000412953 = 501.8021, leaving a residual of -0.362% against the observed feed price. That residual is NOT small relative to the 0.041% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.041%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (505.2774), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 506.1500). These are different quantities related by uiMultiplier(): underlying x 1.000412953 = 506.3590, leaving a residual of -0.214% against the observed feed price. That residual is NOT small relative to the 0.041% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.041%.",
       "impact": {
         "basisPoints": 4.13,
         "percent": 0.0413,
-        "note": "feed 499.9864 vs underlying-mid 501.5950 x multiplier 1.000412953 = 501.8021"
+        "note": "feed 505.2774 vs underlying-mid 506.1500 x multiplier 1.000412953 = 506.3590"
       },
       "evidence": [
         {
@@ -680,37 +680,37 @@
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de22e47ab01248c",
-          "blockNumber": "69219702",
+          "blockNumber": "69607564",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-22T00:15:25.000Z"
+          "observedAt": "2026-09-22T11:09:20.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 49998638543",
+          "claim": "latestRoundData().answer == 50527741948",
           "chainId": 4663,
           "contract": "0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
           "call": "latestRoundData()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000003030000000000000000000000000000000000000000000000000000000ba426adcf000000000000000000000000000000000000000000000000000000006ab183f0000000000000000000000000000000000000000000000000000000006ab183fd0000000000000000000000000000000000000000000000010000000000000303",
-          "blockNumber": "69219702",
+          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000003050000000000000000000000000000000000000000000000000000000bc3b027fc000000000000000000000000000000000000000000000000000000006ab26078000000000000000000000000000000000000000000000000000000006ab260840000000000000000000000000000000000000000000000010000000000000305",
+          "blockNumber": "69607564",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
-          "observedAt": "2026-09-22T00:15:25.000Z"
+          "observedAt": "2026-09-22T11:09:20.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/MSFT",
-          "describes": "underlying share bid/ask used for the mid 501.5950 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:15:18.819521525Z"
+          "describes": "underlying share bid/ask used for the mid 506.1500 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:09:11.654694027Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:15:25.000Z",
+      "detectedAt": "2026-09-22T11:09:20.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:15:33.400Z"
+        "verifiedAt": "2026-09-22T11:09:26.356Z"
       }
     },
     {
@@ -724,7 +724,7 @@
       "impact": {
         "basisPoints": 5.41,
         "percent": 0.0541,
-        "note": "totalSupply raw 7198.3143 tokens vs 7202.2119 share-equivalents (delta 3.8976). Presenting the raw balance as a share count understates by 0.0541%; equivalently the true count is 1.0005x the raw."
+        "note": "totalSupply raw 7354.0204 tokens vs 7358.0023 share-equivalents (delta 3.9819). Presenting the raw balance as a share count understates by 0.0541%; equivalently the true count is 1.0005x the raw."
       },
       "evidence": [
         {
@@ -733,30 +733,30 @@
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2a3281b2a5bf3",
-          "blockNumber": "69219928",
+          "blockNumber": "69607760",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-22T00:15:48.000Z"
+          "observedAt": "2026-09-22T11:09:39.000Z"
         },
         {
-          "claim": "totalSupply() == 7198314311610000000000",
+          "claim": "totalSupply() == 7354020413010000000000",
           "chainId": 4663,
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000018638adb81b048cc400",
-          "blockNumber": "69219928",
+          "rawReturn": "0x00000000000000000000000000000000000000000000018ea988ea5cd080b400",
+          "blockNumber": "69607760",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-22T00:15:48.000Z"
+          "observedAt": "2026-09-22T11:09:39.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:15:48.000Z",
+      "detectedAt": "2026-09-22T11:09:39.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:15:55.526Z"
+        "verifiedAt": "2026-09-22T11:09:51.301Z"
       }
     },
     {
@@ -766,11 +766,11 @@
       "subject": "META (0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35)",
       "affectedParty": "Any caller that values META with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "META: off-chain share price and on-chain token price differ by 0.054%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (739.5802), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 739.0250). These are different quantities related by uiMultiplier(): underlying x 1.000541460 = 739.4252, leaving a residual of 0.021% against the observed feed price. That residual is small relative to the 0.054% multiplier effect, consistent with bid/ask spread and the timing gap between the REST quote and the feed's updatedAt. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.054%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (738.7832), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 738.0000). These are different quantities related by uiMultiplier(): underlying x 1.000541460 = 738.3996, leaving a residual of 0.052% against the observed feed price. That residual is NOT small relative to the 0.054% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.054%.",
       "impact": {
         "basisPoints": 5.41,
         "percent": 0.0541,
-        "note": "feed 739.5802 vs underlying-mid 739.0250 x multiplier 1.000541460 = 739.4252"
+        "note": "feed 738.7832 vs underlying-mid 738.0000 x multiplier 1.000541460 = 738.3996"
       },
       "evidence": [
         {
@@ -779,37 +779,37 @@
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2a3281b2a5bf3",
-          "blockNumber": "69219928",
+          "blockNumber": "69607760",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-22T00:15:48.000Z"
+          "observedAt": "2026-09-22T11:09:39.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 73958023631",
+          "claim": "latestRoundData().answer == 73878315495",
           "chainId": 4663,
           "contract": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
           "call": "latestRoundData()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000004e600000000000000000000000000000000000000000000000000000011383de1cf000000000000000000000000000000000000000000000000000000006ab1c637000000000000000000000000000000000000000000000000000000006ab1c64300000000000000000000000000000000000000000000000100000000000004e6",
-          "blockNumber": "69219928",
+          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000004f000000000000000000000000000000000000000000000000000000011337da1e7000000000000000000000000000000000000000000000000000000006ab260c7000000000000000000000000000000000000000000000000000000006ab260d400000000000000000000000000000000000000000000000100000000000004f0",
+          "blockNumber": "69607760",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
-          "observedAt": "2026-09-22T00:15:48.000Z"
+          "observedAt": "2026-09-22T11:09:39.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/META",
-          "describes": "underlying share bid/ask used for the mid 739.0250 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:15:46.641598821Z"
+          "describes": "underlying share bid/ask used for the mid 738.0000 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:09:47.837579552Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:15:48.000Z",
+      "detectedAt": "2026-09-22T11:09:39.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:15:56.085Z"
+        "verifiedAt": "2026-09-22T11:09:51.878Z"
       }
     },
     {
@@ -832,9 +832,9 @@
           "contract": "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de88f8682962fed",
-          "blockNumber": "69220155",
+          "blockNumber": "69608095",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
-          "observedAt": "2026-09-22T00:16:11.000Z"
+          "observedAt": "2026-09-22T11:10:12.000Z"
         },
         {
           "claim": "totalSupply() == 2964740892740000000000",
@@ -842,20 +842,20 @@
           "contract": "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000a0b80b86139a2da800",
-          "blockNumber": "69220155",
+          "blockNumber": "69608095",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
-          "observedAt": "2026-09-22T00:16:11.000Z"
+          "observedAt": "2026-09-22T11:10:12.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:16:11.000Z",
+      "detectedAt": "2026-09-22T11:10:12.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:16:17.192Z"
+        "verifiedAt": "2026-09-22T11:10:22.465Z"
       }
     },
     {
@@ -878,9 +878,9 @@
           "contract": "0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df233adc753d85a",
-          "blockNumber": "69220205",
+          "blockNumber": "69608254",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
-          "observedAt": "2026-09-22T00:16:16.000Z"
+          "observedAt": "2026-09-22T11:10:28.000Z"
         },
         {
           "claim": "totalSupply() == 60378000000000000000",
@@ -888,20 +888,20 @@
           "contract": "0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000345e9bf1a88890000",
-          "blockNumber": "69220205",
+          "blockNumber": "69608254",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
-          "observedAt": "2026-09-22T00:16:16.000Z"
+          "observedAt": "2026-09-22T11:10:28.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:16:16.000Z",
+      "detectedAt": "2026-09-22T11:10:28.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:16:25.881Z"
+        "verifiedAt": "2026-09-22T11:10:35.170Z"
       }
     },
     {
@@ -924,9 +924,9 @@
           "contract": "0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4ac8cfc43d881",
-          "blockNumber": "69220744",
+          "blockNumber": "69608624",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
-          "observedAt": "2026-09-22T00:17:09.000Z"
+          "observedAt": "2026-09-22T11:11:06.000Z"
         },
         {
           "claim": "totalSupply() == 105295513020000000000",
@@ -934,20 +934,20 @@
           "contract": "0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000005b544cf364f9e5800",
-          "blockNumber": "69220744",
+          "blockNumber": "69608624",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
-          "observedAt": "2026-09-22T00:17:09.000Z"
+          "observedAt": "2026-09-22T11:11:06.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:17:09.000Z",
+      "detectedAt": "2026-09-22T11:11:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:17:14.391Z"
+        "verifiedAt": "2026-09-22T11:11:11.668Z"
       }
     },
     {
@@ -961,7 +961,7 @@
       "impact": {
         "basisPoints": 1.94,
         "percent": 0.0194,
-        "note": "totalSupply raw 15142.8730 tokens vs 15145.8095 share-equivalents (delta 2.9365). Presenting the raw balance as a share count understates by 0.0194%; equivalently the true count is 1.0002x the raw."
+        "note": "totalSupply raw 14919.6532 tokens vs 14922.5465 share-equivalents (delta 2.8933). Presenting the raw balance as a share count understates by 0.0194%; equivalently the true count is 1.0002x the raw."
       },
       "evidence": [
         {
@@ -970,30 +970,30 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de167133335034b",
-          "blockNumber": "69220868",
+          "blockNumber": "69608729",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-22T00:17:21.000Z"
+          "observedAt": "2026-09-22T11:11:16.000Z"
         },
         {
-          "claim": "totalSupply() == 15142873007160000000000",
+          "claim": "totalSupply() == 14919653294910000000000",
           "chainId": 4663,
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "totalSupply()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000334e59411a1df043000",
-          "blockNumber": "69220868",
+          "rawReturn": "0x000000000000000000000000000000000000000000000328cbc8580278daec00",
+          "blockNumber": "69608729",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-22T00:17:21.000Z"
+          "observedAt": "2026-09-22T11:11:16.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:17:21.000Z",
+      "detectedAt": "2026-09-22T11:11:16.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:17:29.258Z"
+        "verifiedAt": "2026-09-22T11:11:22.553Z"
       }
     },
     {
@@ -1003,11 +1003,11 @@
       "subject": "GOOGL (0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3)",
       "affectedParty": "Any caller that values GOOGL with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "GOOGL: off-chain share price and on-chain token price differ by 0.019%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (354.9037), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 355.9050). These are different quantities related by uiMultiplier(): underlying x 1.000193924 = 355.9740, leaving a residual of -0.301% against the observed feed price. That residual is NOT small relative to the 0.019% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.019%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (358.4975), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 356.8950). These are different quantities related by uiMultiplier(): underlying x 1.000193924 = 356.9642, leaving a residual of 0.430% against the observed feed price. That residual is NOT small relative to the 0.019% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.019%.",
       "impact": {
         "basisPoints": 1.94,
         "percent": 0.0194,
-        "note": "feed 354.9037 vs underlying-mid 355.9050 x multiplier 1.000193924 = 355.9740"
+        "note": "feed 358.4975 vs underlying-mid 356.8950 x multiplier 1.000193924 = 356.9642"
       },
       "evidence": [
         {
@@ -1016,37 +1016,37 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de167133335034b",
-          "blockNumber": "69220868",
+          "blockNumber": "69608729",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-22T00:17:21.000Z"
+          "observedAt": "2026-09-22T11:11:16.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 35490365690",
+          "claim": "latestRoundData().answer == 35849750793",
           "chainId": 4663,
           "contract": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
           "call": "latestRoundData()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000032b00000000000000000000000000000000000000000000000000000008436400fa000000000000000000000000000000000000000000000000000000006ab18cea000000000000000000000000000000000000000000000000000000006ab18cf6000000000000000000000000000000000000000000000001000000000000032b",
-          "blockNumber": "69220868",
+          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000032d0000000000000000000000000000000000000000000000000000000858cfc909000000000000000000000000000000000000000000000000000000006ab24260000000000000000000000000000000000000000000000000000000006ab2426c000000000000000000000000000000000000000000000001000000000000032d",
+          "blockNumber": "69608729",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF6f373a037c30F0e5010d854385cA89185AE638b",
-          "observedAt": "2026-09-22T00:17:21.000Z"
+          "observedAt": "2026-09-22T11:11:16.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/GOOGL",
-          "describes": "underlying share bid/ask used for the mid 355.9050 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:17:23.286892454Z"
+          "describes": "underlying share bid/ask used for the mid 356.8950 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:11:17.844409932Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:17:21.000Z",
+      "detectedAt": "2026-09-22T11:11:16.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:17:29.818Z"
+        "verifiedAt": "2026-09-22T11:11:23.199Z"
       }
     },
     {
@@ -1060,7 +1060,7 @@
       "impact": {
         "basisPoints": 51.02,
         "percent": 0.5076,
-        "note": "totalSupply raw 36836.3122 tokens vs 37024.2426 share-equivalents (delta 187.9304). Presenting the raw balance as a share count understates by 0.5076%; equivalently the true count is 1.0051x the raw."
+        "note": "totalSupply raw 34599.2403 tokens vs 34775.7576 share-equivalents (delta 176.5173). Presenting the raw balance as a share count understates by 0.5076%; equivalently the true count is 1.0051x the raw."
       },
       "evidence": [
         {
@@ -1069,30 +1069,30 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df2d6bc0c287246",
-          "blockNumber": "69221247",
+          "blockNumber": "69609144",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-22T00:17:59.000Z"
+          "observedAt": "2026-09-22T11:11:58.000Z"
         },
         {
-          "claim": "totalSupply() == 36836312296960000000000",
+          "claim": "totalSupply() == 34599240323660000000000",
           "chainId": 4663,
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000007cce68692f0264c0000",
-          "blockNumber": "69221247",
+          "rawReturn": "0x000000000000000000000000000000000000000000000753a0ea5fbcada7f800",
+          "blockNumber": "69609144",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-22T00:17:59.000Z"
+          "observedAt": "2026-09-22T11:11:58.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:17:59.000Z",
+      "detectedAt": "2026-09-22T11:11:58.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:18:07.102Z"
+        "verifiedAt": "2026-09-22T11:12:09.355Z"
       }
     },
     {
@@ -1115,9 +1115,9 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df2d6bc0c287246",
-          "blockNumber": "69221247",
+          "blockNumber": "69609144",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-22T00:17:59.000Z"
+          "observedAt": "2026-09-22T11:11:58.000Z"
         },
         {
           "claim": "latestRoundData().answer == 10110821255",
@@ -1125,27 +1125,27 @@
           "contract": "0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
           "call": "latestRoundData()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000040000000000000000000000000000000000000000000000000000000025aa6e387000000000000000000000000000000000000000000000000000000006ab1c520000000000000000000000000000000000000000000000000000000006ab1c52c0000000000000000000000000000000000000000000000010000000000000040",
-          "blockNumber": "69221247",
+          "blockNumber": "69609144",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
-          "observedAt": "2026-09-22T00:17:59.000Z"
+          "observedAt": "2026-09-22T11:11:58.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/SGOV",
           "describes": "underlying share bid/ask used for the mid 100.6050 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:17:59.874731992Z"
+          "fetchedAt": "2026-09-22T11:12:05.084216681Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:17:59.000Z",
+      "detectedAt": "2026-09-22T11:11:58.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:18:07.625Z"
+        "verifiedAt": "2026-09-22T11:12:09.752Z"
       }
     },
     {
@@ -1168,9 +1168,9 @@
           "contract": "0xcF364ea52787e289De6F32077834056E3E70D6A8",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000defc853122d3061",
-          "blockNumber": "69221684",
+          "blockNumber": "69609493",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xcF364ea52787e289De6F32077834056E3E70D6A8",
-          "observedAt": "2026-09-22T00:18:43.000Z"
+          "observedAt": "2026-09-22T11:12:34.000Z"
         },
         {
           "claim": "totalSupply() == 97009504080000000000",
@@ -1178,20 +1178,20 @@
           "contract": "0xcF364ea52787e289De6F32077834056E3E70D6A8",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000054246fdfb7d352000",
-          "blockNumber": "69221684",
+          "blockNumber": "69609493",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xcF364ea52787e289De6F32077834056E3E70D6A8",
-          "observedAt": "2026-09-22T00:18:43.000Z"
+          "observedAt": "2026-09-22T11:12:34.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:18:43.000Z",
+      "detectedAt": "2026-09-22T11:12:34.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:18:49.204Z"
+        "verifiedAt": "2026-09-22T11:12:42.245Z"
       }
     },
     {
@@ -1214,9 +1214,9 @@
           "contract": "0xF52597345A8Edf418bc4071b4a35112472277D3e",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de17c9382dd1305",
-          "blockNumber": "69221831",
+          "blockNumber": "69609748",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF52597345A8Edf418bc4071b4a35112472277D3e",
-          "observedAt": "2026-09-22T00:18:58.000Z"
+          "observedAt": "2026-09-22T11:12:59.000Z"
         },
         {
           "claim": "totalSupply() == 182540415550000000000",
@@ -1224,20 +1224,20 @@
           "contract": "0xF52597345A8Edf418bc4071b4a35112472277D3e",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000009e541d4cd59f0ec00",
-          "blockNumber": "69221831",
+          "blockNumber": "69609748",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF52597345A8Edf418bc4071b4a35112472277D3e",
-          "observedAt": "2026-09-22T00:18:58.000Z"
+          "observedAt": "2026-09-22T11:12:59.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:18:58.000Z",
+      "detectedAt": "2026-09-22T11:12:59.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:19:07.587Z"
+        "verifiedAt": "2026-09-22T11:13:06.554Z"
       }
     },
     {
@@ -1251,7 +1251,7 @@
       "impact": {
         "basisPoints": 0.75,
         "percent": 0.0075,
-        "note": "totalSupply raw 4525.0482 tokens vs 4525.3868 share-equivalents (delta 0.3386). Presenting the raw balance as a share count understates by 0.0075%; equivalently the true count is 1.0001x the raw."
+        "note": "totalSupply raw 4575.8336 tokens vs 4576.1760 share-equivalents (delta 0.3424). Presenting the raw balance as a share count understates by 0.0075%; equivalently the true count is 1.0001x the raw."
       },
       "evidence": [
         {
@@ -1260,30 +1260,30 @@
           "contract": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0fac0caca4f0e",
-          "blockNumber": "69222016",
+          "blockNumber": "69609884",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
-          "observedAt": "2026-09-22T00:19:17.000Z"
+          "observedAt": "2026-09-22T11:13:13.000Z"
         },
         {
-          "claim": "totalSupply() == 4525048271370000000000",
+          "claim": "totalSupply() == 4575833691440000000000",
           "chainId": 4663,
           "contract": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
           "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000f54da8e413e83fe400",
-          "blockNumber": "69222016",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000f80e72f28f0997e000",
+          "blockNumber": "69609884",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
-          "observedAt": "2026-09-22T00:19:17.000Z"
+          "observedAt": "2026-09-22T11:13:13.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:19:17.000Z",
+      "detectedAt": "2026-09-22T11:13:13.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:19:24.086Z"
+        "verifiedAt": "2026-09-22T11:13:22.440Z"
       }
     },
     {
@@ -1297,7 +1297,7 @@
       "impact": {
         "basisPoints": 1.63,
         "percent": 0.0163,
-        "note": "totalSupply raw 55.4608 tokens vs 55.4698 share-equivalents (delta 0.0090). Presenting the raw balance as a share count understates by 0.0163%; equivalently the true count is 1.0002x the raw."
+        "note": "totalSupply raw 56.0587 tokens vs 56.0678 share-equivalents (delta 0.0091). Presenting the raw balance as a share count understates by 0.0163%; equivalently the true count is 1.0002x the raw."
       },
       "evidence": [
         {
@@ -1306,30 +1306,30 @@
           "contract": "0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de14ac1e5798a68",
-          "blockNumber": "69222667",
+          "blockNumber": "69610698",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
-          "observedAt": "2026-09-22T00:20:22.000Z"
+          "observedAt": "2026-09-22T11:14:36.000Z"
         },
         {
-          "claim": "totalSupply() == 55460841590000000000",
+          "claim": "totalSupply() == 56058744260000000000",
           "chainId": 4663,
           "contract": "0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000301ac7d94fc291c00",
-          "blockNumber": "69222667",
+          "rawReturn": "0x00000000000000000000000000000000000000000000000309f8aae47bc4a800",
+          "blockNumber": "69610698",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
-          "observedAt": "2026-09-22T00:20:22.000Z"
+          "observedAt": "2026-09-22T11:14:36.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:20:22.000Z",
+      "detectedAt": "2026-09-22T11:14:36.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:20:28.116Z"
+        "verifiedAt": "2026-09-22T11:14:40.899Z"
       }
     },
     {
@@ -1352,9 +1352,9 @@
           "contract": "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de3924dad16253d",
-          "blockNumber": "69222717",
+          "blockNumber": "69610763",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
-          "observedAt": "2026-09-22T00:20:27.000Z"
+          "observedAt": "2026-09-22T11:14:43.000Z"
         },
         {
           "claim": "totalSupply() == 86275000000000000000",
@@ -1362,20 +1362,20 @@
           "contract": "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000004ad4e5f653cd38000",
-          "blockNumber": "69222717",
+          "blockNumber": "69610763",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
-          "observedAt": "2026-09-22T00:20:27.000Z"
+          "observedAt": "2026-09-22T11:14:43.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:20:27.000Z",
+      "detectedAt": "2026-09-22T11:14:43.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:20:37.107Z"
+        "verifiedAt": "2026-09-22T11:14:47.013Z"
       }
     },
     {
@@ -1389,7 +1389,7 @@
       "impact": {
         "basisPoints": 7.75,
         "percent": 0.0775,
-        "note": "totalSupply raw 86463.1045 tokens vs 86530.1272 share-equivalents (delta 67.0227). Presenting the raw balance as a share count understates by 0.0775%; equivalently the true count is 1.0008x the raw."
+        "note": "totalSupply raw 87768.0431 tokens vs 87836.0773 share-equivalents (delta 68.0342). Presenting the raw balance as a share count understates by 0.0775%; equivalently the true count is 1.0008x the raw."
       },
       "evidence": [
         {
@@ -1398,30 +1398,30 @@
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69222803",
+          "blockNumber": "69610824",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-22T00:20:36.000Z"
+          "observedAt": "2026-09-22T11:14:49.000Z"
         },
         {
-          "claim": "totalSupply() == 86463104592020000000000",
+          "claim": "totalSupply() == 87768043166950000000000",
           "chainId": 4663,
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000124f2c9e6547de0cc800",
-          "blockNumber": "69222803",
+          "rawReturn": "0x000000000000000000000000000000000000000000001295ea47855195297c00",
+          "blockNumber": "69610824",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-22T00:20:36.000Z"
+          "observedAt": "2026-09-22T11:14:49.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:20:36.000Z",
+      "detectedAt": "2026-09-22T11:14:49.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:20:47.223Z"
+        "verifiedAt": "2026-09-22T11:14:56.287Z"
       }
     },
     {
@@ -1431,11 +1431,11 @@
       "subject": "NVDA (0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC)",
       "affectedParty": "Any caller that values NVDA with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "NVDA: off-chain share price and on-chain token price differ by 0.078%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (227.3061), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 227.4250). These are different quantities related by uiMultiplier(): underlying x 1.000775159 = 227.6013, leaving a residual of -0.130% against the observed feed price. That residual is NOT small relative to the 0.078% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.078%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (227.3031), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 227.0350). These are different quantities related by uiMultiplier(): underlying x 1.000775159 = 227.2110, leaving a residual of 0.041% against the observed feed price. That residual is NOT small relative to the 0.078% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.078%.",
       "impact": {
         "basisPoints": 7.75,
         "percent": 0.0775,
-        "note": "feed 227.3061 vs underlying-mid 227.4250 x multiplier 1.000775159 = 227.6013"
+        "note": "feed 227.3031 vs underlying-mid 227.0350 x multiplier 1.000775159 = 227.2110"
       },
       "evidence": [
         {
@@ -1444,37 +1444,37 @@
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69222803",
+          "blockNumber": "69610824",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-22T00:20:36.000Z"
+          "observedAt": "2026-09-22T11:14:49.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 22730606190",
+          "claim": "latestRoundData().answer == 22730305957",
           "chainId": 4663,
           "contract": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
           "call": "latestRoundData()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000432000000000000000000000000000000000000000000000000000000054ad9866e000000000000000000000000000000000000000000000000000000006ab18a8b000000000000000000000000000000000000000000000000000000006ab18a980000000000000000000000000000000000000000000000010000000000000432",
-          "blockNumber": "69222803",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000434000000000000000000000000000000000000000000000000000000054ad4f1a5000000000000000000000000000000000000000000000000000000006ab2514e000000000000000000000000000000000000000000000000000000006ab2515a0000000000000000000000000000000000000000000000010000000000000434",
+          "blockNumber": "69610824",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-          "observedAt": "2026-09-22T00:20:36.000Z"
+          "observedAt": "2026-09-22T11:14:49.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/NVDA",
-          "describes": "underlying share bid/ask used for the mid 227.4250 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:20:45.116792303Z"
+          "describes": "underlying share bid/ask used for the mid 227.0350 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:14:53.269818913Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:20:36.000Z",
+      "detectedAt": "2026-09-22T11:14:49.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:20:47.814Z"
+        "verifiedAt": "2026-09-22T11:14:56.607Z"
       }
     },
     {
@@ -1497,9 +1497,9 @@
           "contract": "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de13b092e0a540b",
-          "blockNumber": "69223079",
+          "blockNumber": "69610992",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
-          "observedAt": "2026-09-22T00:21:04.000Z"
+          "observedAt": "2026-09-22T11:15:06.000Z"
         },
         {
           "claim": "totalSupply() == 18822707821950000000000",
@@ -1507,20 +1507,20 @@
           "contract": "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000003fc618b8d1558516c00",
-          "blockNumber": "69223079",
+          "blockNumber": "69610992",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
-          "observedAt": "2026-09-22T00:21:04.000Z"
+          "observedAt": "2026-09-22T11:15:06.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:21:04.000Z",
+      "detectedAt": "2026-09-22T11:15:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:21:12.804Z"
+        "verifiedAt": "2026-09-22T11:15:12.242Z"
       }
     },
     {
@@ -1534,7 +1534,7 @@
       "impact": {
         "basisPoints": 10.4,
         "percent": 0.1038,
-        "note": "totalSupply raw 231.0417 tokens vs 231.2819 share-equivalents (delta 0.2402). Presenting the raw balance as a share count understates by 0.1038%; equivalently the true count is 1.0010x the raw."
+        "note": "totalSupply raw 236.1254 tokens vs 236.3709 share-equivalents (delta 0.2455). Presenting the raw balance as a share count understates by 0.1038%; equivalently the true count is 1.0010x the raw."
       },
       "evidence": [
         {
@@ -1543,30 +1543,30 @@
           "contract": "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4682df44dfe8c",
-          "blockNumber": "69223247",
+          "blockNumber": "69611100",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
-          "observedAt": "2026-09-22T00:21:20.000Z"
+          "observedAt": "2026-09-22T11:15:17.000Z"
         },
         {
-          "claim": "totalSupply() == 231041747380000000000",
+          "claim": "totalSupply() == 236125462530000000000",
           "chainId": 4663,
           "contract": "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000c86592d2166700800",
-          "blockNumber": "69223247",
+          "rawReturn": "0x00000000000000000000000000000000000000000000000ccce6291fed759400",
+          "blockNumber": "69611100",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
-          "observedAt": "2026-09-22T00:21:20.000Z"
+          "observedAt": "2026-09-22T11:15:17.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:21:20.000Z",
+      "detectedAt": "2026-09-22T11:15:17.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:21:26.153Z"
+        "verifiedAt": "2026-09-22T11:15:21.040Z"
       }
     },
     {
@@ -1589,9 +1589,9 @@
           "contract": "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0df5102723e4a",
-          "blockNumber": "69223721",
+          "blockNumber": "69611472",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
-          "observedAt": "2026-09-22T00:22:08.000Z"
+          "observedAt": "2026-09-22T11:15:55.000Z"
         },
         {
           "claim": "totalSupply() == 254273655080000000000",
@@ -1599,20 +1599,20 @@
           "contract": "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000dc8c17e187f999000",
-          "blockNumber": "69223721",
+          "blockNumber": "69611472",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
-          "observedAt": "2026-09-22T00:22:08.000Z"
+          "observedAt": "2026-09-22T11:15:55.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:22:08.000Z",
+      "detectedAt": "2026-09-22T11:15:55.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:22:14.125Z"
+        "verifiedAt": "2026-09-22T11:15:59.549Z"
       }
     },
     {
@@ -1626,7 +1626,7 @@
       "impact": {
         "basisPoints": 0.02,
         "percent": 0.0002,
-        "note": "totalSupply raw 1706.6636 tokens vs 1706.6675 share-equivalents (delta 0.0039). Presenting the raw balance as a share count understates by 0.0002%; equivalently the true count is 1.0000x the raw."
+        "note": "totalSupply raw 1674.5396 tokens vs 1674.5435 share-equivalents (delta 0.0039). Presenting the raw balance as a share count understates by 0.0002%; equivalently the true count is 1.0000x the raw."
       },
       "evidence": [
         {
@@ -1635,30 +1635,30 @@
           "contract": "0x8005d266423c7ea827372c9c864491e5786600ea",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0b8c88cf96907",
-          "blockNumber": "69223846",
+          "blockNumber": "69611591",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8005d266423c7ea827372c9c864491e5786600ea",
-          "observedAt": "2026-09-22T00:22:21.000Z"
+          "observedAt": "2026-09-22T11:16:06.000Z"
         },
         {
-          "claim": "totalSupply() == 1706663653830000000000",
+          "claim": "totalSupply() == 1674539687370000000000",
           "chainId": 4663,
           "contract": "0x8005d266423c7ea827372c9c864491e5786600ea",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000005c84b74edde7623c00",
-          "blockNumber": "69223846",
+          "rawReturn": "0x00000000000000000000000000000000000000000000005ac6e80d924e856400",
+          "blockNumber": "69611591",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8005d266423c7ea827372c9c864491e5786600ea",
-          "observedAt": "2026-09-22T00:22:21.000Z"
+          "observedAt": "2026-09-22T11:16:06.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:22:21.000Z",
+      "detectedAt": "2026-09-22T11:16:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:22:26.747Z"
+        "verifiedAt": "2026-09-22T11:16:12.176Z"
       }
     },
     {
@@ -1681,9 +1681,9 @@
           "contract": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0ca3f404bad8a",
-          "blockNumber": "69223932",
+          "blockNumber": "69611647",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
-          "observedAt": "2026-09-22T00:22:29.000Z"
+          "observedAt": "2026-09-22T11:16:11.000Z"
         },
         {
           "claim": "totalSupply() == 1019348953920000000000",
@@ -1691,20 +1691,20 @@
           "contract": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000037424ef8d917a08000",
-          "blockNumber": "69223932",
+          "blockNumber": "69611647",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
-          "observedAt": "2026-09-22T00:22:29.000Z"
+          "observedAt": "2026-09-22T11:16:11.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:22:29.000Z",
+      "detectedAt": "2026-09-22T11:16:11.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:22:35.454Z"
+        "verifiedAt": "2026-09-22T11:16:18.302Z"
       }
     },
     {
@@ -1727,9 +1727,9 @@
           "contract": "0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df11788ec920bf5",
-          "blockNumber": "69223983",
+          "blockNumber": "69611707",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
-          "observedAt": "2026-09-22T00:22:35.000Z"
+          "observedAt": "2026-09-22T11:16:17.000Z"
         },
         {
           "claim": "totalSupply() == 959744939860000000000",
@@ -1737,20 +1737,20 @@
           "contract": "0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000340722f9db25f04800",
-          "blockNumber": "69223983",
+          "blockNumber": "69611707",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
-          "observedAt": "2026-09-22T00:22:35.000Z"
+          "observedAt": "2026-09-22T11:16:17.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:22:35.000Z",
+      "detectedAt": "2026-09-22T11:16:17.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:22:40.683Z"
+        "verifiedAt": "2026-09-22T11:16:23.772Z"
       }
     },
     {
@@ -1764,7 +1764,7 @@
       "impact": {
         "basisPoints": 22.11,
         "percent": 0.2206,
-        "note": "totalSupply raw 6230.6951 tokens vs 6244.4706 share-equivalents (delta 13.7755). Presenting the raw balance as a share count understates by 0.2206%; equivalently the true count is 1.0022x the raw."
+        "note": "totalSupply raw 6158.5278 tokens vs 6172.1438 share-equivalents (delta 13.6160). Presenting the raw balance as a share count understates by 0.2206%; equivalently the true count is 1.0022x the raw."
       },
       "evidence": [
         {
@@ -1773,30 +1773,30 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de8918468ddd0ff",
-          "blockNumber": "69224375",
+          "blockNumber": "69612071",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-22T00:23:12.000Z"
+          "observedAt": "2026-09-22T11:16:54.000Z"
         },
         {
-          "claim": "totalSupply() == 6230695152870000000000",
+          "claim": "totalSupply() == 6158527898540000000000",
           "chainId": 4663,
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "totalSupply()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000151c443e5e5c4897c00",
-          "blockNumber": "69224375",
+          "rawReturn": "0x00000000000000000000000000000000000000000000014ddabe4e71619db800",
+          "blockNumber": "69612071",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-22T00:23:12.000Z"
+          "observedAt": "2026-09-22T11:16:54.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:23:12.000Z",
+      "detectedAt": "2026-09-22T11:16:54.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:23:25.610Z"
+        "verifiedAt": "2026-09-22T11:17:01.773Z"
       }
     },
     {
@@ -1806,11 +1806,11 @@
       "subject": "ORCL (0xb0992820E760d836549ba69BC7598b4af75dEE03)",
       "affectedParty": "Any caller that values ORCL with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "ORCL: off-chain share price and on-chain token price differ by 0.221%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (149.0284), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 149.3400). These are different quantities related by uiMultiplier(): underlying x 1.002210915 = 149.6702, leaving a residual of -0.429% against the observed feed price. That residual is NOT small relative to the 0.221% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.221%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (150.5618), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 150.3750). These are different quantities related by uiMultiplier(): underlying x 1.002210915 = 150.7075, leaving a residual of -0.097% against the observed feed price. That residual is small relative to the 0.221% multiplier effect, consistent with bid/ask spread and the timing gap between the REST quote and the feed's updatedAt. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.221%.",
       "impact": {
         "basisPoints": 22.11,
         "percent": 0.2211,
-        "note": "feed 149.0284 vs underlying-mid 149.3400 x multiplier 1.002210915 = 149.6702"
+        "note": "feed 150.5618 vs underlying-mid 150.3750 x multiplier 1.002210915 = 150.7075"
       },
       "evidence": [
         {
@@ -1819,37 +1819,37 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de8918468ddd0ff",
-          "blockNumber": "69224375",
+          "blockNumber": "69612071",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-22T00:23:12.000Z"
+          "observedAt": "2026-09-22T11:16:54.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 14902841228",
+          "claim": "latestRoundData().answer == 15056179498",
           "chainId": 4663,
           "contract": "0x0e6a64a2B58A6693a531E6c555f3A5d042eEA844",
           "call": "latestRoundData()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000008380000000000000000000000000000000000000000000000000000000378474f8c000000000000000000000000000000000000000000000000000000006ab1686f000000000000000000000000000000000000000000000000000000006ab1687c0000000000000000000000000000000000000000000000010000000000000838",
-          "blockNumber": "69224375",
+          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000083c00000000000000000000000000000000000000000000000000000003816b112a000000000000000000000000000000000000000000000000000000006ab25e9f000000000000000000000000000000000000000000000000000000006ab25eac000000000000000000000000000000000000000000000001000000000000083c",
+          "blockNumber": "69612071",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x0e6a64a2B58A6693a531E6c555f3A5d042eEA844",
-          "observedAt": "2026-09-22T00:23:12.000Z"
+          "observedAt": "2026-09-22T11:16:54.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/ORCL",
-          "describes": "underlying share bid/ask used for the mid 149.3400 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:23:21.870844945Z"
+          "describes": "underlying share bid/ask used for the mid 150.3750 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:16:51.232330257Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:23:12.000Z",
+      "detectedAt": "2026-09-22T11:16:54.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:23:26.131Z"
+        "verifiedAt": "2026-09-22T11:17:02.316Z"
       }
     },
     {
@@ -1863,7 +1863,7 @@
       "impact": {
         "basisPoints": 5.66,
         "percent": 0.0566,
-        "note": "totalSupply raw 15679.5672 tokens vs 15688.4431 share-equivalents (delta 8.8759). Presenting the raw balance as a share count understates by 0.0566%; equivalently the true count is 1.0006x the raw."
+        "note": "totalSupply raw 15326.1123 tokens vs 15334.7881 share-equivalents (delta 8.6758). Presenting the raw balance as a share count understates by 0.0566%; equivalently the true count is 1.0006x the raw."
       },
       "evidence": [
         {
@@ -1872,30 +1872,30 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2b98c7058b254",
-          "blockNumber": "69224743",
+          "blockNumber": "69612316",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-22T00:23:50.000Z"
+          "observedAt": "2026-09-22T11:17:19.000Z"
         },
         {
-          "claim": "totalSupply() == 15679567269620000000000",
+          "claim": "totalSupply() == 15326112353400000000000",
           "chainId": 4663,
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "totalSupply()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000351fdb51dcfc5948800",
-          "blockNumber": "69224743",
+          "rawReturn": "0x00000000000000000000000000000000000000000000033ed4890031a506b000",
+          "blockNumber": "69612316",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-22T00:23:50.000Z"
+          "observedAt": "2026-09-22T11:17:19.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:23:50.000Z",
+      "detectedAt": "2026-09-22T11:17:19.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:23:56.836Z"
+        "verifiedAt": "2026-09-22T11:17:25.899Z"
       }
     },
     {
@@ -1905,11 +1905,11 @@
       "subject": "AAPL (0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9)",
       "affectedParty": "Any caller that values AAPL with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "AAPL: off-chain share price and on-chain token price differ by 0.057%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (339.2419), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 338.6450). These are different quantities related by uiMultiplier(): underlying x 1.000566080 = 338.8367, leaving a residual of 0.120% against the observed feed price. That residual is NOT small relative to the 0.057% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.057%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (339.2419), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 339.3950). These are different quantities related by uiMultiplier(): underlying x 1.000566080 = 339.5871, leaving a residual of -0.102% against the observed feed price. That residual is NOT small relative to the 0.057% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.057%.",
       "impact": {
         "basisPoints": 5.66,
         "percent": 0.0566,
-        "note": "feed 339.2419 vs underlying-mid 338.6450 x multiplier 1.000566080 = 338.8367"
+        "note": "feed 339.2419 vs underlying-mid 339.3950 x multiplier 1.000566080 = 339.5871"
       },
       "evidence": [
         {
@@ -1918,9 +1918,9 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2b98c7058b254",
-          "blockNumber": "69224743",
+          "blockNumber": "69612316",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-22T00:23:50.000Z"
+          "observedAt": "2026-09-22T11:17:19.000Z"
         },
         {
           "claim": "latestRoundData().answer == 33924192943",
@@ -1928,27 +1928,27 @@
           "contract": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000028a00000000000000000000000000000000000000000000000000000007e60a1aaf000000000000000000000000000000000000000000000000000000006ab15e92000000000000000000000000000000000000000000000000000000006ab15e9e000000000000000000000000000000000000000000000001000000000000028a",
-          "blockNumber": "69224743",
+          "blockNumber": "69612316",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
-          "observedAt": "2026-09-22T00:23:50.000Z"
+          "observedAt": "2026-09-22T11:17:19.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/AAPL",
-          "describes": "underlying share bid/ask used for the mid 338.6450 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:23:45.714996001Z"
+          "describes": "underlying share bid/ask used for the mid 339.3950 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:17:25.407064012Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:23:50.000Z",
+      "detectedAt": "2026-09-22T11:17:19.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:23:57.370Z"
+        "verifiedAt": "2026-09-22T11:17:26.276Z"
       }
     },
     {
@@ -1971,9 +1971,9 @@
           "contract": "0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d044137509ea",
-          "blockNumber": "69225430",
+          "blockNumber": "69612892",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
-          "observedAt": "2026-09-22T00:25:00.000Z"
+          "observedAt": "2026-09-22T11:18:17.000Z"
         },
         {
           "claim": "totalSupply() == 603893959470000000000",
@@ -1981,20 +1981,20 @@
           "contract": "0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000020bcb65492157e4c00",
-          "blockNumber": "69225430",
+          "blockNumber": "69612892",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
-          "observedAt": "2026-09-22T00:25:00.000Z"
+          "observedAt": "2026-09-22T11:18:17.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:25:00.000Z",
+      "detectedAt": "2026-09-22T11:18:17.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:25:05.783Z"
+        "verifiedAt": "2026-09-22T11:18:24.909Z"
       }
     },
     {
@@ -2008,7 +2008,7 @@
       "impact": {
         "basisPoints": 6.12,
         "percent": 0.0612,
-        "note": "totalSupply raw 1520.7802 tokens vs 1521.7110 share-equivalents (delta 0.9308). Presenting the raw balance as a share count understates by 0.0612%; equivalently the true count is 1.0006x the raw."
+        "note": "totalSupply raw 1476.5063 tokens vs 1477.4100 share-equivalents (delta 0.9037). Presenting the raw balance as a share count understates by 0.0612%; equivalently the true count is 1.0006x the raw."
       },
       "evidence": [
         {
@@ -2017,30 +2017,30 @@
           "contract": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2e35963d66048",
-          "blockNumber": "69226079",
+          "blockNumber": "69613566",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
-          "observedAt": "2026-09-22T00:26:05.000Z"
+          "observedAt": "2026-09-22T11:19:25.000Z"
         },
         {
-          "claim": "totalSupply() == 1520780221550000000000",
+          "claim": "totalSupply() == 1476506318960000000000",
           "chainId": 4663,
           "contract": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
           "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000527110b20f8f9acc00",
-          "blockNumber": "69226079",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000500aa4323a76686000",
+          "blockNumber": "69613566",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
-          "observedAt": "2026-09-22T00:26:05.000Z"
+          "observedAt": "2026-09-22T11:19:25.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:26:05.000Z",
+      "detectedAt": "2026-09-22T11:19:25.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:26:11.177Z"
+        "verifiedAt": "2026-09-22T11:19:36.584Z"
       }
     },
     {
@@ -2063,9 +2063,9 @@
           "contract": "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de250bc9ac63468",
-          "blockNumber": "69226413",
+          "blockNumber": "69614071",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
-          "observedAt": "2026-09-22T00:26:39.000Z"
+          "observedAt": "2026-09-22T11:20:16.000Z"
         },
         {
           "claim": "totalSupply() == 222014737280000000000",
@@ -2073,20 +2073,20 @@
           "contract": "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000c0912cb458c130000",
-          "blockNumber": "69226413",
+          "blockNumber": "69614071",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
-          "observedAt": "2026-09-22T00:26:39.000Z"
+          "observedAt": "2026-09-22T11:20:16.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:26:39.000Z",
+      "detectedAt": "2026-09-22T11:20:16.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:26:48.377Z"
+        "verifiedAt": "2026-09-22T11:20:25.197Z"
       }
     },
     {
@@ -2100,7 +2100,7 @@
       "impact": {
         "basisPoints": 1.01,
         "percent": 0.0101,
-        "note": "totalSupply raw 112.5989 tokens vs 112.6103 share-equivalents (delta 0.0114). Presenting the raw balance as a share count understates by 0.0101%; equivalently the true count is 1.0001x the raw."
+        "note": "totalSupply raw 112.8379 tokens vs 112.8493 share-equivalents (delta 0.0114). Presenting the raw balance as a share count understates by 0.0101%; equivalently the true count is 1.0001x the raw."
       },
       "evidence": [
         {
@@ -2109,30 +2109,30 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de112dacfcc82a9",
-          "blockNumber": "69226500",
+          "blockNumber": "69614151",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-22T00:26:47.000Z"
+          "observedAt": "2026-09-22T11:20:24.000Z"
         },
         {
-          "claim": "totalSupply() == 112598941140000000000",
+          "claim": "totalSupply() == 112837916930000000000",
           "chainId": 4663,
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000061a9fcc645ed14800",
-          "blockNumber": "69226500",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000061df0cf9b5faf9400",
+          "blockNumber": "69614151",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-22T00:26:47.000Z"
+          "observedAt": "2026-09-22T11:20:24.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:26:47.000Z",
+      "detectedAt": "2026-09-22T11:20:24.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:26:55.042Z"
+        "verifiedAt": "2026-09-22T11:20:30.737Z"
       }
     },
     {
@@ -2142,11 +2142,11 @@
       "subject": "ASML (0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA)",
       "affectedParty": "Any caller that values ASML with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "ASML: off-chain share price and on-chain token price differ by 0.010%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (1721.7594), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 1722.9250). These are different quantities related by uiMultiplier(): underlying x 1.000101323 = 1723.0996, leaving a residual of -0.078% against the observed feed price. That residual is NOT small relative to the 0.010% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.010%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (1703.0545), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 1703.8050). These are different quantities related by uiMultiplier(): underlying x 1.000101323 = 1703.9776, leaving a residual of -0.054% against the observed feed price. That residual is NOT small relative to the 0.010% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.010%.",
       "impact": {
         "basisPoints": 1.01,
         "percent": 0.0101,
-        "note": "feed 1721.7594 vs underlying-mid 1722.9250 x multiplier 1.000101323 = 1723.0996"
+        "note": "feed 1703.0545 vs underlying-mid 1703.8050 x multiplier 1.000101323 = 1703.9776"
       },
       "evidence": [
         {
@@ -2155,37 +2155,912 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de112dacfcc82a9",
-          "blockNumber": "69226500",
+          "blockNumber": "69614151",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-22T00:26:47.000Z"
+          "observedAt": "2026-09-22T11:20:24.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 172175943658",
+          "claim": "latestRoundData().answer == 170305454154",
           "chainId": 4663,
           "contract": "0xB4106147E8cce40b7d46124090d373A71b70f87D",
           "call": "latestRoundData()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000072a00000000000000000000000000000000000000000000000000000028167c67ea000000000000000000000000000000000000000000000000000000006ab1c70a000000000000000000000000000000000000000000000000000000006ab1c716000000000000000000000000000000000000000000000001000000000000072a",
-          "blockNumber": "69226500",
+          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000073200000000000000000000000000000000000000000000000000000027a6ff004a000000000000000000000000000000000000000000000000000000006ab25696000000000000000000000000000000000000000000000000000000006ab256a30000000000000000000000000000000000000000000000010000000000000732",
+          "blockNumber": "69614151",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xB4106147E8cce40b7d46124090d373A71b70f87D",
-          "observedAt": "2026-09-22T00:26:47.000Z"
+          "observedAt": "2026-09-22T11:20:24.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/ASML",
-          "describes": "underlying share bid/ask used for the mid 1722.9250 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-22T00:26:53.311155880Z"
+          "describes": "underlying share bid/ask used for the mid 1703.8050 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T11:20:22.044782332Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.3.0",
-      "detectedAt": "2026-09-22T00:26:47.000Z",
+      "detectedAt": "2026-09-22T11:20:24.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-22T00:26:55.648Z"
+        "verifiedAt": "2026-09-22T11:20:31.092Z"
+      }
+    },
+    {
+      "id": "integrator-b19ace63-CCL",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "medium",
+      "subject": "0xb19ace635ef3a28b85bfb01bae97d0de80750680 (holds CCL)",
+      "affectedParty": "Whoever relies on this contract's accounting for CCL — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0xb19ace63… holds 402.3351 CCL and cannot call uiMultiplier()",
+      "statement": "This contract holds 402.335107 CCL (CCL uiMultiplier() = 1.021486445), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 410.979858, which is 8.644751 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 2.1034%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 2.1034,
+        "note": "8.644751 share-equivalents of CCL unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0xb19ace635ef3a28b85bfb01bae97d0de80750680)) == 0x07bc64256fe2bc8675afd6cd6223e506d172f198017634a986b354c52bbd4607 — 22142 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0xb19ace635ef3a28b85bfb01bae97d0de80750680",
+          "call": "getCode()",
+          "rawReturn": "0x07bc64256fe2bc8675afd6cd6223e506d172f198017634a986b354c52bbd4607",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb19ace635ef3a28b85bfb01bae97d0de80750680",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:21:26.055Z"
+      }
+    },
+    {
+      "id": "integrator-8366a39c-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x8366a39cc670b4001a1121b8f6a443a643e40951 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x8366a39c… holds 1217.3923 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 1217.392291 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 1220.081176, which is 2.688885 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "2.688885 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x8366a39cc670b4001a1121b8f6a443a643e40951)) == 0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626 — 24009 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "call": "getCode()",
+          "rawReturn": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:21:39.640Z"
+      }
+    },
+    {
+      "id": "integrator-e5e70264-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0xe5e702641ea86f4ae6cc3cdaed2b886f976be044 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0xe5e70264… holds 0.0344 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.034382 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.034458, which is 0.000076 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "0.000076 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0xe5e702641ea86f4ae6cc3cdaed2b886f976be044)) == 0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db — 15167 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0xe5e702641ea86f4ae6cc3cdaed2b886f976be044",
+          "call": "getCode()",
+          "rawReturn": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe5e702641ea86f4ae6cc3cdaed2b886f976be044",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:21:41.866Z"
+      }
+    },
+    {
+      "id": "integrator-5c67a84e-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x5c67a84ec5494ffe24e217b28debb96341014c86 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x5c67a84e… holds 126.2435 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 126.243498 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 126.522335, which is 0.278837 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "0.278837 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x5c67a84ec5494ffe24e217b28debb96341014c86)) == 0x9c3c67e680b8f805cf2fdb903daf152f972d381648a34e8c7b5d2b4fb8c65d72 — 22142 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x5c67a84ec5494ffe24e217b28debb96341014c86",
+          "call": "getCode()",
+          "rawReturn": "0x9c3c67e680b8f805cf2fdb903daf152f972d381648a34e8c7b5d2b4fb8c65d72",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x5c67a84ec5494ffe24e217b28debb96341014c86",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:21:45.537Z"
+      }
+    },
+    {
+      "id": "integrator-3ab74c45-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x3ab74c45dcecc6a62898204dd42143a816b44cb1 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x3ab74c45… holds 718.9757 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 718.975677 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 720.563697, which is 1.588020 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "1.588020 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x3ab74c45dcecc6a62898204dd42143a816b44cb1)) == 0x4929e0cc5d7c2234689618f980d955782ccb89741e953977ca9959b16f6a6893 — 22142 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x3ab74c45dcecc6a62898204dd42143a816b44cb1",
+          "call": "getCode()",
+          "rawReturn": "0x4929e0cc5d7c2234689618f980d955782ccb89741e953977ca9959b16f6a6893",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x3ab74c45dcecc6a62898204dd42143a816b44cb1",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:21:52.130Z"
+      }
+    },
+    {
+      "id": "integrator-e66cd96d-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0xe66cd96d9750de26b9beea569a7de408ffb0f885 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0xe66cd96d… holds 0.0000 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.000000 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.000000, which is 0.000000 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "0.000000 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0xe66cd96d9750de26b9beea569a7de408ffb0f885)) == 0xc49d847ef4832ab938d9926bb2e00b38f02367529aba46857cd2726eb454686e — 10229 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0xe66cd96d9750de26b9beea569a7de408ffb0f885",
+          "call": "getCode()",
+          "rawReturn": "0xc49d847ef4832ab938d9926bb2e00b38f02367529aba46857cd2726eb454686e",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe66cd96d9750de26b9beea569a7de408ffb0f885",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:02.767Z"
+      }
+    },
+    {
+      "id": "integrator-6f02324d-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x6f02324d20cc679d0e585290caa6b16bacbc0f77 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x6f02324d… holds 7.3111 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 7.311143 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 7.327291, which is 0.016148 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "0.016148 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x6f02324d20cc679d0e585290caa6b16bacbc0f77)) == 0x5d33a1d867ba0d17cc7af077786b1356848c72f8e0bf960ef88aa15f7a6962d1 — 14564 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x6f02324d20cc679d0e585290caa6b16bacbc0f77",
+          "call": "getCode()",
+          "rawReturn": "0x5d33a1d867ba0d17cc7af077786b1356848c72f8e0bf960ef88aa15f7a6962d1",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x6f02324d20cc679d0e585290caa6b16bacbc0f77",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:07.921Z"
+      }
+    },
+    {
+      "id": "integrator-8f10b468-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x8f10b468b06c6fd214b65f87778827f7d113f996 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x8f10b468… holds 0.0000 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.000000 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.000000, which is 0.000000 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "0.000000 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x8f10b468b06c6fd214b65f87778827f7d113f996)) == 0xfc8bfd5c118d0c06e9ff71b223fc3ba9612ac167edbf7e7e6e22bec156a5e70d — 13529 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x8f10b468b06c6fd214b65f87778827f7d113f996",
+          "call": "getCode()",
+          "rawReturn": "0xfc8bfd5c118d0c06e9ff71b223fc3ba9612ac167edbf7e7e6e22bec156a5e70d",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8f10b468b06c6fd214b65f87778827f7d113f996",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:18.929Z"
+      }
+    },
+    {
+      "id": "integrator-4e346895-UPS",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544 (holds UPS)",
+      "affectedParty": "Whoever relies on this contract's accounting for UPS — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x4e346895… holds 0.3792 UPS and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.379219 UPS (UPS uiMultiplier() = 1.002208725), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.380057, which is 0.000838 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2204%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2204,
+        "note": "0.000838 share-equivalents of UPS unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544)) == 0xc41a91106002f15bf70ae266824317f3f3ac638ac72ca5253bae395fa47ee631 — 25533 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544",
+          "call": "getCode()",
+          "rawReturn": "0xc41a91106002f15bf70ae266824317f3f3ac638ac72ca5253bae395fa47ee631",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:22.736Z"
+      }
+    },
+    {
+      "id": "integrator-8366a39c-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x8366a39cc670b4001a1121b8f6a443a643e40951 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x8366a39c… holds 3429.0552 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 3429.055249 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 3446.549500, which is 17.494251 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "17.494251 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $346,706 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x8366a39cc670b4001a1121b8f6a443a643e40951)) == 0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626 — 24009 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "call": "getCode()",
+          "rawReturn": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:33.038Z"
+      }
+    },
+    {
+      "id": "integrator-6f02324d-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x6f02324d20cc679d0e585290caa6b16bacbc0f77 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x6f02324d… holds 75.3636 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 75.363580 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 75.748068, which is 0.384488 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "0.384488 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $7,620 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x6f02324d20cc679d0e585290caa6b16bacbc0f77)) == 0x5d33a1d867ba0d17cc7af077786b1356848c72f8e0bf960ef88aa15f7a6962d1 — 14564 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x6f02324d20cc679d0e585290caa6b16bacbc0f77",
+          "call": "getCode()",
+          "rawReturn": "0x5d33a1d867ba0d17cc7af077786b1356848c72f8e0bf960ef88aa15f7a6962d1",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x6f02324d20cc679d0e585290caa6b16bacbc0f77",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:34.957Z"
+      }
+    },
+    {
+      "id": "integrator-4e346895-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x4e346895… holds 5.1752 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 5.175164 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 5.201567, which is 0.026402 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "0.026402 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $523 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544)) == 0xc41a91106002f15bf70ae266824317f3f3ac638ac72ca5253bae395fa47ee631 — 25533 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544",
+          "call": "getCode()",
+          "rawReturn": "0xc41a91106002f15bf70ae266824317f3f3ac638ac72ca5253bae395fa47ee631",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4e3468951d49f2eea976ed0d6e75ffcb44a9a544",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:37.652Z"
+      }
+    },
+    {
+      "id": "integrator-2f4579ca-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x2f4579ca81717d3d61bf8b6f06571877bbe54a07 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x2f4579ca… holds 2891.8424 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 2891.842403 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 2906.595918, which is 14.753515 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "14.753515 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $292,389 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x2f4579ca81717d3d61bf8b6f06571877bbe54a07)) == 0x883661d952a0123ddc2928050dfc0af107306145d09ffdf990daa199f76284c5 — 5914 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x2f4579ca81717d3d61bf8b6f06571877bbe54a07",
+          "call": "getCode()",
+          "rawReturn": "0x883661d952a0123ddc2928050dfc0af107306145d09ffdf990daa199f76284c5",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2f4579ca81717d3d61bf8b6f06571877bbe54a07",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:42.504Z"
+      }
+    },
+    {
+      "id": "integrator-8f10b468-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x8f10b468b06c6fd214b65f87778827f7d113f996 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x8f10b468… holds 0.0000 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.000000 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.000000, which is 0.000000 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "0.000000 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $0 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x8f10b468b06c6fd214b65f87778827f7d113f996)) == 0xfc8bfd5c118d0c06e9ff71b223fc3ba9612ac167edbf7e7e6e22bec156a5e70d — 13529 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x8f10b468b06c6fd214b65f87778827f7d113f996",
+          "call": "getCode()",
+          "rawReturn": "0xfc8bfd5c118d0c06e9ff71b223fc3ba9612ac167edbf7e7e6e22bec156a5e70d",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8f10b468b06c6fd214b65f87778827f7d113f996",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:46.542Z"
+      }
+    },
+    {
+      "id": "integrator-8695820e-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x8695820e01903c83ccfc27a0933c9fd69f13cac1 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x8695820e… holds 471.0986 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 471.098608 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 473.502045, which is 2.403437 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "2.403437 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $47,632 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x8695820e01903c83ccfc27a0933c9fd69f13cac1)) == 0x9b5359c58c9eeb510ffc8f3efd130b9a2cfc5f400c19ab66208a1c658c81964e — 21609 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x8695820e01903c83ccfc27a0933c9fd69f13cac1",
+          "call": "getCode()",
+          "rawReturn": "0x9b5359c58c9eeb510ffc8f3efd130b9a2cfc5f400c19ab66208a1c658c81964e",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8695820e01903c83ccfc27a0933c9fd69f13cac1",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:48.648Z"
+      }
+    },
+    {
+      "id": "integrator-e5e70264-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0xe5e702641ea86f4ae6cc3cdaed2b886f976be044 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0xe5e70264… holds 0.1791 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.179073 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.179986, which is 0.000914 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "0.000914 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $18 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0xe5e702641ea86f4ae6cc3cdaed2b886f976be044)) == 0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db — 15167 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0xe5e702641ea86f4ae6cc3cdaed2b886f976be044",
+          "call": "getCode()",
+          "rawReturn": "0xc21b1e6c1b45403e81a581f22ed6d9c747997af1cfdac1b1dc9f4b1d346a10db",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe5e702641ea86f4ae6cc3cdaed2b886f976be044",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:51.438Z"
+      }
+    },
+    {
+      "id": "integrator-ff6f806e-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0xff6f806e131994bbcaf28d5707101f4360e61794 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0xff6f806e… holds 0.4930 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.493038 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. It is a beacon proxy (beacon 0xa125492aca28449d2291f5415a818697345cfa09) resolving to implementation 0x3b09f732d0919e767b17b97d8d30db0c624591bc, and the selector test was run against that implementation's bytecode, not the stub's. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.495554, which is 0.002515 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "0.002515 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $50 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x3b09f732d0919e767b17b97d8d30db0c624591bc)) == 0x8ac568cf33034dacb25dc93c765e7db7582a404a2667f95b394dfdb85b56889e — 9257 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x3b09f732d0919e767b17b97d8d30db0c624591bc",
+          "call": "getCode()",
+          "rawReturn": "0x8ac568cf33034dacb25dc93c765e7db7582a404a2667f95b394dfdb85b56889e",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x3b09f732d0919e767b17b97d8d30db0c624591bc",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:56.629Z"
+      }
+    },
+    {
+      "id": "integrator-9d021e71-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x9d021e710953466e73ba6e3915ca8715741d3178 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x9d021e71… holds 0.0726 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.072570 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. It is a beacon proxy (beacon 0xa125492aca28449d2291f5415a818697345cfa09) resolving to implementation 0x3b09f732d0919e767b17b97d8d30db0c624591bc, and the selector test was run against that implementation's bytecode, not the stub's. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.072941, which is 0.000370 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "0.000370 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $7 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x3b09f732d0919e767b17b97d8d30db0c624591bc)) == 0x8ac568cf33034dacb25dc93c765e7db7582a404a2667f95b394dfdb85b56889e — 9257 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x3b09f732d0919e767b17b97d8d30db0c624591bc",
+          "call": "getCode()",
+          "rawReturn": "0x8ac568cf33034dacb25dc93c765e7db7582a404a2667f95b394dfdb85b56889e",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x3b09f732d0919e767b17b97d8d30db0c624591bc",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:22:59.687Z"
+      }
+    },
+    {
+      "id": "integrator-7f310e3d-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x7f310e3d05e575bd449e4484ef5da15863ea43b1 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x7f310e3d… holds 1215.3804 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 1215.380375 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 1221.580966, which is 6.200591 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "6.200591 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $122,885 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x7f310e3d05e575bd449e4484ef5da15863ea43b1)) == 0x894771959980fb94f852eb3ef67ff5c69209141a822136a02bfe2bf55537b17e — 22142 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x7f310e3d05e575bd449e4484ef5da15863ea43b1",
+          "call": "getCode()",
+          "rawReturn": "0x894771959980fb94f852eb3ef67ff5c69209141a822136a02bfe2bf55537b17e",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x7f310e3d05e575bd449e4484ef5da15863ea43b1",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:23:01.512Z"
+      }
+    },
+    {
+      "id": "integrator-fab52005-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0xfab520051f96f4d2a32c22b6a3dd7fffdf231bfe (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0xfab52005… holds 9791.3084 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 9791.308379 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 9841.261383, which is 49.953003 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "49.953003 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $989,982 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0xfab520051f96f4d2a32c22b6a3dd7fffdf231bfe)) == 0x93219e05cf394c802a6969936f858648aa26d3670da87fb7aa8f27493c2cc06e — 22142 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0xfab520051f96f4d2a32c22b6a3dd7fffdf231bfe",
+          "call": "getCode()",
+          "rawReturn": "0x93219e05cf394c802a6969936f858648aa26d3670da87fb7aa8f27493c2cc06e",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xfab520051f96f4d2a32c22b6a3dd7fffdf231bfe",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:23:04.188Z"
+      }
+    },
+    {
+      "id": "integrator-5bf2a006-SGOV",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x5bf2a00621105ca37af7b6e02715ee2ee2dde966 (holds SGOV)",
+      "affectedParty": "Whoever relies on this contract's accounting for SGOV — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x5bf2a006… holds 0.1114 SGOV and cannot call uiMultiplier()",
+      "statement": "This contract holds 0.111396 SGOV (SGOV uiMultiplier() = 1.005101770), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 0.111964, which is 0.000568 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.5076%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.5076,
+        "note": "0.000568 share-equivalents of SGOV unaccounted for if this balance is read as a share count, against $11 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x5bf2a00621105ca37af7b6e02715ee2ee2dde966)) == 0x28e3ef2a9fc7515bcc156fb01fd49406dadc620fa893010f53e9cbb43d67e440 — 13258 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x5bf2a00621105ca37af7b6e02715ee2ee2dde966",
+          "call": "getCode()",
+          "rawReturn": "0x28e3ef2a9fc7515bcc156fb01fd49406dadc620fa893010f53e9cbb43d67e440",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x5bf2a00621105ca37af7b6e02715ee2ee2dde966",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:23:20.470Z"
+      }
+    },
+    {
+      "id": "integrator-8366a39c-UNH",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x8366a39cc670b4001a1121b8f6a443a643e40951 (holds UNH)",
+      "affectedParty": "Whoever relies on this contract's accounting for UNH — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x8366a39c… holds 48.2660 UNH and cannot call uiMultiplier()",
+      "statement": "This contract holds 48.265987 UNH (UNH uiMultiplier() = 1.004241501), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 48.470708, which is 0.204720 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.4224%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.4224,
+        "note": "0.204720 share-equivalents of UNH unaccounted for if this balance is read as a share count. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x8366a39cc670b4001a1121b8f6a443a643e40951)) == 0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626 — 24009 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "call": "getCode()",
+          "rawReturn": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:23:31.996Z"
+      }
+    },
+    {
+      "id": "integrator-8366a39c-ORCL",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x8366a39cc670b4001a1121b8f6a443a643e40951 (holds ORCL)",
+      "affectedParty": "Whoever relies on this contract's accounting for ORCL — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x8366a39c… holds 273.2226 ORCL and cannot call uiMultiplier()",
+      "statement": "This contract holds 273.222637 ORCL (ORCL uiMultiplier() = 1.002210915), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 273.826709, which is 0.604072 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2206%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2206,
+        "note": "0.604072 share-equivalents of ORCL unaccounted for if this balance is read as a share count, against $41,137 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x8366a39cc670b4001a1121b8f6a443a643e40951)) == 0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626 — 24009 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "call": "getCode()",
+          "rawReturn": "0xbd3881180b547f5fe817545743cfb4343e96b1bc6640dcd70c106b0066e95626",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8366a39cc670b4001a1121b8f6a443a643e40951",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:23:41.968Z"
+      }
+    },
+    {
+      "id": "integrator-39adb8ac-ORCL",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x39adb8acd07427d338b5f1afab436a04abfdb7c4 (holds ORCL)",
+      "affectedParty": "Whoever relies on this contract's accounting for ORCL — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x39adb8ac… holds 1.7523 ORCL and cannot call uiMultiplier()",
+      "statement": "This contract holds 1.752291 ORCL (ORCL uiMultiplier() = 1.002210915), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 1.756165, which is 0.003874 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2206%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2206,
+        "note": "0.003874 share-equivalents of ORCL unaccounted for if this balance is read as a share count, against $264 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x39adb8acd07427d338b5f1afab436a04abfdb7c4)) == 0x5621ee5fc4517e81b28ed30c99ff956f48e0ccd491e31fe484dd9a42d5f4f972 — 14724 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x39adb8acd07427d338b5f1afab436a04abfdb7c4",
+          "call": "getCode()",
+          "rawReturn": "0x5621ee5fc4517e81b28ed30c99ff956f48e0ccd491e31fe484dd9a42d5f4f972",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x39adb8acd07427d338b5f1afab436a04abfdb7c4",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:23:45.634Z"
+      }
+    },
+    {
+      "id": "integrator-2f4579ca-ORCL",
+      "defectClass": "INTEGRATOR_NOT_MULTIPLIER_AWARE",
+      "severity": "low",
+      "subject": "0x2f4579ca81717d3d61bf8b6f06571877bbe54a07 (holds ORCL)",
+      "affectedParty": "Whoever relies on this contract's accounting for ORCL — its depositors, its integrators, or anything reading a share count or valuation out of it.",
+      "title": "0x2f4579ca… holds 1823.5256 ORCL and cannot call uiMultiplier()",
+      "statement": "This contract holds 1823.525602 ORCL (ORCL uiMultiplier() = 1.002210915), and its deployed bytecode does not contain the 0xa60bf13d selector, so it cannot call uiMultiplier() directly. Under ERC-8056 the share-equivalent count is balance x uiMultiplier() / 1e18 = 1827.557262, which is 4.031660 more than the raw balance. IF this contract derives a share count or a valuation from that balance, the figure is understated by 0.2206%. IT MAY NOT DO SO — a contract that only custodies or routes the token never needs the multiplier and is not wrong to lack it. What is established here is the absence of the call, not the presence of a mistake.",
+      "impact": {
+        "percent": 0.2206,
+        "note": "4.031660 share-equivalents of ORCL unaccounted for if this balance is read as a share count, against $274,553 held. The token contract is behaving exactly as ERC-8056 specifies; this finding is about the reader."
+      },
+      "evidence": [
+        {
+          "claim": "keccak256(eth_getCode(0x2f4579ca81717d3d61bf8b6f06571877bbe54a07)) == 0x883661d952a0123ddc2928050dfc0af107306145d09ffdf990daa199f76284c5 — 5914 bytes, no 0xa60bf13d selector",
+          "chainId": 4663,
+          "contract": "0x2f4579ca81717d3d61bf8b6f06571877bbe54a07",
+          "call": "getCode()",
+          "rawReturn": "0x883661d952a0123ddc2928050dfc0af107306145d09ffdf990daa199f76284c5",
+          "blockNumber": "69614606",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2f4579ca81717d3d61bf8b6f06571877bbe54a07",
+          "observedAt": "2026-09-22T11:21:10.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T11:21:10.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T11:23:49.546Z"
       }
     }
   ],
@@ -2198,5 +3073,14 @@
     "missingFeeds": 160,
     "pausedOracles": 0
   },
-  "errors": []
+  "errors": [],
+  "integrators": {
+    "scanned": 96,
+    "contracts": 66,
+    "notAware": 25,
+    "aware": 0,
+    "proxyUnresolved": 2,
+    "usdHeldByNotAware": 2123776.918997192,
+    "sharesUnaccounted": 109.28193581446517
+  }
 }
