@@ -32,6 +32,7 @@
     "mcp:sse": "tsx src/mcp/sse.ts",
     "attest:pending": "tsx scripts/attest-pending.ts",
     "attest:build": "tsx scripts/attest-build.ts",
+    "attest:respond": "tsx scripts/attest-respond.ts",
     "attest:submit": "tsx scripts/attest-submit.ts",
     "verify:attestation": "tsx scripts/verify-attestation.ts"
   },

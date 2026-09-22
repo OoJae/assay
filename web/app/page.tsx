@@ -191,6 +191,41 @@ export default async function Home() {
         </div>
       ))}
 
+      {d.integrators && d.integrators.contracts > 0 ? (
+        <div className="banner" style={{ borderColor: 'var(--high)' }}>
+          <strong>
+            {d.integrators.notAware} of {d.integrators.contracts} contracts holding
+            divergent-multiplier Stock Tokens cannot call{' '}
+            <span className="mono">uiMultiplier()</span>
+          </strong>
+          <div style={{ marginTop: 8 }}>
+            Every finding above names the asset that was <em>read</em>. This names the other side.
+            Across {d.integrators.scanned} addresses seen moving these tokens,{' '}
+            {d.integrators.contracts} are contracts, and {d.integrators.notAware} of them hold{' '}
+            <strong>
+              $
+              {Math.round(d.integrators.usdHeldByNotAware).toLocaleString()}
+            </strong>{' '}
+            with no <span className="mono">uiMultiplier()</span> selector anywhere in their deployed
+            bytecode — {d.integrators.sharesUnaccounted.toFixed(2)} share-equivalents unaccounted
+            for if those balances are read as share counts.
+          </div>
+          <div className="meta" style={{ marginTop: 10, lineHeight: 1.8 }}>
+            What this establishes is the <strong>absence of a call</strong>, not the presence of a
+            mistake: a contract that only custodies or routes a token never needs the multiplier and
+            is not wrong to lack it. Proxies are resolved to their implementation before any verdict
+            — EIP-1967, beacon and EIP-1167 — and{' '}
+            {d.integrators.proxyUnresolved > 0
+              ? `${d.integrators.proxyUnresolved} that could not be resolved are withheld with no claim made.`
+              : 'anything unresolvable is withheld with no claim made.'}{' '}
+            <strong>No contract is named on this page.</strong> The named audit, with its bytecode
+            evidence, is the paid{' '}
+            <span className="mono">assay_check_contract</span> call — see{' '}
+            <Link href="/pricing">pricing</Link>.
+          </div>
+        </div>
+      ) : null}
+
       <div className="tscroll">
         <table>
           <thead>

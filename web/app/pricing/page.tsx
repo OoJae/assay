@@ -29,6 +29,18 @@ const TIERS = [
       'The corrected ERC-8056 position for one holder: raw balance, uiMultiplier, share-equivalents, multiplier-adjusted price, oracle hygiene, and an explicit refusal when the read is not safe to act on. Available over x402, MCP (SSE) and as an AgentKit action.',
   },
   {
+    name: 'assay_check_contract()',
+    price: '$0.25',
+    state: 'live' as const,
+    what:
+      'Audit any address on chain 4663: does its deployed bytecode reference uiMultiplier(), which ' +
+      'divergent-multiplier Stock Tokens does it hold, and how many share-equivalents go unaccounted ' +
+      'for if those balances are read as share counts. Resolves EIP-1967, beacon and EIP-1167 proxies ' +
+      'to the implementation before deciding, and returns PROXY_UNRESOLVED rather than a verdict when ' +
+      'it cannot. Priced above the per-position check because it answers a question about a ' +
+      'counterparty, which is the one you ask before you act.',
+  },
+  {
     name: 'Full evidence pack',
     price: '$2.00',
     state: 'roadmap' as const,
@@ -107,14 +119,19 @@ export default async function Pricing() {
         </table>
       </div>
 
-      <h2 className="h2">Why $0.01 is the right price for the live line</h2>
+      <h2 className="h2">Why these two prices are different</h2>
       <p className="sub">
-        The OpenServ x402 marketplace has 471 listed services, 77 of them active. The median price
-        is $0.01 and only six are priced at $1.00 or above. A per-call valuation check has to be
-        cheap enough to run before <em>every</em> valuation, which is the only usage pattern that
-        makes an audit primitive load-bearing rather than occasional. The {d.findings.length}{' '}
-        findings on the wall are the reason to call it; the price is the reason there is no excuse
-        not to.
+        The OpenServ x402 marketplace lists 473 services, 80 of them active, at a median of $0.02 —
+        and 83% of everything ever listed is now dead. A per-position check has to be cheap enough
+        to run before <em>every</em> valuation, which is the only pattern that makes an audit
+        primitive load-bearing rather than occasional; that is the $0.01 line and it stays there.
+      </p>
+      <p className="sub" style={{ marginTop: 10 }}>
+        <span className="mono">assay_check_contract</span> is a different kind of question. It is
+        asked once, about a counterparty, before deciding whether to rely on its accounting — and it
+        returns a named verdict with bytecode evidence rather than a number. It is priced as a
+        decision, not a lookup. The {d.findings.length} findings on the wall are the reason to call
+        either one.
       </p>
 
       <footer>

@@ -75,6 +75,20 @@ export interface SweepData {
   chainNotes: ChainNote[]
   stats: Record<string, number>
   errors: Array<{ symbol: string; error: string }>
+  /**
+   * AGGREGATE integrator exposure. The named contracts are deliberately NOT here — they are
+   * behind the paid/MCP call. The public claim is a count and a dollar figure, so nobody who
+   * might merely be custodying a token is named on a public page.
+   */
+  integrators?: {
+    scanned: number
+    contracts: number
+    notAware: number
+    aware: number
+    proxyUnresolved: number
+    usdHeldByNotAware: number
+    sharesUnaccounted: number
+  }
 }
 
 const EMPTY: SweepData = {
