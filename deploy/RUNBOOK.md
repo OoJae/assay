@@ -55,6 +55,18 @@ behind nginx. `ufw` on the instance is a second layer, not the effective one.
 
 ## Checks
 
+**Does the host still match version control?** Run this first — the units drifted once, with
+`MCP_PUBLIC_PATH` set on the box and absent from the repo, which quietly falsified the claim at the
+top of this file.
+
+```bash
+cd /home/ubuntu/assay
+for u in assay-agent assay-mcp assay-sweep; do
+  diff -q /etc/systemd/system/$u.service deploy/$u.service || echo "DRIFT: $u"
+done
+diff -q /etc/logrotate.d/assay deploy/assay.logrotate || echo "DRIFT: logrotate"
+```
+
 ```bash
 systemctl is-active assay-agent assay-mcp
 systemctl list-timers assay-sweep.timer
@@ -87,8 +99,19 @@ here rather than left as an unexamined default: the watchdog is a mitigation, no
 ## Logs
 
 `agent.log`, `mcp.log`, `sweep.log` in `/home/ubuntu/assay`. Rotated daily, 7 kept, 50 MB cap,
-via `/etc/logrotate.d/assay`. Before that existed they grew unbounded on a box with ~1 GB free,
-and a full disk takes down the paid endpoint and the MCP server together.
+via `/etc/logrotate.d/assay`. Unrotated they grow unbounded on a box with ~1 GB free, and a full
+disk takes down the paid endpoint and the MCP server together.
+
+⚠️ The config must say **`su root root`**, not `su ubuntu ubuntu`. The units write with
+`StandardOutput=append:`, which opens the file *before* dropping to `User=ubuntu`, so the logs are
+`root:root` even though the service runs as ubuntu. With `su ubuntu ubuntu` logrotate exits 1 with
+`Permission denied` and rotates nothing — silently, since the timer does not report it. Verify the
+rotation actually works rather than assuming it does:
+
+```bash
+sudo logrotate -f /etc/logrotate.d/assay; echo "exit=$?"   # must be 0
+ls -la /home/ubuntu/assay/*.log*                            # .log.1 should appear
+```
 
 ## Deploying a change
 
