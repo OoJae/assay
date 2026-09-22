@@ -14,5 +14,15 @@
     compress
     delaycompress
     copytruncate
-    su ubuntu ubuntu
+    # ROOT, not ubuntu.
+    #
+    # The units write with systemd's `StandardOutput=append:`, which opens the file BEFORE dropping
+    # to User=ubuntu -- so the logs are root:root 0644 even though the service runs as ubuntu.
+    # `su ubuntu ubuntu` therefore could not truncate them: verified on the host, `logrotate -f`
+    # exited 1 with "error opening ...: Permission denied" and rotated nothing. The rotation I
+    # claimed to have added had never once run.
+    #
+    # It is stated explicitly rather than omitted because the parent directory is ubuntu-owned and
+    # group-writable, and logrotate skips such files unless told whose privileges to use.
+    su root root
 }

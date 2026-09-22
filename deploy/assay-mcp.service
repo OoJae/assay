@@ -16,6 +16,11 @@ Environment=MCP_HOST=127.0.0.1
 # Without this, the X-Forwarded-For header nginx sets is attacker-controlled and the per-IP rate
 # limiter can be bypassed by anyone who sends one. With it, XFF is honoured from this peer only.
 Environment=MCP_TRUSTED_PROXIES=127.0.0.1,::1
+# Mounted under a path on the existing sonar.my.id certificate rather than its own subdomain, so
+# the SSE transport must advertise the prefixed POST path -- it sends an ABSOLUTE path, and a bare
+# /messages would land on whatever else lives at the origin root. Remove this when the endpoint
+# moves to assay-mcp.sonar.my.id (see RUNBOOK).
+Environment=MCP_PUBLIC_PATH=/assay-mcp
 ExecStart=/usr/bin/env pnpm mcp:sse
 Restart=always
 RestartSec=10
