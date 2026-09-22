@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
 import { buildServer } from './server.js'
+import { loadSnapshot } from '../lib/surface.js'
 import {
   RateLimiter,
   clientIp,
@@ -137,6 +138,39 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     return
   }
 
+  /**
+   * The published sweep as plain JSON.
+   *
+   * WHY THIS EXISTS. The sweep timer on this host regenerates data/findings.json every 30 minutes,
+   * but the WALL is a separate deployment reading a copy committed at build time — so fixing the
+   * regeneration only fixed half the staleness. Every citation carries a "reproduce this yourself"
+   * command against a block this RPC serves for roughly 5k-20k blocks, so a wall that only updates
+   * when someone redeploys is publishing commands that stopped working hours ago.
+   *
+   * The wall fetches this at request time and falls back to its committed copy when this host is
+   * unreachable, so the endpoint being down degrades freshness rather than emptying the board.
+   *
+   * Metered like any other cheap read, and served from the same mtime-keyed cache the MCP tools use.
+   */
+  if ((req.method === 'GET' || req.method === 'HEAD') && is('/findings.json')) {
+    const wait = limiter.check(`cheap:${ip}`, LIMITS.cheapCall)
+    if (wait !== null) {
+      tooMany(res, wait, 'too many requests from this address')
+      return
+    }
+    const snap = loadSnapshot()
+    const body = JSON.stringify(snap)
+    res.writeHead(200, {
+      'content-type': 'application/json',
+      'content-length': Buffer.byteLength(body),
+      // Short, because the point of the endpoint is freshness.
+      'cache-control': 'public, max-age=60',
+      'access-control-allow-origin': '*',
+    })
+    res.end(req.method === 'HEAD' ? undefined : body)
+    return
+  }
+
   if (req.method === 'GET' && is('/sse')) {
     if (sessions.size >= MAX_CONCURRENT_SESSIONS) {
       tooMany(res, 30, `server is at its ${MAX_CONCURRENT_SESSIONS}-session cap`)
@@ -236,7 +270,9 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   }
 
   res.writeHead(404, { 'content-type': 'application/json' })
-  res.end(JSON.stringify({ error: 'not found', endpoints: ['/sse', '/messages', '/health'] }))
+  res.end(
+    JSON.stringify({ error: 'not found', endpoints: ['/sse', '/messages', '/health', '/findings.json'] }),
+  )
 }
 
 http.listen(PORT, HOST, () => {

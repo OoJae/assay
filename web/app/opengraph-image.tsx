@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { loadSweep } from '@/lib/findings'
+import { loadSweepLive } from '@/lib/findings'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -16,7 +16,7 @@ export const contentType = 'image/png'
  * impossible by construction.
  */
 export default async function Image() {
-  const d = loadSweep()
+  const d = await loadSweepLive()
   const cites = d.findings.reduce((n, f) => n + (f.verification?.checked ?? 0), 0)
   const ok = d.findings.reduce((n, f) => n + (f.verification?.reproduced ?? 0), 0)
 

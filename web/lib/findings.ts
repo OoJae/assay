@@ -114,6 +114,38 @@ export function loadSweep(): SweepData {
   return EMPTY
 }
 
+/** Where the sweeper host publishes its current snapshot. */
+export const LIVE_SNAPSHOT_URL = 'https://sonar.my.id/assay-mcp/findings.json'
+
+/**
+ * Prefer the LIVE snapshot, fall back to the copy committed at build time.
+ *
+ * The sweep runs on a 30-minute timer on the VPS, but this is a separate deployment reading a file
+ * baked in at build time — so regenerating the artifact only fixed half the staleness. Every
+ * citation on this wall carries a "reproduce this yourself" command against a block the public RPC
+ * serves for roughly 5k-20k blocks at ~100ms each, which means a board that only moves when someone
+ * redeploys is publishing commands that stopped working hours earlier.
+ *
+ * The committed copy is the fallback rather than the source, so the sweeper host being unreachable
+ * costs freshness — which the page then renders in the past tense behind a STALE badge — instead of
+ * emptying the board. Both paths are the same shape, so nothing downstream knows which one it got.
+ */
+export async function loadSweepLive(): Promise<SweepData> {
+  try {
+    const res = await fetch(LIVE_SNAPSHOT_URL, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(4000),
+    })
+    if (res.ok) {
+      const live = (await res.json()) as Partial<SweepData>
+      if (Array.isArray(live.findings)) return { ...EMPTY, ...live }
+    }
+  } catch {
+    /* fall through to the committed copy */
+  }
+  return loadSweep()
+}
+
 export const SEV_RANK: Record<Severity, number> = {
   critical: 0,
   high: 1,

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { loadSweep, SEV_RANK, symbolOf, snapshotAge, type Severity } from '@/lib/findings'
+import { loadSweepLive, SEV_RANK, symbolOf, snapshotAge, type Severity } from '@/lib/findings'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,8 +24,8 @@ const REASON_COPY: Record<string, string> = {
   no_evidence: 'The finding arrived with no citations at all — a defect in our detector, not a statement about the subject.',
 }
 
-export default function Home() {
-  const d = loadSweep()
+export default async function Home() {
+  const d = await loadSweepLive()
   const findings = [...d.findings].sort(
     (a, b) => SEV_RANK[a.severity] - SEV_RANK[b.severity] || a.subject.localeCompare(b.subject),
   )

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { loadSweep } from '@/lib/findings'
+import { loadSweepLive } from '@/lib/findings'
 
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pricing — ASSAY' }
@@ -50,8 +50,8 @@ const TIERS = [
   },
 ]
 
-export default function Pricing() {
-  const d = loadSweep()
+export default async function Pricing() {
+  const d = await loadSweepLive()
   return (
     <div className="wrap">
       <nav className="navbar">

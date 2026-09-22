@@ -1,12 +1,12 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { loadSweep, repliesFor } from '@/lib/findings'
+import { loadSweepLive, repliesFor } from '@/lib/findings'
 
 export const dynamic = 'force-dynamic'
 
 export default async function FindingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const d = loadSweep()
+  const d = await loadSweepLive()
   const f = d.findings.find((x) => x.id === decodeURIComponent(id))
   if (!f) notFound()
   const replies = repliesFor(f.id)
