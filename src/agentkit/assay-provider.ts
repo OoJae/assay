@@ -1,6 +1,6 @@
 import { customActionProvider, type WalletProvider } from '@coinbase/agentkit'
 import { z } from 'zod3'
-import { truePositionFor, checkSymbolSummary } from '../lib/surface.js'
+import { truePositionFor, checkSymbolSummary, auditContract } from '../lib/surface.js'
 
 /**
  * ASSAY as a Coinbase AgentKit action provider.
@@ -77,4 +77,22 @@ Use this to decide whether an asset is safe to price before taking a position in
 })
 
 /** Both ASSAY actions, ready to drop into an AgentKit config's `actionProviders`. */
-export const assayActionProviders = () => [assayTruePosition, assayCheckSymbol]
+const CheckContractSchema = z.object({
+  address: z.string().regex(/^0x[a-fA-F0-9]{40}$/).describe('0x-prefixed address on Robinhood Chain 4663'),
+})
+
+export const assayCheckContract = customActionProvider<WalletProvider>({
+  name: 'assay_check_contract',
+  description: `
+Audit a counterparty contract on Robinhood Chain before relying on its share accounting. Returns
+whether its bytecode references uiMultiplier() (proxies resolved first), the divergent-multiplier
+Stock Tokens it holds, and the share-equivalents unaccounted for. NOT_AWARE means the call cannot
+be made, not that a mistake was made. PROXY_UNRESOLVED means no verdict — do not treat it as a pass.
+`.trim(),
+  schema: CheckContractSchema,
+  invoke: async (_wallet, args: z.infer<typeof CheckContractSchema>) => {
+    return JSON.stringify(await auditContract(args.address as `0x${string}`), null, 2)
+  },
+})
+
+export const assayActionProviders = () => [assayTruePosition, assayCheckSymbol, assayCheckContract]

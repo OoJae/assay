@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:offline": "ASSAY_OFFLINE_ONLY=1 vitest run",
     "provision": "tsx scripts/provision.ts",
+    "payto": "tsx scripts/set-payto.ts",
     "wallets": "tsx scripts/make-wallets.ts",
     "buyer": "tsx scripts/make-buyer.ts",
     "pay": "tsx scripts/pay.ts",

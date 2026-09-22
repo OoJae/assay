@@ -1,0 +1,9 @@
+{
+  "address": "0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648",
+  "chainId": 4663,
+  "txHash": "0x30b2029209f10e015bbb5fc7a63106c7f373b3f686ade2c89ee7404f13ca3df6",
+  "blockNumber": "69865594",
+  "deployer": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+  "bytecodeBytes": 3555,
+  "note": "Free, ownerless, storage-free, view-only. No upgrade path — this address is permanent."
+}

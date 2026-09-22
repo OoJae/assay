@@ -1,6 +1,6 @@
 import { Agent } from '@openserv-labs/sdk'
 import { z } from 'zod'
-import { truePositionFor, checkSymbolSummary } from '../lib/surface.js'
+import { truePositionFor, checkSymbolSummary, auditContract } from '../lib/surface.js'
 
 /**
  * The ASSAY agent as exposed on the OpenServ marketplace.
@@ -66,3 +66,24 @@ assayAgent.addCapability({
     return JSON.stringify(await checkSymbolSummary(args.symbol), null, 2)
   },
 })
+
+assayAgent.addCapability({
+  name: 'check_contract',
+  description:
+    'Audit any address on Robinhood Chain 4663 that holds ERC-8056 Stock Tokens. Returns whether ' +
+    'its deployed bytecode references uiMultiplier() — resolving EIP-1967, beacon and EIP-1167 ' +
+    'proxies to the implementation before deciding — plus the divergent-multiplier tokens it holds ' +
+    'and the share-equivalents unaccounted for if those balances are read as share counts. ' +
+    'NOT_AWARE means the call cannot be made from this bytecode, NOT that the contract misvalues ' +
+    'anything. An unresolvable proxy returns PROXY_UNRESOLVED and no verdict.',
+  inputSchema: z.object({
+    address: z
+      .string()
+      .regex(/^0x[a-fA-F0-9]{40}$/)
+      .describe('0x-prefixed address on Robinhood Chain 4663'),
+  }),
+  async run({ args }) {
+    return JSON.stringify(await auditContract(args.address as `0x${string}`), null, 2)
+  },
+})
+

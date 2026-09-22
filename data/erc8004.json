@@ -1,9 +1,18 @@
 {
-  "agentId": "95265",
+  "agentId": "95374",
   "agentURI": "https://assay-steel.vercel.app/agent-card.json",
-  "owner": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5",
-  "txHash": "0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a",
+  "owner": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+  "txHash": "0x019ecbbcfe12f646d977c3a7d778d147d91cac9d6a348cc93a03be6d80e8356f",
   "chainId": 8453,
-  "duplicates": ["95266"],
-  "note": "95265 is canonical. 95266 was minted by an accidental re-run of a non-idempotent script; both are owned by the same wallet and carry the same agentURI. Recorded rather than hidden."
+  "duplicates": [
+    "95266"
+  ],
+  "frozen": [
+    {
+      "agentId": "95265",
+      "owner": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5",
+      "reason": "signing key lost"
+    }
+  ],
+  "note": "95374 is canonical, owned by 0x6328f2fE483922721D94b33eE99e9938Da3b7911. 95265 (owner 0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5) is FROZEN: its signing key was lost when the local .env was overwritten with a copy of .env.example, so it can never be updated again. Everything it already published — its agent card, the attestation under it, and the x402 payments to its wallet — remains true and verifiable. 95266 was an accidental duplicate of 95265. Recorded rather than hidden."
 }

@@ -83,6 +83,7 @@ interface Erc8004State {
   chainId: number
   duplicates?: string[]
   note?: string
+  frozen?: Array<{ agentId: string; owner: string; reason: string }>
 }
 const previous: Erc8004State | null = existsSync(STATE)
   ? (JSON.parse(readFileSync(STATE, 'utf8')) as Erc8004State)
@@ -166,9 +167,34 @@ console.log('tokenURI   ', uri || '(not yet readable — state lag, retry shortl
  * of one's own mistake is precisely the behaviour this project grades other people for, and it
  * would have happened on the one code path taken while already knowing about the duplicate.
  */
+const ownerChangedEarly = Boolean(previous && previous.owner.toLowerCase() !== account.address.toLowerCase())
+// A previous identity under a DIFFERENT owner is frozen, not a duplicate — those are different
+// claims and conflating them would misdescribe why it exists. Only same-owner re-mints are
+// duplicates.
 const duplicates = previous
-  ? [...(previous.duplicates ?? []), previous.agentId].filter((id) => id !== agentId.toString())
+  ? [...(previous.duplicates ?? []), ...(ownerChangedEarly ? [] : [previous.agentId])].filter(
+      (id) => id !== agentId.toString(),
+    )
   : []
+
+/**
+ * A NEW OWNER makes the previous note false, so it must not be carried forward.
+ *
+ * The note on 95265 read "95265 is canonical". When its signing key was lost and a replacement was
+ * minted from a new wallet, preserving that sentence — which the code above would otherwise do —
+ * would have recorded a false claim in the one file that exists to keep this history honest.
+ */
+const ownerChanged = Boolean(previous && previous.owner.toLowerCase() !== account.address.toLowerCase())
+const supersededNote = ownerChanged
+  ? `${agentId} is canonical, owned by ${account.address}. ${previous!.agentId} (owner ${previous!.owner}) is FROZEN: ` +
+    `its signing key was lost when the local .env was overwritten with a copy of .env.example, so it ` +
+    `can never be updated again. Everything it already published — its agent card, the attestation ` +
+    `under it, and the x402 payments to its wallet — remains true and verifiable. ` +
+    ((previous!.duplicates ?? []).length
+      ? `${previous!.duplicates!.join(', ')} ${previous!.duplicates!.length > 1 ? 'were' : 'was'} an accidental duplicate of ${previous!.agentId}. `
+      : '') +
+    `Recorded rather than hidden.`
+  : null
 
 writeFileSync(
   STATE,
@@ -180,9 +206,11 @@ writeFileSync(
       txHash: hash,
       chainId: 8453,
       ...(duplicates.length ? { duplicates } : {}),
-      ...(previous?.note || duplicates.length
+      ...(ownerChanged ? { frozen: [{ agentId: previous!.agentId, owner: previous!.owner, reason: 'signing key lost' }] } : {}),
+      ...(supersededNote || previous?.note || duplicates.length
         ? {
             note:
+              supersededNote ??
               previous?.note ??
               `${agentId} is canonical. ${duplicates.join(', ')} ${duplicates.length > 1 ? 'were' : 'was'} ` +
                 `minted earlier by this script; all are owned by the same wallet and carry the same ` +
