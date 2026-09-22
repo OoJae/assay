@@ -117,7 +117,13 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   const route = url.pathname.replace(/\/+$/, '') || '/'
   const is = (p: string) => route === p || route.endsWith(p)
 
-  if (req.method === 'GET' && is('/health')) {
+  // HEAD as well as GET: `curl -I` is the first thing anyone runs against a new endpoint, and
+  // falling through to 404 makes a healthy server look broken.
+  if ((req.method === 'GET' || req.method === 'HEAD') && is('/health')) {
+    if (req.method === 'HEAD') {
+      res.writeHead(200, { 'content-type': 'application/json' }).end()
+      return
+    }
     res.writeHead(200, { 'content-type': 'application/json' })
     res.end(
       JSON.stringify({

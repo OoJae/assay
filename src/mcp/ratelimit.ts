@@ -114,12 +114,23 @@ export function normaliseIp(addr: string): string {
  *
  * x-forwarded-for is honoured ONLY when the immediate peer is an explicitly trusted proxy.
  *
- * The previous version took the header's first entry unconditionally, with a comment claiming it
+ * The first version took the header's first entry unconditionally, with a comment claiming it
  * prevented spoofing. It did the opposite: with no proxy deployed, any caller could mint a fresh
  * bucket per request by rotating the header. Measured against the real limits — rotating XFF over
  * one socket: 200 allowed, 0 blocked, against a 30/min limit. Without the header: 30 allowed,
  * 170 blocked. Every limit was a no-op for anyone who sent a header, while the README advertised
  * the protection to third parties.
+ *
+ * TRUSTING THE PEER WAS NOT ENOUGH, which is the second half of this and was measured too.
+ * nginx's `$proxy_add_x_forwarded_for` APPENDS the real address to whatever the client sent, so
+ * the LEFTMOST entry is still attacker-authored even behind a trusted proxy. Measured against the
+ * deployed stack: 42 bursted connections with no header gave 29 allowed / 13 limited, and the
+ * same burst with a rotating `X-Forwarded-For` gave ZERO 429s. Putting a proxy in front had
+ * re-opened the exact bypass this function exists to close.
+ *
+ * The RIGHTMOST entry is the one the trusted proxy itself appended, so it is the only entry a
+ * client cannot author. That is what is used, and it stays correct whether the proxy appends or
+ * overwrites.
  */
 export function clientIp(
   headers: Record<string, string | string[] | undefined>,
@@ -130,7 +141,11 @@ export function clientIp(
   if (!trusted.has(peer)) return peer
 
   const xff = headers['x-forwarded-for']
-  const raw = Array.isArray(xff) ? xff[0] : xff
-  const first = raw?.split(',')[0]?.trim()
-  return first ? normaliseIp(first) : peer
+  const raw = Array.isArray(xff) ? xff.join(',') : xff
+  const hops = (raw ?? '')
+    .split(',')
+    .map((h) => h.trim())
+    .filter(Boolean)
+  const nearest = hops[hops.length - 1]
+  return nearest ? normaliseIp(nearest) : peer
 }

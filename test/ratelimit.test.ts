@@ -95,3 +95,47 @@ describe('client IP extraction', () => {
     expect(clientIp({}, undefined, new Set())).toBe('unknown')
   })
 })
+
+describe('client IP behind a real proxy — the appended-header bypass', () => {
+  const trusted = new Set(['127.0.0.1'])
+
+  it('takes the RIGHTMOST hop, which is the only entry a client cannot author', () => {
+    // nginx's $proxy_add_x_forwarded_for APPENDS the peer address to whatever the client sent, so
+    // the leftmost entry stays attacker-controlled even behind a trusted proxy. Measured against
+    // the deployed stack: 42 bursted connections with no header gave 29 allowed / 13 limited; the
+    // same burst with a rotating X-Forwarded-For gave ZERO 429s. Putting a proxy in front had
+    // re-opened the exact bypass this function exists to close.
+    expect(clientIp({ 'x-forwarded-for': '203.0.113.9, 8.8.8.8' }, '127.0.0.1', trusted)).toBe('8.8.8.8')
+  })
+
+  it('a client rotating the leftmost entry cannot mint new buckets', () => {
+    const limiter = new RateLimiter()
+    let allowed = 0
+    for (let i = 0; i < 60; i++) {
+      // The attacker authors the first hop; the proxy appends the real peer. Only the appended one counts.
+      const ip = clientIp(
+        { 'x-forwarded-for': `203.0.113.${i}, 8.8.8.8` },
+        '127.0.0.1',
+        trusted,
+      )
+      if (limiter.check(`conn:${ip}`, LIMITS.connection) === null) allowed++
+    }
+    expect(allowed).toBe(LIMITS.connection.max)
+  })
+
+  it('is still correct when the proxy OVERWRITES rather than appends', () => {
+    // deploy/assay-mcp.nginx.conf sets X-Forwarded-For to $remote_addr, so there is one hop and
+    // rightmost == leftmost == the peer. Both configurations must give the same answer.
+    expect(clientIp({ 'x-forwarded-for': '8.8.8.8' }, '127.0.0.1', trusted)).toBe('8.8.8.8')
+  })
+
+  it('handles a repeated header field without letting the client pick the winner', () => {
+    expect(
+      clientIp({ 'x-forwarded-for': ['203.0.113.1', '203.0.113.2, 8.8.8.8'] }, '127.0.0.1', trusted),
+    ).toBe('8.8.8.8')
+  })
+
+  it('falls back to the peer when a trusted proxy sends no header at all', () => {
+    expect(clientIp({}, '127.0.0.1', trusted)).toBe('127.0.0.1')
+  })
+})
