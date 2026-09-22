@@ -102,11 +102,16 @@ export async function verifyEvidence(e: Evidence): Promise<VerificationResult> {
  *  - 'unverifiable_here' the node no longer serves that block. Unchecked, not disproven.
  *  - 'unchecked'         the re-fetch failed (transient RPC error after retries). Says nothing
  *                        about the finding's truth, only about our ability to confirm it.
+ *  - 'no_evidence'       the finding arrived carrying NO citations at all. This is a defect in the
+ *                        SWEEPER, not a statement about the subject. It gets its own reason because
+ *                        folding it into 'unchecked' would let a detector bug that emits uncited
+ *                        findings hide inside the same bucket as ordinary RPC flakiness, and folding
+ *                        it into 'mismatch' would report a subject as fabricated on zero evidence.
  *
  * Reporting an RPC failure as 'mismatch' would be exactly the over-claim this tool exists to
  * avoid — asserting a defect when the honest statement is "we could not check".
  */
-export type RejectionReason = 'mismatch' | 'unverifiable_here' | 'unchecked'
+export type RejectionReason = 'mismatch' | 'unverifiable_here' | 'unchecked' | 'no_evidence'
 
 export interface RejectedFinding {
   finding: Finding
@@ -131,6 +136,21 @@ export type VerifyOutcome =
   | { ok: false; rejected: RejectedFinding }
 
 export async function verifyFindingDetailed(f: Finding): Promise<VerifyOutcome> {
+  // A finding with no citations at all never reaches the byte comparison, so without this guard
+  // it fell through to the kept.length === 0 ladder and was rejected as 'mismatch' — reporting a
+  // sweeper bug as though the subject's chain state had contradicted us.
+  if (f.evidence.length === 0) {
+    return {
+      ok: false,
+      rejected: {
+        finding: f,
+        reason: 'no_evidence',
+        detail: 'finding carries no citations — detector defect, not a statement about the subject',
+        results: [],
+      },
+    }
+  }
+
   const results = await Promise.all(f.evidence.map(verifyEvidence))
   const kept = results.filter((r) => r.reproduced).map((r) => r.evidence)
   const dropped = results.filter((r) => !r.reproduced)

@@ -9,6 +9,10 @@ dist
 
 web/node_modules
 web/.next
-*.png
+# Screenshots dropped in the repo root during the build, NOT site assets. A bare *.png rule
+# silently swallowed web/public/og.png on git add, which is how a social card can be "added"
+# and still 404 in production.
+/*.png
+docs/scratch/*.png
 
 .openserv.json

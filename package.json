@@ -2,8 +2,9 @@
   "name": "assay",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
-  "description": "Independent valuation integrity audit for agents on Robinhood Chain and IXS RWA vaults",
+  "description": "Independent valuation integrity audit for agents on Robinhood Chain (EIP-155 4663)",
   "scripts": {
     "sweep": "tsx scripts/sweep.ts",
     "probe": "tsx scripts/probe-ixs.ts",

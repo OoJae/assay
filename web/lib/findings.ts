@@ -52,7 +52,12 @@ export interface SweepData {
   marketClosed: boolean
   cohort: { size: number; stale: number; clockHint: boolean }
   findings: Finding[]
-  rejected: Array<{ reason: string; detail: string; finding: { id: string; subject: string } }>
+  rejected: Array<{
+    reason: 'mismatch' | 'unverifiable_here' | 'unchecked' | 'no_evidence' | string
+    detail: string
+    finding: { id: string; subject: string; title?: string; defectClass?: string; severity?: Severity }
+    results?: Array<{ status: string; reason?: string }>
+  }>
   chainNotes: ChainNote[]
   stats: Record<string, number>
   errors: Array<{ symbol: string; error: string }>
@@ -105,4 +110,19 @@ export const SEV_RANK: Record<Severity, number> = {
 
 export function symbolOf(subject: string): string {
   return subject.split(' ')[0] ?? subject
+}
+
+/**
+ * How old a sweep may be before its PRESENT-TENSE claims stop being safe to make.
+ *
+ * The wall states live market conditions from a build-time snapshot. Rendered on a Saturday from
+ * a Friday sweep, "market open" is a confident, wrong claim on the front page of a product whose
+ * whole thesis is not confusing a scheduled closure with an incident. Past this age the same
+ * facts are rendered in the past tense, as an observation, which is what they actually are.
+ */
+export const SNAPSHOT_FRESH_MS = 2 * 60 * 60 * 1000
+
+export function snapshotAge(observedAt: string): { ms: number; fresh: boolean } {
+  const ms = Date.now() - new Date(observedAt).getTime()
+  return { ms, fresh: Number.isFinite(ms) && ms >= 0 && ms < SNAPSHOT_FRESH_MS }
 }

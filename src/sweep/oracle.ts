@@ -8,7 +8,7 @@ const EXPLORER = 'https://robinhoodchain.blockscout.com'
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 /** A transient failure is worth retrying; a revert or a pruned block is not. */
-function isTransient(message: string): boolean {
+export function isTransient(message: string): boolean {
   const m = message.toLowerCase()
   if (m.includes('execution reverted')) return false
   if (m.includes('historical state')) return false

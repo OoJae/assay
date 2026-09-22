@@ -290,7 +290,7 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
                 ? `This feed is marked marketHours="${feed.docs?.marketHours}" and ${cohortStale} of ${cohort.length} ` +
                   `24/5 equity feeds are stale at this same block, which corroborates a scheduled market closure rather than ` +
                   `an oracle incident. The staleness is therefore EXPECTED BY DESIGN. ` +
-                  `so the staleness is EXPECTED BY DESIGN. It is reported because the contract gives callers no on-chain ` +
+                  `It is reported because the contract gives callers no on-chain ` +
                   `way to distinguish it: latestRoundData() returns a price either way, and marketHours exists only in ` +
                   `off-chain metadata. Robinhood's documentation requires callers to check updatedAt against the heartbeat. ` +
                   `A caller without that guard is pricing off data up to ${(reading2.ageSeconds / 3600).toFixed(1)} hours old.`

@@ -1,6 +1,6 @@
 {
-  "blockNumber": "69094808",
-  "observedAt": "2026-09-21T20:46:03.000Z",
+  "blockNumber": "69096337",
+  "observedAt": "2026-09-21T20:48:37.000Z",
   "marketClosed": false,
   "cohort": {
     "size": 35,
@@ -18,7 +18,7 @@
         "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
         "https://docs.chain.link/data-feeds/l2-sequencer-feeds"
       ],
-      "observedAt": "2026-09-21T20:46:03.000Z"
+      "observedAt": "2026-09-21T20:48:37.000Z"
     },
     {
       "id": "rh-chain-assets-without-price-feed",
@@ -30,7 +30,7 @@
         "https://docs.robinhood.com/chain/oracles-and-price-feeds/",
         "https://api.robinhood.com/rhj/assets"
       ],
-      "observedAt": "2026-09-21T20:46:03.000Z"
+      "observedAt": "2026-09-21T20:48:37.000Z"
     }
   ],
   "assetsScanned": 195,
@@ -55,9 +55,9 @@
           "contract": "0xd95B44124e475743a7589e68F3D74008A5536D44",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4cb186403c235",
-          "blockNumber": "69094913",
+          "blockNumber": "69096514",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd95B44124e475743a7589e68F3D74008A5536D44",
-          "observedAt": "2026-09-21T20:46:13.000Z"
+          "observedAt": "2026-09-21T20:48:55.000Z"
         },
         {
           "claim": "totalSupply() == 302643028120000000000",
@@ -65,20 +65,20 @@
           "contract": "0xd95B44124e475743a7589e68F3D74008A5536D44",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000106804069a8927f000",
-          "blockNumber": "69094913",
+          "blockNumber": "69096514",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd95B44124e475743a7589e68F3D74008A5536D44",
-          "observedAt": "2026-09-21T20:46:13.000Z"
+          "observedAt": "2026-09-21T20:48:55.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:46:13.000Z",
+      "detectedAt": "2026-09-21T20:48:55.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:46:18.956Z"
+        "verifiedAt": "2026-09-21T20:49:02.730Z"
       }
     },
     {
@@ -100,9 +100,9 @@
           "contract": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0f0a4f90ff185",
-          "blockNumber": "69095555",
+          "blockNumber": "69097216",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
-          "observedAt": "2026-09-21T20:47:18.000Z"
+          "observedAt": "2026-09-21T20:50:08.000Z"
         },
         {
           "claim": "totalSupply() == 647745952970000000000",
@@ -110,20 +110,20 @@
           "contract": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000231d47e85231bb6400",
-          "blockNumber": "69095555",
+          "blockNumber": "69097216",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
-          "observedAt": "2026-09-21T20:47:18.000Z"
+          "observedAt": "2026-09-21T20:50:08.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:47:18.000Z",
+      "detectedAt": "2026-09-21T20:50:08.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:47:29.575Z"
+        "verifiedAt": "2026-09-21T20:50:18.150Z"
       }
     },
     {
@@ -145,9 +145,9 @@
           "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000003782dace9d900000",
-          "blockNumber": "69096026",
+          "blockNumber": "69097549",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "observedAt": "2026-09-21T20:48:05.000Z"
+          "observedAt": "2026-09-21T20:50:42.000Z"
         },
         {
           "claim": "totalSupply() == 19506750000000000000",
@@ -155,20 +155,20 @@
           "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000010eb5e5c61859e000",
-          "blockNumber": "69096026",
+          "blockNumber": "69097549",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "observedAt": "2026-09-21T20:48:05.000Z"
+          "observedAt": "2026-09-21T20:50:42.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:48:05.000Z",
+      "detectedAt": "2026-09-21T20:50:42.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:48:10.862Z"
+        "verifiedAt": "2026-09-21T20:50:52.795Z"
       }
     },
     {
@@ -190,9 +190,9 @@
           "contract": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de52e39f7a00bf4",
-          "blockNumber": "69096070",
+          "blockNumber": "69097649",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
-          "observedAt": "2026-09-21T20:48:10.000Z"
+          "observedAt": "2026-09-21T20:50:52.000Z"
         },
         {
           "claim": "totalSupply() == 570857480240000000000",
@@ -200,20 +200,20 @@
           "contract": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000001ef23d2dbee7c5e000",
-          "blockNumber": "69096070",
+          "blockNumber": "69097649",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
-          "observedAt": "2026-09-21T20:48:10.000Z"
+          "observedAt": "2026-09-21T20:50:52.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:48:10.000Z",
+      "detectedAt": "2026-09-21T20:50:52.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:48:15.660Z"
+        "verifiedAt": "2026-09-21T20:50:58.145Z"
       }
     },
     {
@@ -235,9 +235,9 @@
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69096116",
+          "blockNumber": "69097699",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-21T20:48:14.000Z"
+          "observedAt": "2026-09-21T20:50:57.000Z"
         },
         {
           "claim": "totalSupply() == 27545599852230000000000",
@@ -245,20 +245,20 @@
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000005d53ffd62c2a5a43c00",
-          "blockNumber": "69096116",
+          "blockNumber": "69097699",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-21T20:48:14.000Z"
+          "observedAt": "2026-09-21T20:50:57.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:48:14.000Z",
+      "detectedAt": "2026-09-21T20:50:57.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:48:22.919Z"
+        "verifiedAt": "2026-09-21T20:51:08.719Z"
       }
     },
     {
@@ -267,11 +267,11 @@
       "severity": "medium",
       "subject": "SPY (0x117cc2133c37B721F49dE2A7a74833232B3B4C0C)",
       "title": "SPY: off-chain share price and on-chain token price differ by 0.172%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (773.0897), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 772.9400). These are different quantities related by uiMultiplier(): underlying x 1.001717991 = 774.2679 (residual -0.152%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.172%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (773.0897), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 772.9550). These are different quantities related by uiMultiplier(): underlying x 1.001717991 = 774.2829 (residual -0.154%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.172%.",
       "impact": {
         "basisPoints": 17.18,
         "percent": 0.1718,
-        "note": "feed 773.0897 vs underlying-mid 772.9400 x multiplier 1.001717991 = 774.2679"
+        "note": "feed 773.0897 vs underlying-mid 772.9550 x multiplier 1.001717991 = 774.2829"
       },
       "evidence": [
         {
@@ -280,9 +280,9 @@
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69096116",
+          "blockNumber": "69097699",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-21T20:48:14.000Z"
+          "observedAt": "2026-09-21T20:50:57.000Z"
         },
         {
           "claim": "latestRoundData().answer == 77308968340",
@@ -290,27 +290,27 @@
           "contract": "0x319724394D3A0e3669269846abE664Cd621f9f6A",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000008d00000000000000000000000000000000000000000000000000000011fff93d94000000000000000000000000000000000000000000000000000000006ab1570d000000000000000000000000000000000000000000000000000000006ab15719000000000000000000000000000000000000000000000001000000000000008d",
-          "blockNumber": "69096116",
+          "blockNumber": "69097699",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x319724394D3A0e3669269846abE664Cd621f9f6A",
-          "observedAt": "2026-09-21T20:48:14.000Z"
+          "observedAt": "2026-09-21T20:50:57.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/SPY",
-          "describes": "underlying share bid/ask used for the mid 772.9400 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:48:08.611071936Z"
+          "describes": "underlying share bid/ask used for the mid 772.9550 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-21T20:50:53.521127772Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:48:14.000Z",
+      "detectedAt": "2026-09-21T20:50:57.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:48:24.257Z"
+        "verifiedAt": "2026-09-21T20:51:09.279Z"
       }
     },
     {
@@ -332,9 +332,9 @@
           "contract": "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000e2d0c827078a208",
-          "blockNumber": "69096200",
+          "blockNumber": "69097810",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9651342CeA770aE9a2969Ba2A52611523146aef9",
-          "observedAt": "2026-09-21T20:48:23.000Z"
+          "observedAt": "2026-09-21T20:51:08.000Z"
         },
         {
           "claim": "totalSupply() == 2117547414450000000000",
@@ -342,20 +342,20 @@
           "contract": "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000072cadfaa31fb1e7400",
-          "blockNumber": "69096200",
+          "blockNumber": "69097810",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9651342CeA770aE9a2969Ba2A52611523146aef9",
-          "observedAt": "2026-09-21T20:48:23.000Z"
+          "observedAt": "2026-09-21T20:51:08.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:48:23.000Z",
+      "detectedAt": "2026-09-21T20:51:08.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:48:29.803Z"
+        "verifiedAt": "2026-09-21T20:51:16.750Z"
       }
     },
     {
@@ -377,9 +377,9 @@
           "contract": "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df09f5dd70b2d96",
-          "blockNumber": "69096439",
+          "blockNumber": "69098015",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
-          "observedAt": "2026-09-21T20:48:47.000Z"
+          "observedAt": "2026-09-21T20:51:29.000Z"
         },
         {
           "claim": "totalSupply() == 573337000000000000000",
@@ -387,20 +387,20 @@
           "contract": "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000001f14a633d494228000",
-          "blockNumber": "69096439",
+          "blockNumber": "69098015",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
-          "observedAt": "2026-09-21T20:48:47.000Z"
+          "observedAt": "2026-09-21T20:51:29.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:48:47.000Z",
+      "detectedAt": "2026-09-21T20:51:29.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:48:56.531Z"
+        "verifiedAt": "2026-09-21T20:51:39.375Z"
       }
     },
     {
@@ -422,9 +422,9 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de5e95082ba0f3a",
-          "blockNumber": "69097044",
+          "blockNumber": "69098455",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-21T20:49:51.000Z"
+          "observedAt": "2026-09-21T20:52:11.000Z"
         },
         {
           "claim": "totalSupply() == 3407894428120000000000",
@@ -432,20 +432,20 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000b8be0926939d947000",
-          "blockNumber": "69097044",
+          "blockNumber": "69098455",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-21T20:49:51.000Z"
+          "observedAt": "2026-09-21T20:52:11.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:49:51.000Z",
+      "detectedAt": "2026-09-21T20:52:11.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:49:58.405Z"
+        "verifiedAt": "2026-09-21T20:52:23.388Z"
       }
     },
     {
@@ -467,9 +467,9 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de5e95082ba0f3a",
-          "blockNumber": "69097044",
+          "blockNumber": "69098455",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-21T20:49:51.000Z"
+          "observedAt": "2026-09-21T20:52:11.000Z"
         },
         {
           "claim": "latestRoundData().answer == 44584633104",
@@ -477,27 +477,27 @@
           "contract": "0x874cF94aa8eC88Fd9560094dD065f2fB3E41Fc2F",
           "call": "latestRoundData()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000005830000000000000000000000000000000000000000000000000000000a61738310000000000000000000000000000000000000000000000000000000006ab182f7000000000000000000000000000000000000000000000000000000006ab183040000000000000000000000000000000000000000000000010000000000000583",
-          "blockNumber": "69097044",
+          "blockNumber": "69098455",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x874cF94aa8eC88Fd9560094dD065f2fB3E41Fc2F",
-          "observedAt": "2026-09-21T20:49:51.000Z"
+          "observedAt": "2026-09-21T20:52:11.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/TSM",
           "describes": "underlying share bid/ask used for the mid 444.3950 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:49:54.980992461Z"
+          "fetchedAt": "2026-09-21T20:52:10.838271028Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:49:51.000Z",
+      "detectedAt": "2026-09-21T20:52:11.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:49:58.965Z"
+        "verifiedAt": "2026-09-21T20:52:24.452Z"
       }
     },
     {
@@ -519,9 +519,9 @@
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de22e47ab01248c",
-          "blockNumber": "69097216",
+          "blockNumber": "69098673",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-21T20:50:08.000Z"
+          "observedAt": "2026-09-21T20:52:33.000Z"
         },
         {
           "claim": "totalSupply() == 5923088845200000000000",
@@ -529,20 +529,20 @@
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000141175ec2d6f8aba000",
-          "blockNumber": "69097216",
+          "blockNumber": "69098673",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-21T20:50:08.000Z"
+          "observedAt": "2026-09-21T20:52:33.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:08.000Z",
+      "detectedAt": "2026-09-21T20:52:33.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:50:19.164Z"
+        "verifiedAt": "2026-09-21T20:52:40.388Z"
       }
     },
     {
@@ -551,11 +551,11 @@
       "severity": "low",
       "subject": "MSFT (0xe93237C50D904957Cf27E7B1133b510C669c2e74)",
       "title": "MSFT: off-chain share price and on-chain token price differ by 0.041%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (499.9864), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 501.7700). These are different quantities related by uiMultiplier(): underlying x 1.000412953 = 501.9772 (residual -0.397%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.041%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (499.9864), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 501.6900). These are different quantities related by uiMultiplier(): underlying x 1.000412953 = 501.8972 (residual -0.381%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.041%.",
       "impact": {
         "basisPoints": 4.13,
         "percent": 0.0413,
-        "note": "feed 499.9864 vs underlying-mid 501.7700 x multiplier 1.000412953 = 501.9772"
+        "note": "feed 499.9864 vs underlying-mid 501.6900 x multiplier 1.000412953 = 501.8972"
       },
       "evidence": [
         {
@@ -564,9 +564,9 @@
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de22e47ab01248c",
-          "blockNumber": "69097216",
+          "blockNumber": "69098673",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-21T20:50:08.000Z"
+          "observedAt": "2026-09-21T20:52:33.000Z"
         },
         {
           "claim": "latestRoundData().answer == 49998638543",
@@ -574,27 +574,27 @@
           "contract": "0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
           "call": "latestRoundData()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000003030000000000000000000000000000000000000000000000000000000ba426adcf000000000000000000000000000000000000000000000000000000006ab183f0000000000000000000000000000000000000000000000000000000006ab183fd0000000000000000000000000000000000000000000000010000000000000303",
-          "blockNumber": "69097216",
+          "blockNumber": "69098673",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
-          "observedAt": "2026-09-21T20:50:08.000Z"
+          "observedAt": "2026-09-21T20:52:33.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/MSFT",
-          "describes": "underlying share bid/ask used for the mid 501.7700 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:50:05.144079839Z"
+          "describes": "underlying share bid/ask used for the mid 501.6900 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-21T20:52:35.991100031Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:08.000Z",
+      "detectedAt": "2026-09-21T20:52:33.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:50:19.441Z"
+        "verifiedAt": "2026-09-21T20:52:42.487Z"
       }
     },
     {
@@ -616,9 +616,9 @@
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2a3281b2a5bf3",
-          "blockNumber": "69097499",
+          "blockNumber": "69098872",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-21T20:50:37.000Z"
+          "observedAt": "2026-09-21T20:52:53.000Z"
         },
         {
           "claim": "totalSupply() == 6703245301630000000000",
@@ -626,20 +626,20 @@
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000016b623746844a556c00",
-          "blockNumber": "69097499",
+          "blockNumber": "69098872",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-21T20:50:37.000Z"
+          "observedAt": "2026-09-21T20:52:53.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:37.000Z",
+      "detectedAt": "2026-09-21T20:52:53.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:50:44.662Z"
+        "verifiedAt": "2026-09-21T20:53:05.172Z"
       }
     },
     {
@@ -648,11 +648,11 @@
       "severity": "low",
       "subject": "META (0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35)",
       "title": "META: off-chain share price and on-chain token price differ by 0.054%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (743.5656), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 740.7650). These are different quantities related by uiMultiplier(): underlying x 1.000541460 = 741.1661 (residual 0.324%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.054%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (743.5656), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 740.8950). These are different quantities related by uiMultiplier(): underlying x 1.000541460 = 741.2962 (residual 0.306%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.054%.",
       "impact": {
         "basisPoints": 5.41,
         "percent": 0.0541,
-        "note": "feed 743.5656 vs underlying-mid 740.7650 x multiplier 1.000541460 = 741.1661"
+        "note": "feed 743.5656 vs underlying-mid 740.8950 x multiplier 1.000541460 = 741.2962"
       },
       "evidence": [
         {
@@ -661,9 +661,9 @@
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2a3281b2a5bf3",
-          "blockNumber": "69097499",
+          "blockNumber": "69098872",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-21T20:50:37.000Z"
+          "observedAt": "2026-09-21T20:52:53.000Z"
         },
         {
           "claim": "latestRoundData().answer == 74356559305",
@@ -671,27 +671,27 @@
           "contract": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
           "call": "latestRoundData()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000004e5000000000000000000000000000000000000000000000000000000114fff0dc9000000000000000000000000000000000000000000000000000000006ab18bf4000000000000000000000000000000000000000000000000000000006ab18c0100000000000000000000000000000000000000000000000100000000000004e5",
-          "blockNumber": "69097499",
+          "blockNumber": "69098872",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
-          "observedAt": "2026-09-21T20:50:37.000Z"
+          "observedAt": "2026-09-21T20:52:53.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/META",
-          "describes": "underlying share bid/ask used for the mid 740.7650 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:50:32.337130548Z"
+          "describes": "underlying share bid/ask used for the mid 740.8950 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-21T20:53:02.993799368Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:37.000Z",
+      "detectedAt": "2026-09-21T20:52:53.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:50:45.287Z"
+        "verifiedAt": "2026-09-21T20:53:05.835Z"
       }
     },
     {
@@ -713,9 +713,9 @@
           "contract": "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de88f8682962fed",
-          "blockNumber": "69097785",
+          "blockNumber": "69099176",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
-          "observedAt": "2026-09-21T20:51:05.000Z"
+          "observedAt": "2026-09-21T20:53:23.000Z"
         },
         {
           "claim": "totalSupply() == 2964740892740000000000",
@@ -723,20 +723,20 @@
           "contract": "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000a0b80b86139a2da800",
-          "blockNumber": "69097785",
+          "blockNumber": "69099176",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
-          "observedAt": "2026-09-21T20:51:05.000Z"
+          "observedAt": "2026-09-21T20:53:23.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:51:05.000Z",
+      "detectedAt": "2026-09-21T20:53:23.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:51:16.175Z"
+        "verifiedAt": "2026-09-21T20:53:30.572Z"
       }
     },
     {
@@ -758,9 +758,9 @@
           "contract": "0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df233adc753d85a",
-          "blockNumber": "69097880",
+          "blockNumber": "69099317",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
-          "observedAt": "2026-09-21T20:51:15.000Z"
+          "observedAt": "2026-09-21T20:53:38.000Z"
         },
         {
           "claim": "totalSupply() == 60378000000000000000",
@@ -768,20 +768,20 @@
           "contract": "0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000345e9bf1a88890000",
-          "blockNumber": "69097880",
+          "blockNumber": "69099317",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
-          "observedAt": "2026-09-21T20:51:15.000Z"
+          "observedAt": "2026-09-21T20:53:38.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:51:15.000Z",
+      "detectedAt": "2026-09-21T20:53:38.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:51:26.440Z"
+        "verifiedAt": "2026-09-21T20:53:43.819Z"
       }
     },
     {
@@ -803,9 +803,9 @@
           "contract": "0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4ac8cfc43d881",
-          "blockNumber": "69098438",
+          "blockNumber": "69099864",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
-          "observedAt": "2026-09-21T20:52:09.000Z"
+          "observedAt": "2026-09-21T20:54:33.000Z"
         },
         {
           "claim": "totalSupply() == 105295513020000000000",
@@ -813,20 +813,20 @@
           "contract": "0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000005b544cf364f9e5800",
-          "blockNumber": "69098438",
+          "blockNumber": "69099864",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
-          "observedAt": "2026-09-21T20:52:09.000Z"
+          "observedAt": "2026-09-21T20:54:33.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:09.000Z",
+      "detectedAt": "2026-09-21T20:54:33.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:52:16.944Z"
+        "verifiedAt": "2026-09-21T20:54:39.656Z"
       }
     },
     {
@@ -848,9 +848,9 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de167133335034b",
-          "blockNumber": "69098551",
+          "blockNumber": "69100049",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-21T20:52:21.000Z"
+          "observedAt": "2026-09-21T20:54:51.000Z"
         },
         {
           "claim": "totalSupply() == 15142873007160000000000",
@@ -858,20 +858,20 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000334e59411a1df043000",
-          "blockNumber": "69098551",
+          "blockNumber": "69100049",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-21T20:52:21.000Z"
+          "observedAt": "2026-09-21T20:54:51.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:21.000Z",
+      "detectedAt": "2026-09-21T20:54:51.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:52:33.569Z"
+        "verifiedAt": "2026-09-21T20:54:59.791Z"
       }
     },
     {
@@ -880,11 +880,11 @@
       "severity": "low",
       "subject": "GOOGL (0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3)",
       "title": "GOOGL: off-chain share price and on-chain token price differ by 0.019%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (354.9037), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 355.6600). These are different quantities related by uiMultiplier(): underlying x 1.000193924 = 355.7290 (residual -0.232%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.019%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (354.9037), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 355.5800). These are different quantities related by uiMultiplier(): underlying x 1.000193924 = 355.6490 (residual -0.210%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.019%.",
       "impact": {
         "basisPoints": 1.94,
         "percent": 0.0194,
-        "note": "feed 354.9037 vs underlying-mid 355.6600 x multiplier 1.000193924 = 355.7290"
+        "note": "feed 354.9037 vs underlying-mid 355.5800 x multiplier 1.000193924 = 355.6490"
       },
       "evidence": [
         {
@@ -893,9 +893,9 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de167133335034b",
-          "blockNumber": "69098551",
+          "blockNumber": "69100049",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-21T20:52:21.000Z"
+          "observedAt": "2026-09-21T20:54:51.000Z"
         },
         {
           "claim": "latestRoundData().answer == 35490365690",
@@ -903,27 +903,27 @@
           "contract": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000032b00000000000000000000000000000000000000000000000000000008436400fa000000000000000000000000000000000000000000000000000000006ab18cea000000000000000000000000000000000000000000000000000000006ab18cf6000000000000000000000000000000000000000000000001000000000000032b",
-          "blockNumber": "69098551",
+          "blockNumber": "69100049",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF6f373a037c30F0e5010d854385cA89185AE638b",
-          "observedAt": "2026-09-21T20:52:21.000Z"
+          "observedAt": "2026-09-21T20:54:51.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/GOOGL",
-          "describes": "underlying share bid/ask used for the mid 355.6600 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:52:30.608463617Z"
+          "describes": "underlying share bid/ask used for the mid 355.5800 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-21T20:54:46.180542133Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:21.000Z",
+      "detectedAt": "2026-09-21T20:54:51.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:52:34.124Z"
+        "verifiedAt": "2026-09-21T20:55:00.556Z"
       }
     },
     {
@@ -945,9 +945,9 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df2d6bc0c287246",
-          "blockNumber": "69099030",
+          "blockNumber": "69100536",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-21T20:53:09.000Z"
+          "observedAt": "2026-09-21T20:55:40.000Z"
         },
         {
           "claim": "totalSupply() == 36836312296960000000000",
@@ -955,20 +955,20 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000007cce68692f0264c0000",
-          "blockNumber": "69099030",
+          "blockNumber": "69100536",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-21T20:53:09.000Z"
+          "observedAt": "2026-09-21T20:55:40.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:53:09.000Z",
+      "detectedAt": "2026-09-21T20:55:40.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:53:17.513Z"
+        "verifiedAt": "2026-09-21T20:55:51.474Z"
       }
     },
     {
@@ -990,9 +990,9 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df2d6bc0c287246",
-          "blockNumber": "69099030",
+          "blockNumber": "69100536",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-21T20:53:09.000Z"
+          "observedAt": "2026-09-21T20:55:40.000Z"
         },
         {
           "claim": "latestRoundData().answer == 10110821255",
@@ -1000,27 +1000,27 @@
           "contract": "0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000003f000000000000000000000000000000000000000000000000000000025aa6e387000000000000000000000000000000000000000000000000000000006ab0738f000000000000000000000000000000000000000000000000000000006ab0739b000000000000000000000000000000000000000000000001000000000000003f",
-          "blockNumber": "69099030",
+          "blockNumber": "69100536",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
-          "observedAt": "2026-09-21T20:53:09.000Z"
+          "observedAt": "2026-09-21T20:55:40.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/SGOV",
           "describes": "underlying share bid/ask used for the mid 100.5950 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:53:04.795026107Z"
+          "fetchedAt": "2026-09-21T20:55:36.570247268Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:53:09.000Z",
+      "detectedAt": "2026-09-21T20:55:40.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:53:18.112Z"
+        "verifiedAt": "2026-09-21T20:55:52.234Z"
       }
     },
     {
@@ -1042,9 +1042,9 @@
           "contract": "0xcF364ea52787e289De6F32077834056E3E70D6A8",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000defc853122d3061",
-          "blockNumber": "69099548",
+          "blockNumber": "69101048",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xcF364ea52787e289De6F32077834056E3E70D6A8",
-          "observedAt": "2026-09-21T20:54:01.000Z"
+          "observedAt": "2026-09-21T20:56:32.000Z"
         },
         {
           "claim": "totalSupply() == 97009504080000000000",
@@ -1052,20 +1052,20 @@
           "contract": "0xcF364ea52787e289De6F32077834056E3E70D6A8",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000054246fdfb7d352000",
-          "blockNumber": "69099548",
+          "blockNumber": "69101048",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xcF364ea52787e289De6F32077834056E3E70D6A8",
-          "observedAt": "2026-09-21T20:54:01.000Z"
+          "observedAt": "2026-09-21T20:56:32.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:54:01.000Z",
+      "detectedAt": "2026-09-21T20:56:32.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:54:09.530Z"
+        "verifiedAt": "2026-09-21T20:56:43.770Z"
       }
     },
     {
@@ -1087,9 +1087,9 @@
           "contract": "0xF52597345A8Edf418bc4071b4a35112472277D3e",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de17c9382dd1305",
-          "blockNumber": "69099794",
+          "blockNumber": "69101449",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF52597345A8Edf418bc4071b4a35112472277D3e",
-          "observedAt": "2026-09-21T20:54:26.000Z"
+          "observedAt": "2026-09-21T20:57:12.000Z"
         },
         {
           "claim": "totalSupply() == 182540415550000000000",
@@ -1097,20 +1097,20 @@
           "contract": "0xF52597345A8Edf418bc4071b4a35112472277D3e",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000009e541d4cd59f0ec00",
-          "blockNumber": "69099794",
+          "blockNumber": "69101449",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF52597345A8Edf418bc4071b4a35112472277D3e",
-          "observedAt": "2026-09-21T20:54:26.000Z"
+          "observedAt": "2026-09-21T20:57:12.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:54:26.000Z",
+      "detectedAt": "2026-09-21T20:57:12.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:54:31.671Z"
+        "verifiedAt": "2026-09-21T20:57:18.516Z"
       }
     },
     {
@@ -1132,9 +1132,9 @@
           "contract": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0fac0caca4f0e",
-          "blockNumber": "69099969",
+          "blockNumber": "69101646",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
-          "observedAt": "2026-09-21T20:54:43.000Z"
+          "observedAt": "2026-09-21T20:57:32.000Z"
         },
         {
           "claim": "totalSupply() == 4525048271370000000000",
@@ -1142,20 +1142,20 @@
           "contract": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000f54da8e413e83fe400",
-          "blockNumber": "69099969",
+          "blockNumber": "69101646",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
-          "observedAt": "2026-09-21T20:54:43.000Z"
+          "observedAt": "2026-09-21T20:57:32.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:54:43.000Z",
+      "detectedAt": "2026-09-21T20:57:32.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:54:52.050Z"
+        "verifiedAt": "2026-09-21T20:57:42.693Z"
       }
     },
     {
@@ -1177,9 +1177,9 @@
           "contract": "0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de14ac1e5798a68",
-          "blockNumber": "69100766",
+          "blockNumber": "69102409",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
-          "observedAt": "2026-09-21T20:56:03.000Z"
+          "observedAt": "2026-09-21T20:58:46.000Z"
         },
         {
           "claim": "totalSupply() == 55460841590000000000",
@@ -1187,20 +1187,20 @@
           "contract": "0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000301ac7d94fc291c00",
-          "blockNumber": "69100766",
+          "blockNumber": "69102409",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
-          "observedAt": "2026-09-21T20:56:03.000Z"
+          "observedAt": "2026-09-21T20:58:46.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:56:03.000Z",
+      "detectedAt": "2026-09-21T20:58:46.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:56:13.575Z"
+        "verifiedAt": "2026-09-21T20:58:53.155Z"
       }
     },
     {
@@ -1222,9 +1222,9 @@
           "contract": "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de3924dad16253d",
-          "blockNumber": "69100908",
+          "blockNumber": "69102517",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
-          "observedAt": "2026-09-21T20:56:18.000Z"
+          "observedAt": "2026-09-21T20:58:57.000Z"
         },
         {
           "claim": "totalSupply() == 86275000000000000000",
@@ -1232,20 +1232,20 @@
           "contract": "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000004ad4e5f653cd38000",
-          "blockNumber": "69100908",
+          "blockNumber": "69102517",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
-          "observedAt": "2026-09-21T20:56:18.000Z"
+          "observedAt": "2026-09-21T20:58:57.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:56:18.000Z",
+      "detectedAt": "2026-09-21T20:58:57.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:56:25.032Z"
+        "verifiedAt": "2026-09-21T20:59:04.410Z"
       }
     },
     {
@@ -1267,9 +1267,9 @@
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69101039",
+          "blockNumber": "69102629",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-21T20:56:31.000Z"
+          "observedAt": "2026-09-21T20:59:09.000Z"
         },
         {
           "claim": "totalSupply() == 85991020961970000000000",
@@ -1277,20 +1277,20 @@
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000123595246cf4dee07400",
-          "blockNumber": "69101039",
+          "blockNumber": "69102629",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-21T20:56:31.000Z"
+          "observedAt": "2026-09-21T20:59:09.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:56:31.000Z",
+      "detectedAt": "2026-09-21T20:59:09.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:56:38.968Z"
+        "verifiedAt": "2026-09-21T20:59:20.774Z"
       }
     },
     {
@@ -1312,9 +1312,9 @@
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69101039",
+          "blockNumber": "69102629",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-21T20:56:31.000Z"
+          "observedAt": "2026-09-21T20:59:09.000Z"
         },
         {
           "claim": "latestRoundData().answer == 22730606190",
@@ -1322,27 +1322,27 @@
           "contract": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
           "call": "latestRoundData()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000432000000000000000000000000000000000000000000000000000000054ad9866e000000000000000000000000000000000000000000000000000000006ab18a8b000000000000000000000000000000000000000000000000000000006ab18a980000000000000000000000000000000000000000000000010000000000000432",
-          "blockNumber": "69101039",
+          "blockNumber": "69102629",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-          "observedAt": "2026-09-21T20:56:31.000Z"
+          "observedAt": "2026-09-21T20:59:09.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/NVDA",
           "describes": "underlying share bid/ask used for the mid 226.9500 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:56:35.865508472Z"
+          "fetchedAt": "2026-09-21T20:59:05.210760393Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:56:31.000Z",
+      "detectedAt": "2026-09-21T20:59:09.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:56:39.614Z"
+        "verifiedAt": "2026-09-21T20:59:21.551Z"
       }
     },
     {
@@ -1364,9 +1364,9 @@
           "contract": "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de13b092e0a540b",
-          "blockNumber": "69101444",
+          "blockNumber": "69102939",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
-          "observedAt": "2026-09-21T20:57:11.000Z"
+          "observedAt": "2026-09-21T20:59:41.000Z"
         },
         {
           "claim": "totalSupply() == 18822707821950000000000",
@@ -1374,20 +1374,20 @@
           "contract": "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000003fc618b8d1558516c00",
-          "blockNumber": "69101444",
+          "blockNumber": "69102939",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
-          "observedAt": "2026-09-21T20:57:11.000Z"
+          "observedAt": "2026-09-21T20:59:41.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:57:11.000Z",
+      "detectedAt": "2026-09-21T20:59:41.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:57:19.112Z"
+        "verifiedAt": "2026-09-21T20:59:50.450Z"
       }
     },
     {
@@ -1409,9 +1409,9 @@
           "contract": "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4682df44dfe8c",
-          "blockNumber": "69101641",
+          "blockNumber": "69103150",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
-          "observedAt": "2026-09-21T20:57:31.000Z"
+          "observedAt": "2026-09-21T21:00:02.000Z"
         },
         {
           "claim": "totalSupply() == 231041747380000000000",
@@ -1419,20 +1419,20 @@
           "contract": "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000c86592d2166700800",
-          "blockNumber": "69101641",
+          "blockNumber": "69103150",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
-          "observedAt": "2026-09-21T20:57:31.000Z"
+          "observedAt": "2026-09-21T21:00:02.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:57:31.000Z",
+      "detectedAt": "2026-09-21T21:00:02.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:57:39.277Z"
+        "verifiedAt": "2026-09-21T21:00:10.507Z"
       }
     },
     {
@@ -1454,9 +1454,9 @@
           "contract": "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0df5102723e4a",
-          "blockNumber": "69102229",
+          "blockNumber": "69103788",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
-          "observedAt": "2026-09-21T20:58:28.000Z"
+          "observedAt": "2026-09-21T21:01:06.000Z"
         },
         {
           "claim": "totalSupply() == 254273655080000000000",
@@ -1464,20 +1464,20 @@
           "contract": "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000dc8c17e187f999000",
-          "blockNumber": "69102229",
+          "blockNumber": "69103788",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
-          "observedAt": "2026-09-21T20:58:28.000Z"
+          "observedAt": "2026-09-21T21:01:06.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:58:28.000Z",
+      "detectedAt": "2026-09-21T21:01:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:58:33.865Z"
+        "verifiedAt": "2026-09-21T21:01:12.659Z"
       }
     },
     {
@@ -1499,9 +1499,9 @@
           "contract": "0x8005d266423c7ea827372c9c864491e5786600ea",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0b8c88cf96907",
-          "blockNumber": "69102314",
+          "blockNumber": "69103918",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8005d266423c7ea827372c9c864491e5786600ea",
-          "observedAt": "2026-09-21T20:58:37.000Z"
+          "observedAt": "2026-09-21T21:01:20.000Z"
         },
         {
           "claim": "totalSupply() == 1706663653830000000000",
@@ -1509,20 +1509,20 @@
           "contract": "0x8005d266423c7ea827372c9c864491e5786600ea",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000005c84b74edde7623c00",
-          "blockNumber": "69102314",
+          "blockNumber": "69103918",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8005d266423c7ea827372c9c864491e5786600ea",
-          "observedAt": "2026-09-21T20:58:37.000Z"
+          "observedAt": "2026-09-21T21:01:20.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:58:37.000Z",
+      "detectedAt": "2026-09-21T21:01:20.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:58:46.803Z"
+        "verifiedAt": "2026-09-21T21:01:26.518Z"
       }
     },
     {
@@ -1544,9 +1544,9 @@
           "contract": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0ca3f404bad8a",
-          "blockNumber": "69102455",
+          "blockNumber": "69104035",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
-          "observedAt": "2026-09-21T20:58:51.000Z"
+          "observedAt": "2026-09-21T21:01:31.000Z"
         },
         {
           "claim": "totalSupply() == 1019348953920000000000",
@@ -1554,20 +1554,20 @@
           "contract": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000037424ef8d917a08000",
-          "blockNumber": "69102455",
+          "blockNumber": "69104035",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
-          "observedAt": "2026-09-21T20:58:51.000Z"
+          "observedAt": "2026-09-21T21:01:31.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:58:51.000Z",
+      "detectedAt": "2026-09-21T21:01:31.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:58:59.687Z"
+        "verifiedAt": "2026-09-21T21:01:37.638Z"
       }
     },
     {
@@ -1589,9 +1589,9 @@
           "contract": "0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df11788ec920bf5",
-          "blockNumber": "69102532",
+          "blockNumber": "69104089",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
-          "observedAt": "2026-09-21T20:58:59.000Z"
+          "observedAt": "2026-09-21T21:01:37.000Z"
         },
         {
           "claim": "totalSupply() == 959744939860000000000",
@@ -1599,20 +1599,20 @@
           "contract": "0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000340722f9db25f04800",
-          "blockNumber": "69102532",
+          "blockNumber": "69104089",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
-          "observedAt": "2026-09-21T20:58:59.000Z"
+          "observedAt": "2026-09-21T21:01:37.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:58:59.000Z",
+      "detectedAt": "2026-09-21T21:01:37.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:59:06.029Z"
+        "verifiedAt": "2026-09-21T21:01:44.998Z"
       }
     },
     {
@@ -1634,9 +1634,9 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de8918468ddd0ff",
-          "blockNumber": "69103080",
+          "blockNumber": "69104606",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-21T20:59:55.000Z"
+          "observedAt": "2026-09-21T21:02:29.000Z"
         },
         {
           "claim": "totalSupply() == 6230695152870000000000",
@@ -1644,20 +1644,20 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000151c443e5e5c4897c00",
-          "blockNumber": "69103080",
+          "blockNumber": "69104606",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-21T20:59:55.000Z"
+          "observedAt": "2026-09-21T21:02:29.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:59:55.000Z",
+      "detectedAt": "2026-09-21T21:02:29.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:00:05.035Z"
+        "verifiedAt": "2026-09-21T21:02:41.480Z"
       }
     },
     {
@@ -1679,9 +1679,9 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de8918468ddd0ff",
-          "blockNumber": "69103080",
+          "blockNumber": "69104606",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-21T20:59:55.000Z"
+          "observedAt": "2026-09-21T21:02:29.000Z"
         },
         {
           "claim": "latestRoundData().answer == 14902841228",
@@ -1689,27 +1689,27 @@
           "contract": "0x0e6a64a2B58A6693a531E6c555f3A5d042eEA844",
           "call": "latestRoundData()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000008380000000000000000000000000000000000000000000000000000000378474f8c000000000000000000000000000000000000000000000000000000006ab1686f000000000000000000000000000000000000000000000000000000006ab1687c0000000000000000000000000000000000000000000000010000000000000838",
-          "blockNumber": "69103080",
+          "blockNumber": "69104606",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x0e6a64a2B58A6693a531E6c555f3A5d042eEA844",
-          "observedAt": "2026-09-21T20:59:55.000Z"
+          "observedAt": "2026-09-21T21:02:29.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/ORCL",
           "describes": "underlying share bid/ask used for the mid 148.5300 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:59:54.389120965Z"
+          "fetchedAt": "2026-09-21T21:02:27.201310359Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:59:55.000Z",
+      "detectedAt": "2026-09-21T21:02:29.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:00:06.284Z"
+        "verifiedAt": "2026-09-21T21:02:43.110Z"
       }
     },
     {
@@ -1731,9 +1731,9 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2b98c7058b254",
-          "blockNumber": "69103532",
+          "blockNumber": "69105012",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-21T21:00:41.000Z"
+          "observedAt": "2026-09-21T21:03:10.000Z"
         },
         {
           "claim": "totalSupply() == 15679567269620000000000",
@@ -1741,20 +1741,20 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000351fdb51dcfc5948800",
-          "blockNumber": "69103532",
+          "blockNumber": "69105012",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-21T21:00:41.000Z"
+          "observedAt": "2026-09-21T21:03:10.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:00:41.000Z",
+      "detectedAt": "2026-09-21T21:03:10.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:00:49.164Z"
+        "verifiedAt": "2026-09-21T21:03:20.624Z"
       }
     },
     {
@@ -1763,11 +1763,11 @@
       "severity": "low",
       "subject": "AAPL (0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9)",
       "title": "AAPL: off-chain share price and on-chain token price differ by 0.057%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (339.2419), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 338.6550). These are different quantities related by uiMultiplier(): underlying x 1.000566080 = 338.8467 (residual 0.117%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.057%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (339.2419), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 338.7000). These are different quantities related by uiMultiplier(): underlying x 1.000566080 = 338.8917 (residual 0.103%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.057%.",
       "impact": {
         "basisPoints": 5.66,
         "percent": 0.0566,
-        "note": "feed 339.2419 vs underlying-mid 338.6550 x multiplier 1.000566080 = 338.8467"
+        "note": "feed 339.2419 vs underlying-mid 338.7000 x multiplier 1.000566080 = 338.8917"
       },
       "evidence": [
         {
@@ -1776,9 +1776,9 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2b98c7058b254",
-          "blockNumber": "69103532",
+          "blockNumber": "69105012",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-21T21:00:41.000Z"
+          "observedAt": "2026-09-21T21:03:10.000Z"
         },
         {
           "claim": "latestRoundData().answer == 33924192943",
@@ -1786,27 +1786,27 @@
           "contract": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000028a00000000000000000000000000000000000000000000000000000007e60a1aaf000000000000000000000000000000000000000000000000000000006ab15e92000000000000000000000000000000000000000000000000000000006ab15e9e000000000000000000000000000000000000000000000001000000000000028a",
-          "blockNumber": "69103532",
+          "blockNumber": "69105012",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
-          "observedAt": "2026-09-21T21:00:41.000Z"
+          "observedAt": "2026-09-21T21:03:10.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/AAPL",
-          "describes": "underlying share bid/ask used for the mid 338.6550 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T21:00:41.465821185Z"
+          "describes": "underlying share bid/ask used for the mid 338.7000 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-21T21:03:12.061387362Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:00:41.000Z",
+      "detectedAt": "2026-09-21T21:03:10.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:00:50.219Z"
+        "verifiedAt": "2026-09-21T21:03:21.742Z"
       }
     },
     {
@@ -1828,9 +1828,9 @@
           "contract": "0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d044137509ea",
-          "blockNumber": "69104285",
+          "blockNumber": "69105855",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
-          "observedAt": "2026-09-21T21:01:56.000Z"
+          "observedAt": "2026-09-21T21:04:34.000Z"
         },
         {
           "claim": "totalSupply() == 603893959470000000000",
@@ -1838,20 +1838,20 @@
           "contract": "0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000020bcb65492157e4c00",
-          "blockNumber": "69104285",
+          "blockNumber": "69105855",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
-          "observedAt": "2026-09-21T21:01:56.000Z"
+          "observedAt": "2026-09-21T21:04:34.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:01:56.000Z",
+      "detectedAt": "2026-09-21T21:04:34.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:02:03.753Z"
+        "verifiedAt": "2026-09-21T21:04:42.176Z"
       }
     },
     {
@@ -1873,9 +1873,9 @@
           "contract": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2e35963d66048",
-          "blockNumber": "69105078",
+          "blockNumber": "69106749",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
-          "observedAt": "2026-09-21T21:03:16.000Z"
+          "observedAt": "2026-09-21T21:06:03.000Z"
         },
         {
           "claim": "totalSupply() == 1520780221550000000000",
@@ -1883,20 +1883,20 @@
           "contract": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000527110b20f8f9acc00",
-          "blockNumber": "69105078",
+          "blockNumber": "69106749",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
-          "observedAt": "2026-09-21T21:03:16.000Z"
+          "observedAt": "2026-09-21T21:06:03.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:03:16.000Z",
+      "detectedAt": "2026-09-21T21:06:03.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:03:23.294Z"
+        "verifiedAt": "2026-09-21T21:06:09.141Z"
       }
     },
     {
@@ -1918,9 +1918,9 @@
           "contract": "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de250bc9ac63468",
-          "blockNumber": "69105479",
+          "blockNumber": "69107201",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
-          "observedAt": "2026-09-21T21:03:57.000Z"
+          "observedAt": "2026-09-21T21:06:48.000Z"
         },
         {
           "claim": "totalSupply() == 223866892260000000000",
@@ -1928,20 +1928,20 @@
           "contract": "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000c22c6f869aff1e800",
-          "blockNumber": "69105479",
+          "blockNumber": "69107201",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
-          "observedAt": "2026-09-21T21:03:57.000Z"
+          "observedAt": "2026-09-21T21:06:48.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:03:57.000Z",
+      "detectedAt": "2026-09-21T21:06:48.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:04:07.866Z"
+        "verifiedAt": "2026-09-21T21:06:54.505Z"
       }
     },
     {
@@ -1963,9 +1963,9 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de112dacfcc82a9",
-          "blockNumber": "69105579",
+          "blockNumber": "69107251",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-21T21:04:07.000Z"
+          "observedAt": "2026-09-21T21:06:53.000Z"
         },
         {
           "claim": "totalSupply() == 112598941140000000000",
@@ -1973,20 +1973,20 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000061a9fcc645ed14800",
-          "blockNumber": "69105579",
+          "blockNumber": "69107251",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-21T21:04:07.000Z"
+          "observedAt": "2026-09-21T21:06:53.000Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:04:07.000Z",
+      "detectedAt": "2026-09-21T21:06:53.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:04:16.509Z"
+        "verifiedAt": "2026-09-21T21:07:02.654Z"
       }
     },
     {
@@ -1995,11 +1995,11 @@
       "severity": "low",
       "subject": "ASML (0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA)",
       "title": "ASML: off-chain share price and on-chain token price differ by 0.010%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (1712.8193), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 1711.7750). These are different quantities related by uiMultiplier(): underlying x 1.000101323 = 1711.9484 (residual 0.051%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.010%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (1712.8193), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 1710.8100). These are different quantities related by uiMultiplier(): underlying x 1.000101323 = 1710.9833 (residual 0.107%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.010%.",
       "impact": {
         "basisPoints": 1.01,
         "percent": 0.0101,
-        "note": "feed 1712.8193 vs underlying-mid 1711.7750 x multiplier 1.000101323 = 1711.9484"
+        "note": "feed 1712.8193 vs underlying-mid 1710.8100 x multiplier 1.000101323 = 1710.9833"
       },
       "evidence": [
         {
@@ -2008,9 +2008,9 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de112dacfcc82a9",
-          "blockNumber": "69105579",
+          "blockNumber": "69107251",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-21T21:04:07.000Z"
+          "observedAt": "2026-09-21T21:06:53.000Z"
         },
         {
           "claim": "latestRoundData().answer == 171281928083",
@@ -2018,27 +2018,27 @@
           "contract": "0xB4106147E8cce40b7d46124090d373A71b70f87D",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000072900000000000000000000000000000000000000000000000000000027e132cf93000000000000000000000000000000000000000000000000000000006ab18df3000000000000000000000000000000000000000000000000000000006ab18e000000000000000000000000000000000000000000000000010000000000000729",
-          "blockNumber": "69105579",
+          "blockNumber": "69107251",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xB4106147E8cce40b7d46124090d373A71b70f87D",
-          "observedAt": "2026-09-21T21:04:07.000Z"
+          "observedAt": "2026-09-21T21:06:53.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/ASML",
-          "describes": "underlying share bid/ask used for the mid 1711.7750 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T21:04:07.054998142Z"
+          "describes": "underlying share bid/ask used for the mid 1710.8100 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-21T21:06:52.050214587Z"
         }
       ],
       "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:04:07.000Z",
+      "detectedAt": "2026-09-21T21:06:53.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:04:16.788Z"
+        "verifiedAt": "2026-09-21T21:07:03.753Z"
       }
     }
   ],
