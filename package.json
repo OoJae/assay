@@ -18,6 +18,7 @@
     "payto": "tsx scripts/set-payto.ts",
     "wallets": "tsx scripts/make-wallets.ts",
     "buyer": "tsx scripts/make-buyer.ts",
+    "pay:contract": "tsx scripts/pay-contract.ts",
     "pay": "tsx scripts/pay.ts",
     "prove": "tsx scripts/prove-settlement.ts",
     "mcp": "tsx src/mcp/stdio.ts",

@@ -4,6 +4,7 @@ import { loadSweepLive } from '@/lib/findings'
 export const dynamic = 'force-dynamic'
 export const metadata = { title: 'Pricing — ASSAY' }
 
+const CONTRACT_AUDIT_TX = '0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2'
 const SETTLED_TX = '0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b'
 const REPO = 'https://github.com/OoJae/assay'
 
@@ -45,7 +46,7 @@ const TIERS = [
     price: '$2.00',
     state: 'roadmap' as const,
     what:
-      'Every citation for a subject in one signed document. Not purchasable: OpenServ payWorkflow() enforces a hard $0.10 client-side ceiling, so this needs a different x402 client than the one demonstrated.',
+      'Every citation for a subject in one signed document. Not purchasable: no workflow for it exists yet. (This previously blamed a $0.10 ceiling in OpenServ payWorkflow(). That ceiling is only the DEFAULT of the SDK\'s wrapFetchWithPayment, which accepts an explicit one — the $0.25 tier above is paid exactly that way.)',
   },
   {
     name: 'Continuous monitoring',
@@ -83,8 +84,9 @@ export default async function Pricing() {
 
       <div className="banner">
         <strong>What the revenue evidence actually is.</strong> Four x402 payments of $0.01 have
-        settled on Base, between two wallets this project controls.{' '}
-        <a href={`https://basescan.org/tx/${SETTLED_TX}`}>The most recent one is on-chain</a>. That
+        settled on Base, between two wallets this project controls, plus one{' '}
+        <a href={`https://basescan.org/tx/${CONTRACT_AUDIT_TX}`}>$0.25 contract audit</a>.{' '}
+        <a href={`https://basescan.org/tx/${SETTLED_TX}`}>The most recent $0.01 one is on-chain</a> too. That
         proves the <em>rail works end to end</em> — discovery, EIP-3009 authorization, relayed
         settlement, the agent answering, the buyer getting a result. It is{' '}
         <strong>plumbing, not demand</strong>. No external party has paid ASSAY for anything.

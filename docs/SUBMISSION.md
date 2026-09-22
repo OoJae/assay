@@ -6,9 +6,11 @@ sweep at block 69217928 (2026-09-22) — re-run `pnpm readme:stats` and re-check
 Links used throughout:
 - wall — <https://assay-steel.vercel.app>
 - repo — <https://github.com/OoJae/assay>
-- settled payment — <https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b>
+- settled payment, $0.01 — <https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b>
+- settled payment, $0.25 contract audit — <https://basescan.org/tx/0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2>
+- ERC8056Guard on 4663 — <https://robinhoodchain.blockscout.com/address/0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648> (Sourcify exact match)
 - attestation — <https://basescan.org/tx/0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669>
-- identity — <https://www.8004scan.io/agents/base/95265>
+- identity — <https://www.8004scan.io/agents/base/95374>
 
 ---
 
@@ -40,9 +42,9 @@ terminal · the Basescan `transferWithAuthorization` · the withheld table (or `
 > The wall also shows what it **withheld**, and names the asset it *read* separately from the party
 > who carries the risk — CRWD's contract is spec-perfect; the exposure is on whoever reads it wrong.
 >
-> Live wall, MCP over SSE behind TLS, x402 at $0.01/call, ERC-8004 identity 8453:95265, and a
-> self-attestation whose on-chain hash matches the bytes it serves — verify it yourself with one
-> command.
+> The guard is live at 0x674f…1648 on Robinhood Chain and verified as an exact match on Sourcify.
+> Two paid tiers settle over x402 on Base — $0.01 for a corrected position, $0.25 for a named
+> contract audit. ERC-8004 identity 8453:95374.
 >
 > 🔗 assay-steel.vercel.app
 > 🔗 github.com/OoJae/assay
@@ -232,7 +234,7 @@ reading on its own — the interesting content is the three times I was wrong.
 
 - [ ] `pnpm sweep && pnpm readme:stats`, then re-check every number above
 - [ ] `pnpm test:guard` passes (needs `anvil`)
-- [ ] guard deployed on 4663 and its address published on the wall and in the README
+- [x] guard deployed on 4663 (0x674f9b0e…1648), Sourcify exact match, published on the wall and README
 - [ ] `pnpm verify:attestation` returns VERIFIES
 - [ ] wall loads, `/pricing` loads, a finding page loads, 404 page is styled
 - [ ] `curl -s https://sonar.my.id/assay-mcp/health` returns ok

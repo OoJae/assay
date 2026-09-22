@@ -6,7 +6,9 @@ export const dynamic = 'force-dynamic'
 const MCP_URL = 'https://sonar.my.id/assay-mcp/sse'
 const REPO = 'https://github.com/OoJae/assay'
 const SETTLED_TX = '0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b'
-const IDENTITY_TX = '0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a'
+const IDENTITY_TX = '0x019ecbbcfe12f646d977c3a7d778d147d91cac9d6a348cc93a03be6d80e8356f'
+const GUARD = '0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648'
+const CONTRACT_AUDIT_TX = '0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2'
 const ATTEST_TX = '0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669'
 
 function fmtAge(iso: string) {
@@ -166,9 +168,21 @@ export default async function Home() {
           <div className="val">{MCP_URL}</div>
         </div>
         <div className="proof">
+          <div className="lbl">Guard on 4663 · free</div>
+          <div className="val">
+            <a href={`https://sourcify.dev/#/lookup/${GUARD}`}>ERC8056Guard</a> · verified
+          </div>
+        </div>
+        <div className="proof">
+          <div className="lbl">Contract audit · x402</div>
+          <div className="val">
+            $0.25 · <a href={`https://basescan.org/tx/${CONTRACT_AUDIT_TX}`}>settled on Base</a>
+          </div>
+        </div>
+        <div className="proof">
           <div className="lbl">ERC-8004 identity</div>
           <div className="val">
-            <a href={`https://basescan.org/tx/${IDENTITY_TX}`}>8453:95265</a>
+            <a href={`https://basescan.org/tx/${IDENTITY_TX}`}>8453:95374</a>
           </div>
         </div>
         <div className="proof">

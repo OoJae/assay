@@ -102,23 +102,38 @@ export function scheduledClosure(staleCount: number, cohortSize: number, clockHi
  */
 const FETCH_TIMEOUT_MS = 5_000
 
+/**
+ * One retry, and only on a transport failure.
+ *
+ * Measured: Robinhood's /rhj/assets returns 163KB in 1.2-2.8s normally, and its tail crossed the
+ * 5s bound twice in one session — once failing a live sweep, once a test. Both directories are
+ * memoised and served stale on error, so this only bites on a cold start, where there is nothing
+ * stale to fall back to. A second bounded attempt covers that tail while keeping every individual
+ * attempt capped; an HTTP error status is a real answer and is not retried.
+ */
+const FETCH_ATTEMPTS = 2
+
 async function getJson<T>(url: string, label: string): Promise<T> {
-  let res: Response
-  try {
-    res = await fetch(url, {
-      headers: { accept: 'application/json' },
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    })
-  } catch (err) {
-    const e = err as Error
-    throw new Error(
-      e.name === 'TimeoutError' || e.name === 'AbortError'
-        ? `${label}: timed out after ${FETCH_TIMEOUT_MS}ms fetching ${url}`
-        : `${label}: ${e.message} fetching ${url}`,
-    )
+  let lastErr = ''
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
+    let res: Response
+    try {
+      res = await fetch(url, {
+        headers: { accept: 'application/json' },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      })
+    } catch (err) {
+      const e = err as Error
+      lastErr =
+        e.name === 'TimeoutError' || e.name === 'AbortError'
+          ? `${label}: timed out after ${FETCH_TIMEOUT_MS}ms fetching ${url}`
+          : `${label}: ${e.message} fetching ${url}`
+      continue
+    }
+    if (!res.ok) throw new Error(`${label}: HTTP ${res.status} from ${url}`)
+    return (await res.json()) as T
   }
-  if (!res.ok) throw new Error(`${label}: HTTP ${res.status} from ${url}`)
-  return (await res.json()) as T
+  throw new Error(`${lastErr} (after ${FETCH_ATTEMPTS} attempts)`)
 }
 
 /**

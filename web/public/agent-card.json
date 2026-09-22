@@ -1,7 +1,7 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "ASSAY Valuation Integrity",
-  "description": "Independent valuation-integrity audit for agents on Robinhood Chain (EIP-155 chain 4663). Detects ERC-8056 corporate-action multiplier defects, missing and stale Chainlink feeds, and cross-surface price mixing between off-chain share prices and on-chain multiplier-adjusted token prices. Every published citation is re-fetched from chain state and byte-compared before publication; anything that does not reproduce is never published. ASSAY never moves capital and has no control path over anything it grades.",
+  "description": "Independent valuation-integrity audit for agents on Robinhood Chain (EIP-155 chain 4663). Detects ERC-8056 corporate-action multiplier defects, stale Chainlink feeds and cross-surface price mixing, and audits the CONTRACTS holding Stock Tokens for whether they can call uiMultiplier() at all \u2014 resolving proxies before any verdict. Every published citation is re-fetched from chain state and byte-compared before publication. Also publishes a free, ownerless on-chain guard that returns the corrected share count or refuses. ASSAY never moves capital and has no control path over anything it grades.",
   "services": [
     {
       "name": "http",
@@ -36,6 +36,38 @@
             }
           }
         }
+      },
+      "description": "assay_true_position \u2014 $0.01. Corrected ERC-8056 position plus oracle hygiene, or an explicit refusal."
+    },
+    {
+      "name": "http",
+      "description": "assay_check_contract \u2014 $0.25. Named integrator audit: is this contract multiplier-aware, and what is it exposed on.",
+      "endpoint": "https://api.openserv.ai/webhooks/x402/trigger/a1bb2a3946d1411eb945200d43ebc740",
+      "method": "POST",
+      "schema": {
+        "type": "object",
+        "required": [
+          "buyerAddress",
+          "payload"
+        ],
+        "properties": {
+          "buyerAddress": {
+            "type": "string",
+            "description": "Address paying for the call"
+          },
+          "payload": {
+            "type": "object",
+            "required": [
+              "address"
+            ],
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "0x-prefixed address on Robinhood Chain 4663"
+              }
+            }
+          }
+        }
       }
     },
     {
@@ -46,7 +78,8 @@
       "tools": [
         "assay_true_position",
         "assay_findings",
-        "assay_check_symbol"
+        "assay_check_symbol",
+        "assay_check_contract"
       ]
     },
     {
@@ -59,7 +92,16 @@
     },
     {
       "name": "agentWallet",
-      "endpoint": "eip155:8453:0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5"
+      "endpoint": "eip155:8453:0x6328f2fE483922721D94b33eE99e9938Da3b7911"
+    },
+    {
+      "name": "onchainGuard",
+      "description": "ERC8056Guard \u2014 free, ownerless, view-only. Verified exact match on Sourcify.",
+      "endpoint": "eip155:4663:0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648"
+    },
+    {
+      "name": "npm",
+      "endpoint": "https://github.com/OoJae/assay/tree/main/packages/erc8056-guard"
     }
   ],
   "active": true,
@@ -67,14 +109,25 @@
   "x402": {
     "network": "base",
     "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
-    "price": "0.01",
-    "payTo": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5"
+    "payTo": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+    "prices": {
+      "assay_true_position": "0.01",
+      "assay_check_contract": "0.25"
+    }
   },
   "erc8004": {
-    "canonicalAgentId": "8453:95265",
+    "canonicalAgentId": "8453:95374",
+    "owner": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+    "frozenAgentIds": [
+      {
+        "agentId": "8453:95265",
+        "owner": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5",
+        "reason": "signing key lost"
+      }
+    ],
     "duplicateAgentIds": [
       "8453:95266"
     ],
-    "note": "95265 is canonical. 95266 was minted by an accidental re-run of a non-idempotent script; both are owned by the same wallet and carry this same agentURI. Disclosed here so a reader of either token resolves to the same, correct identity rather than concluding one of them is an impostor."
+    "note": "95374 is canonical. 95265 is FROZEN: its signing key was lost when a local .env was overwritten with a copy of .env.example, so it can never be updated again. Everything already published under it \u2014 this card, the self-attestation it holds, and the x402 payments made to its wallet \u2014 remains true and verifiable. 95266 was an accidental duplicate of 95265. All three resolve to this same card, so a reader of any of them lands on the correct identity rather than concluding one is an impostor."
   }
 }
