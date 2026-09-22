@@ -100,6 +100,17 @@ for (const f of result.findings) {
   byClass[f.defectClass] = (byClass[f.defectClass] ?? 0) + 1
 }
 console.log('by severity:', bySeverity)
+const ig = result.integrators
+console.log(
+  `\nintegrators: scanned ${ig.scanned} addresses -> ${ig.contracts} contracts ` +
+    `(${ig.aware} multiplier-aware, ${ig.notAware} NOT aware, ${ig.proxyUnresolved} proxies withheld)`,
+)
+if (ig.notAware) {
+  console.log(
+    `  exposure: $${ig.usdHeldByNotAware.toLocaleString(undefined, { maximumFractionDigits: 0 })} held, ` +
+      `${ig.sharesUnaccounted.toFixed(4)} share-equivalents unaccounted if those balances are read as share counts`,
+  )
+}
 console.log('by class:', byClass)
 
 if (result.chainNotes.length) {

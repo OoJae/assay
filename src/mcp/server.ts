@@ -52,19 +52,18 @@ export function buildServer(): McpServer {
         // STALE_ORACLE_PAST_HEARTBEAT, a class that does not exist, so a caller filtering by the
         // documented value got an empty list and no error.
         defectClass: z
+          // Exactly the classes a detector can actually emit. Five values that no detector
+          // produces were removed: a filter that silently answers "none" to a question it cannot
+          // answer is worse than one that rejects it.
           .enum([
             'CROSS_SURFACE_PRICE_MIX',
             'ORACLE_STALE_MARKET_CLOSED',
             'ORACLE_STALE_UNEXPECTED',
             'ORACLE_STALE_INDETERMINATE',
-            'NO_PRICE_FEED',
             'SHARE_COUNT_MISREAD_RISK',
+            'INTEGRATOR_NOT_MULTIPLIER_AWARE',
             'ORACLE_PAUSED',
-            'SEQUENCER_FEED_UNAVAILABLE',
             'PENDING_CORPORATE_ACTION',
-            'VAULT_DECIMAL_SCALE',
-            'VAULT_WHITELIST',
-            'VAULT_ASYNC_SETTLEMENT',
           ])
           .optional()
           .describe('Exact defect class'),

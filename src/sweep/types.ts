@@ -16,7 +16,6 @@ export type DefectClass =
    * answer would let our own RPC flakiness decide a subject's severity.
    */
   | 'ORACLE_STALE_INDETERMINATE'
-  | 'NO_PRICE_FEED'
   /**
    * Renamed from SHARE_COUNT_MISREPORT. Nothing MISREPORTS anything here: a Stock Token that
    * moves uiMultiplier() is doing exactly what ERC-8056 specifies. The exposure is a RISK borne
@@ -24,13 +23,31 @@ export type DefectClass =
    * "ASSAY flags CRWD critical", which is an accusation against a compliant contract.
    */
   | 'SHARE_COUNT_MISREAD_RISK'
+  /**
+   * A contract HOLDING a Stock Token whose deployed bytecode contains no uiMultiplier() selector,
+   * so it cannot call it directly. The counterpart to SHARE_COUNT_MISREAD_RISK: that class names
+   * the asset that was read, this one names a party that reads it.
+   *
+   * Strictly an absence-of-capability claim, proven by eth_getCode and re-runnable by the verifier.
+   * It is NOT a claim that the contract misvalues anything — see src/sweep/integrators.ts.
+   */
+  | 'INTEGRATOR_NOT_MULTIPLIER_AWARE'
   | 'ORACLE_PAUSED'
-  /** Robinhood's docs require an L2 sequencer-uptime check, but no such feed is published. */
-  | 'SEQUENCER_FEED_UNAVAILABLE'
   | 'PENDING_CORPORATE_ACTION'
-  | 'VAULT_DECIMAL_SCALE'
-  | 'VAULT_WHITELIST'
-  | 'VAULT_ASYNC_SETTLEMENT'
+
+/*
+ * DELIBERATELY ABSENT, and this is load-bearing rather than tidiness.
+ *
+ * NO_PRICE_FEED and SEQUENCER_FEED_UNAVAILABLE were in this union and are emitted as ChainNotes
+ * instead, because an absence that no single RPC read can prove must not carry the byte-verified
+ * badge. VAULT_DECIMAL_SCALE, VAULT_WHITELIST and VAULT_ASYNC_SETTLEMENT were declared for an IXS
+ * path that was never built and has no detector.
+ *
+ * All five were filterable through assay_findings, so a caller asking for any of them got a
+ * valid-schema empty list forever — exactly the defect fixed once already for the nonexistent
+ * STALE_ORACLE_PAST_HEARTBEAT (see src/mcp/server.ts). A filter that silently answers "none" to a
+ * question it cannot answer is worse than one that rejects it.
+ */
 
 /**
  * A single verified observation. Every numeric field here must be reproducible by

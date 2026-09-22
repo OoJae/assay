@@ -2,7 +2,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { mkdtempSync, writeFileSync, readFileSync, rmSync, statSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { appendEnvSecret, hasEnvKey, hasEnvValue, readEnv } from '../src/lib/envfile.js'
+import {
+  appendEnvSecret,
+  assertNoSecretLoss,
+  backupEnv,
+  hasEnvKey,
+  hasEnvValue,
+  populatedSecretCount,
+  readEnv,
+} from '../src/lib/envfile.js'
 
 /**
  * The setup path a judge follows verbatim.
@@ -74,5 +82,54 @@ describe('appendEnvSecret', () => {
     writeFileSync(env, 'BUYER_PRIVATE_KEY=\n', { mode: 0o644 })
     appendEnvSecret('BUYER_PRIVATE_KEY', KEY, env)
     expect(statSync(env).mode & 0o077).toBe(0)
+  })
+})
+
+describe('secret-loss guard — the thing that would have saved WALLET_PRIVATE_KEY', () => {
+  it('REFUSES a write that reduces the number of populated secrets', () => {
+    // The exact incident: `.env` held live keys and was replaced by a byte-for-byte copy of
+    // `.env.example`. Both files parse fine, both are valid dotenv, and the destructive one looks
+    // entirely reasonable — which is why the guard counts VALUES rather than inspecting content.
+    writeFileSync(env, `WALLET_PRIVATE_KEY=${KEY}\nBUYER_PRIVATE_KEY=${OTHER}\nSERV_API_KEY=real\n`)
+    expect(populatedSecretCount(env)).toBe(3)
+
+    const template = 'WALLET_PRIVATE_KEY=\nBUYER_PRIVATE_KEY=\nSERV_API_KEY=serv_...\n'
+    expect(() => assertNoSecretLoss(env, template)).toThrow(/REFUSING to write/)
+  })
+
+  it('treats placeholder spellings as empty, not as secrets', () => {
+    writeFileSync(env, 'SERV_API_KEY=serv_...\nWALLET_PRIVATE_KEY=\n')
+    expect(populatedSecretCount(env)).toBe(0)
+  })
+
+  it('allows a write that keeps or adds secrets', () => {
+    writeFileSync(env, `WALLET_PRIVATE_KEY=${KEY}\n`)
+    expect(() => assertNoSecretLoss(env, `WALLET_PRIVATE_KEY=${KEY}\nBUYER_PRIVATE_KEY=${OTHER}\n`)).not.toThrow()
+    expect(() => assertNoSecretLoss(env, `WALLET_PRIVATE_KEY=${OTHER}\n`)).not.toThrow()
+  })
+
+  it('can be overridden deliberately, but only by saying so', () => {
+    writeFileSync(env, `WALLET_PRIVATE_KEY=${KEY}\n`)
+    expect(() => assertNoSecretLoss(env, '', true)).not.toThrow()
+  })
+
+  it('appendEnvSecret cannot be used to destroy an existing secret', () => {
+    writeFileSync(env, `WALLET_PRIVATE_KEY=${KEY}\nBUYER_PRIVATE_KEY=\n`)
+    appendEnvSecret('BUYER_PRIVATE_KEY', OTHER, env)
+    const after = readEnv(env)
+    expect(after.WALLET_PRIVATE_KEY).toBe(KEY)   // untouched
+    expect(after.BUYER_PRIVATE_KEY).toBe(OTHER)  // filled
+    expect(populatedSecretCount(env)).toBe(2)
+  })
+
+  it('backupEnv mirrors outside the working tree and refuses to back up nothing', () => {
+    const dest = join(dir, 'backup', 'env.backup')
+    writeFileSync(env, 'WALLET_PRIVATE_KEY=\n')
+    expect(backupEnv(env, dest)).toBeNull()      // no secrets: nothing worth copying
+
+    writeFileSync(env, `WALLET_PRIVATE_KEY=${KEY}\n`)
+    expect(backupEnv(env, dest)).toBe(dest)
+    expect(readFileSync(dest, 'utf8')).toContain(KEY)
+    expect(statSync(dest).mode & 0o077).toBe(0)
   })
 })

@@ -1,4 +1,15 @@
-import { readFileSync, writeFileSync, existsSync, statSync, chmodSync, renameSync, unlinkSync } from 'node:fs'
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  statSync,
+  chmodSync,
+  renameSync,
+  unlinkSync,
+  mkdirSync,
+} from 'node:fs'
+import { homedir } from 'node:os'
+import { join, dirname } from 'node:path'
 import { parse } from 'dotenv'
 
 /**
@@ -15,6 +26,63 @@ import { parse } from 'dotenv'
  */
 
 export const ENV_PATH = '.env'
+
+/**
+ * Where live secrets are mirrored, OUTSIDE the working tree.
+ *
+ * This exists because the working copy was destroyed. `.env` was overwritten with a byte-for-byte
+ * copy of `.env.example`, and with it went WALLET_PRIVATE_KEY — the key that owned ERC-8004
+ * identity 95265 and received every x402 payment — and BUYER_PRIVATE_KEY. Both unrecoverable: 97
+ * stored 64-hex values across every artifact were tested and none was a key for those wallets.
+ *
+ * A single copy of an unrecoverable secret, inside a directory full of test fixtures and template
+ * files with nearly the same name, is not storage. It is a countdown.
+ */
+export const ENV_BACKUP_PATH = join(homedir(), '.assay', 'env.backup')
+
+/** A value that looks like a real secret rather than a placeholder. */
+function isPopulated(v: string | undefined): boolean {
+  const t = (v ?? '').trim()
+  return t !== '' && !t.endsWith('...') && !t.startsWith('<')
+}
+
+/** How many secrets a file currently holds. The quantity the guard below refuses to reduce. */
+export function populatedSecretCount(path = ENV_PATH): number {
+  if (!existsSync(path)) return 0
+  return Object.values(readEnv(path)).filter(isPopulated).length
+}
+
+/**
+ * Refuse any write that would DESTROY secrets.
+ *
+ * The guard is deliberately crude — it counts populated values — because the failure it prevents
+ * was crude: something copied a template over a live file. A write that reduces the count is
+ * either a mistake or needs `{ allowSecretLoss: true }` said out loud.
+ */
+export function assertNoSecretLoss(path: string, nextBody: string, allowSecretLoss = false): void {
+  if (allowSecretLoss || !existsSync(path)) return
+  const before = populatedSecretCount(path)
+  const after = Object.values(parse(nextBody)).filter(isPopulated).length
+  if (after < before) {
+    throw new Error(
+      `REFUSING to write ${path}: it currently holds ${before} populated secret(s) and the new ` +
+        `content holds ${after}. This is how the previous WALLET_PRIVATE_KEY was lost — a template ` +
+        `overwrote a live file. Pass allowSecretLoss to override, and back up first.`,
+    )
+  }
+}
+
+/** Mirror the current secrets outside the working tree. Best effort; never blocks the caller. */
+export function backupEnv(path = ENV_PATH, to = ENV_BACKUP_PATH): string | null {
+  if (!existsSync(path) || populatedSecretCount(path) === 0) return null
+  try {
+    mkdirSync(dirname(to), { recursive: true, mode: 0o700 })
+    writeFileSync(to, readFileSync(path, 'utf8'), { mode: 0o600 })
+    return to
+  } catch {
+    return null
+  }
+}
 
 /** Parse with the same parser that will later load it, so "does it exist" cannot disagree. */
 export function readEnv(path = ENV_PATH): Record<string, string> {
@@ -76,11 +144,14 @@ export function appendEnvSecret(name: string, value: string, path = ENV_PATH): v
     ? prev.replace(placeholder, `$1${value}`)
     : (prev.trimEnd() + (prev.trim() ? '\n' : '') + `${name}=${value}\n`).replace(/^\n+/, '')
 
+  assertNoSecretLoss(path, body)
+
   const tmp = `${path}.tmp`
   writeFileSync(tmp, body, { mode: 0o600 })
   renameSync(tmp, path)
   if (existsSync(tmp)) unlinkSync(tmp)
   secureEnv(path)
+  backupEnv(path)
 }
 
 /**

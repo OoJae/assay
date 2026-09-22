@@ -16,6 +16,12 @@ import {
 } from '../lib/sources.js'
 import { rhClient } from '../lib/chains.js'
 import { verifyFindingDetailed, type VerifiedFinding, type RejectedFinding } from '../verify/index.js'
+import {
+  classifyIntegrator,
+  integratorExposure,
+  integratorFinding,
+  recentCounterparties,
+} from './integrators.js'
 
 /**
  * The methodology a finding was produced under. It appears on every finding so a subject can
@@ -41,6 +47,16 @@ const BLOCK_REFRESH_EVERY = 1
 
 /** ERC-8056 uiMultiplier() is 1e18 fixed point regardless of the token's own decimals(). */
 const ONE_E18 = 10n ** 18n
+
+/**
+ * How many counterparties to classify per divergent asset.
+ *
+ * Each one costs an eth_getCode plus possibly a storage read and a balanceOf. The sweep has to
+ * finish inside the 8-minute cadence that keeps its own citations re-fetchable, so this is a
+ * budget, not a judgement about how many exist — and the aggregate reports `scanned` so the
+ * coverage is stated rather than implied.
+ */
+const INTEGRATOR_SCAN_CAP = 40
 
 /**
  * Cohort pre-pass cache.
@@ -139,6 +155,8 @@ export interface SweepOptions {
   symbols?: string[]
   /** Progress callback: (done, total, symbol) */
   onProgress?: (done: number, total: number, symbol: string) => void
+  /** Run the integrator pass. Defaults on; disable for a fast asset-only sweep. */
+  integrators?: boolean
   /**
    * Verify every citation before returning. ON BY DEFAULT and strongly recommended:
    * the public RPC serves state for only 5,000-10,000 blocks, so verification MUST happen in
@@ -170,6 +188,23 @@ export interface SweepResult {
     pausedOracles: number
   }
   errors: Array<{ symbol: string; error: string }>
+  /**
+   * AGGREGATE integrator exposure, for the public wall.
+   *
+   * The named contracts live in `findings` (class INTEGRATOR_NOT_MULTIPLIER_AWARE) and are served
+   * only through the paid/MCP surface. The wall gets counts and dollars, so the public claim is
+   * "N contracts holding $X cannot call uiMultiplier()" without naming anyone who might merely be
+   * custodying the token.
+   */
+  integrators: {
+    scanned: number
+    contracts: number
+    notAware: number
+    aware: number
+    proxyUnresolved: number
+    usdHeldByNotAware: number
+    sharesUnaccounted: number
+  }
 }
 
 export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
@@ -727,6 +762,89 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
 
   if (!shouldVerify) verified.push(...(findings as VerifiedFinding[]))
 
+  // ---- Integrator pass ------------------------------------------------------------
+  //
+  // Everything above audits ASSETS, all of which behave exactly as ERC-8056 specifies. This pass
+  // audits the contracts that HOLD them, which is where the exposure actually is: measured on this
+  // chain, ~80% of the addresses touching these tokens are contracts.
+  //
+  // Only DIVERGENT assets are scanned. Where the multiplier is 1.0 there is nothing to misread, so
+  // naming a contract would be pure noise about a party with no exposure at all.
+  const integrators = {
+    scanned: 0,
+    contracts: 0,
+    notAware: 0,
+    aware: 0,
+    proxyUnresolved: 0,
+    usdHeldByNotAware: 0,
+    sharesUnaccounted: 0,
+  }
+
+  if (opts.integrators !== false) {
+    const seen = new Set<string>()
+    for (const asset of scope) {
+      const mult = Number((asset as { currentMultiplier?: string }).currentMultiplier)
+      if (!Number.isFinite(mult) || Math.abs(mult - 1) <= 0.002) continue
+      const dep = rhDeployment(asset)
+      if (!dep) continue
+      const sym = asset.tokenSymbol
+      const feed = feedForSymbol(feeds, sym)
+
+      let priceUsd: number | null = null
+      if (feed) {
+        const fr = await readFeed(feed.proxyAddress, feed.heartbeat, lastNow, lastBlock)
+        if (fr?.usable) priceUsd = fr.price
+      }
+
+      let counterparties: Set<`0x${string}`>
+      try {
+        counterparties = await recentCounterparties(dep.contractAddress, lastBlock)
+      } catch {
+        continue
+      }
+
+      for (const addr of [...counterparties].slice(0, INTEGRATOR_SCAN_CAP)) {
+        const key = `${addr}:${sym}`
+        if (seen.has(key)) continue
+        seen.add(key)
+        integrators.scanned++
+
+        const reading = await classifyIntegrator(addr, lastBlock)
+        if (!reading || reading.verdict === 'EOA') continue
+        integrators.contracts++
+        if (reading.verdict === 'AWARE') { integrators.aware++; continue }
+        if (reading.verdict === 'PROXY_UNRESOLVED') { integrators.proxyUnresolved++; continue }
+        if (reading.verdict === 'TOO_SMALL') continue
+
+        const exposure = await integratorExposure(reading, sym, dep.contractAddress, mult, priceUsd)
+        if (!exposure) continue
+
+        const f = integratorFinding(exposure, lastBlock, lastObservedAt, METHODOLOGY_VERSION)
+        if (shouldVerify) {
+          try {
+            const r = await verifyFindingDetailed(f)
+            if (!r.ok) { rejected.push(r.rejected); continue }
+            verified.push(r.finding)
+          } catch (err) {
+            rejected.push({
+              finding: f,
+              reason: 'unchecked',
+              detail: `verification threw: ${(err as Error).message.slice(0, 160)}`,
+              results: [],
+            })
+            continue
+          }
+        } else {
+          verified.push(f as VerifiedFinding)
+        }
+        integrators.notAware++
+        integrators.sharesUnaccounted += exposure.sharesUnaccounted
+        integrators.usdHeldByNotAware += exposure.usdHeld ?? 0
+      }
+    }
+  }
+
+
   // ---- Chain-level notes -----------------------------------------------------------
   // Absences. These carry sources a third party can check, not eth_call citations, so they
   // are reported separately from findings and never inherit the byte-verified guarantee.
@@ -794,5 +912,6 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
     rejected,
     stats,
     errors,
+    integrators,
   }
 }

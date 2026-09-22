@@ -1,6 +1,6 @@
 import { rhClient } from '../lib/chains.js'
 import type { Evidence, Finding } from '../sweep/types.js'
-import { encodeFunctionData } from 'viem'
+import { encodeFunctionData, keccak256 } from 'viem'
 import { stockTokenAbi, aggregatorV3Abi } from '../lib/abis.js'
 
 /**
@@ -59,7 +59,31 @@ export function isPrunedError(message: string): boolean {
   return m.includes('historical') || m.includes('missing trie node') || m.includes('state not available')
 }
 
+/**
+ * Citations that are NOT an eth_call.
+ *
+ * The integrator audit's central claim is an ABSENCE: this contract's deployed bytecode does not
+ * contain the `uiMultiplier()` selector, therefore it cannot call it directly. The evidence for
+ * that is the bytecode itself, fetched with eth_getCode — a different JSON-RPC method entirely.
+ *
+ * Without this branch the verifier would return `unknown call signature` for every such citation,
+ * and the finding would be withheld as `no_evidence`. An absence that CAN be proven by a specific
+ * RPC read is a legitimate Finding; only an absence that cannot (a feed that is published nowhere)
+ * has to be a ChainNote. This is that distinction, kept sharp.
+ */
+const RAW_METHODS: Record<string, 'eth_getCode' | 'eth_getStorageAt'> = {
+  'getCode()': 'eth_getCode',
+  'getStorageAt(EIP1967_IMPLEMENTATION)': 'eth_getStorageAt',
+}
+
+/** EIP-1967 implementation slot — the one storage slot a proxy citation may read. */
+export const EIP1967_IMPLEMENTATION_SLOT =
+  '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc' as const
+
 export async function verifyEvidence(e: Evidence): Promise<VerificationResult> {
+  const rawMethod = RAW_METHODS[e.call]
+  if (rawMethod) return verifyRawRead(e, rawMethod)
+
   const abi = SIG_TO_ABI[e.call]
   if (!abi)
     return { evidence: e, reproduced: false, status: 'error', reason: `unknown call signature: ${e.call}` }
@@ -93,6 +117,50 @@ export async function verifyEvidence(e: Evidence): Promise<VerificationResult> {
       }
     }
     return { evidence: e, reproduced: false, status: 'error', reason: `call failed: ${msg.slice(0, 120)}` }
+  }
+}
+
+/**
+ * Re-run a raw RPC read and byte-compare, exactly as an eth_call citation is re-run.
+ *
+ * Bytecode is large, so citations store the keccak256 of the code rather than the code itself —
+ * `rawReturn` is that hash. The comparison is still byte-for-byte on what the node returns; it is
+ * the hash of those bytes that is compared, which keeps a finding a few hundred bytes instead of
+ * tens of kilobytes while remaining exactly as falsifiable.
+ */
+async function verifyRawRead(
+  e: Evidence,
+  method: 'eth_getCode' | 'eth_getStorageAt',
+): Promise<VerificationResult> {
+  try {
+    const params =
+      method === 'eth_getCode'
+        ? [e.contract, `0x${BigInt(e.blockNumber).toString(16)}`]
+        : [e.contract, EIP1967_IMPLEMENTATION_SLOT, `0x${BigInt(e.blockNumber).toString(16)}`]
+    const got = (await rhClient.request({ method, params } as never)) as string
+    const actual = method === 'eth_getCode' ? keccak256(got as `0x${string}`) : got
+
+    if (actual.toLowerCase() !== e.rawReturn.toLowerCase()) {
+      return {
+        evidence: e,
+        reproduced: false,
+        status: 'mismatch',
+        actualReturn: actual,
+        reason: 'raw return mismatch',
+      }
+    }
+    return { evidence: e, reproduced: true, status: 'reproduced', actualReturn: actual }
+  } catch (err) {
+    const msg = (err as Error).message
+    if (isPrunedError(msg)) {
+      return {
+        evidence: e,
+        reproduced: false,
+        status: 'pruned',
+        reason: 'block no longer served by this RPC (not an archive node) — citation is unchecked here, not disproven',
+      }
+    }
+    return { evidence: e, reproduced: false, status: 'error', reason: `${method} failed: ${msg.slice(0, 120)}` }
   }
 }
 
