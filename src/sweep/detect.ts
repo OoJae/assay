@@ -289,6 +289,22 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
     const mult = reading.multiplierFloat
     const divergenceBps = Math.abs(mult - 1) * 10_000
     /**
+     * A zero or non-finite multiplier is a BROKEN READ, not a 100%-divergent asset.
+     *
+     * misreadPct guards with `mult > 0 ? ... : 0`, so the impact reported 0% — while divergenceBps
+     * stayed |0-1|*10000 = 10000, which sev() maps to CRITICAL. That published a critical finding
+     * against a named asset whose own impact field said the effect was zero, which is not a
+     * statement anyone should be able to screenshot.
+     */
+    const multiplierUsable = mult > 0 && Number.isFinite(mult)
+    if (!multiplierUsable) {
+      errors.push({
+        symbol: sym,
+        error: `uiMultiplier() returned ${reading.multiplier.toString()} — not a usable scaling factor, asset not assessed`,
+      })
+      continue
+    }
+    /**
      * How much a raw balanceOf() understates the true share count, as a percentage of the TRUE
      * value. This is bounded by 100% by construction.
      *
@@ -310,7 +326,7 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
     const direction = misreadPct >= 0 ? 'understates' : 'overstates'
 
     // --- Class 4: share-count misreport (only meaningful when multiplier != 1) ---
-    if (divergenceBps > 0.01) {
+    if (multiplierUsable && divergenceBps > 0.01) {
       stats.divergentMultipliers++
       // C-9: scale by the token's OWN decimals(), read above and previously discarded while the
       // code hardcoded 1e18. Divide in bigint first so a large supply keeps full precision, then
@@ -407,6 +423,16 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
     // --- Classes 1 + 2: feed present -> staleness and cross-surface mixing ---
     if (feed) {
       const reading2 = await readFeed(feed.proxyAddress, feed.heartbeat, nowSeconds, blockNumber)
+      if (!reading2) {
+        // Symmetric with the unreadable-token case above, and it was missing here.
+        // `if (reading2) { ... }` had no else, so a feed whose latestRoundData() could not be read
+        // produced silence: no finding, no error, and a caller asking about that asset was told
+        // nothing was wrong with it. "We could not read the oracle" is not "the oracle is fine".
+        errors.push({
+          symbol: sym,
+          error: `Chainlink feed ${feed.proxyAddress} unreadable at this block — staleness not assessed`,
+        })
+      }
       if (reading2) {
         if (reading2.stale) {
           stats.staleFeeds++
@@ -510,7 +536,7 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
         // Cross-surface mixing: quantify what an off-chain share price would do.
         // CROSS-SURFACE NEEDS A PRICE. Unlike staleness, this finding IS a statement about two
         // numbers, so it is simply not made when one of them is unknown.
-        if (divergenceBps > 1 && reading2.price !== null && reading2.usable) {
+        if (multiplierUsable && divergenceBps > 1 && reading2.price !== null && reading2.usable) {
           const under = await fetchRhUnderlyingPrice(sym)
           if (under && under.mid > 0) {
             const predicted = under.mid * mult

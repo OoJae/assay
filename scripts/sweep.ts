@@ -5,11 +5,13 @@ const args = process.argv.slice(2)
 const limitArg = args.find((a) => a.startsWith('--limit='))
 const symArg = args.find((a) => a.startsWith('--symbols='))
 const force = args.includes('--force')
-const OUT = 'data/findings.json'
+// Overridable so the production host can write outside the git working tree — see
+// src/lib/surface.ts for why `git update-index --skip-worktree` is not sufficient.
+const OUT = process.env.ASSAY_FINDINGS_PATH || 'data/findings.json'
 // Unique per process. A single fixed temp path meant two overlapping sweeps -- the 8-minute timer
 // against a manual run, which is now a realistic overlap -- wrote each other's bytes, and whichever
 // renamed second published a file the first had already moved away.
-const TMP = `data/findings.tmp.${process.pid}.json`
+const TMP = `${OUT}.tmp.${process.pid}`
 
 /**
  * How far the published finding count may fall before this refuses to overwrite.
@@ -37,7 +39,7 @@ const result = await sweep({
  */
 const scoped = Boolean(symArg || limitArg)
 const publishing = !scoped || args.includes('--publish')
-const target = publishing ? OUT : 'data/findings.scoped.json'
+const target = publishing ? OUT : `${OUT.replace(/\.json$/, '')}.scoped.json`
 
 // Refuse a large regression unless it was asked for, and write atomically so an interrupted
 // run cannot leave a truncated board behind.

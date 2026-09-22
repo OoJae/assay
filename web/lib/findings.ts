@@ -137,8 +137,23 @@ export async function loadSweepLive(): Promise<SweepData> {
       signal: AbortSignal.timeout(4000),
     })
     if (res.ok) {
-      const live = (await res.json()) as Partial<SweepData>
-      if (Array.isArray(live.findings)) return { ...EMPTY, ...live }
+      const live = (await res.json()) as Partial<SweepData> & {
+        available?: boolean
+        unavailableReason?: string
+      }
+      /**
+       * A 200 is not enough. The endpoint now serves an explicit `{available: false}` payload when
+       * the sweeper host could not read its own artifact, and accepting that because `findings` is
+       * an array meant the wall rendered an EMPTY BOARD in preference to the committed copy it was
+       * supposed to fall back to. The comment promising that "the endpoint being down degrades
+       * freshness rather than emptying the board" held only for a non-200.
+       *
+       * An empty findings array is also rejected: 195 assets have never once produced zero
+       * findings, so zero here means something upstream failed, and the fallback is strictly
+       * better than a blank page claiming everything is clean.
+       */
+      if (live.available === false) return loadSweep()
+      if (Array.isArray(live.findings) && live.findings.length > 0) return { ...EMPTY, ...live }
     }
   } catch {
     /* fall through to the committed copy */
@@ -170,6 +185,8 @@ export const SNAPSHOT_FRESH_MS = 2 * 60 * 60 * 1000
 
 export function snapshotAge(observedAt: string): { ms: number; fresh: boolean } {
   const ms = Date.now() - new Date(observedAt).getTime()
+  // An unparseable or absent timestamp is NOT fresh. Treating an unknown age as fresh is the same
+  // error as treating an unread asset as clean, on the banner that states live market conditions.
   return { ms, fresh: Number.isFinite(ms) && ms >= 0 && ms < SNAPSHOT_FRESH_MS }
 }
 

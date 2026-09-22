@@ -130,21 +130,29 @@ cd /home/ubuntu/assay && git pull && pnpm install --frozen-lockfile
 sudo systemctl restart assay-agent assay-mcp
 ```
 
-**One-time setup, without which that command aborts.** The sweep timer rewrites
-`data/findings.json` every 8 minutes and the file is git-tracked, so a bare `git pull` fails with
-*"local changes would be overwritten"* — and because of the `&&`, nothing restarts, leaving the host
-on old code while the command looks like it ran. Tell git the host's copy is allowed to diverge:
+**One-time setup, without which that command aborts.** The live artifact must live **outside the
+git working tree**:
 
 ```bash
-cd /home/ubuntu/assay && git update-index --skip-worktree data/findings.json
-git ls-files -v data/findings.json      # expect: S data/findings.json
+mkdir -p /home/ubuntu/assay-data
+cd /home/ubuntu/assay && git checkout -- data/findings.json   # release the tracked copy, once
+git update-index --no-skip-worktree data/findings.json 2>/dev/null || true
 ```
 
-Divergence is the intended state here. The host regenerates that file every 8 minutes and serves it
-at `/assay-mcp/findings.json`, which is where the wall actually reads from; the committed copy is
-only the wall's fallback for when this host is unreachable. `git checkout -- data/findings.json`
-would "fix" the conflict by throwing away the fresh sweep and serving a stale board until the next
-tick — which is exactly what happened once.
+The units set `ASSAY_FINDINGS_PATH=/home/ubuntu/assay-data/findings.json`, so the sweep writes
+there and the MCP server serves from there.
+
+Why not simply let the tracked file diverge: the sweep rewrites it every 8 minutes, so `git pull`
+aborts with *"local changes would be overwritten"*, and because of the `&&` nothing restarts —
+leaving the host on old code while the command looks like it ran. **`git update-index
+--skip-worktree` does not fix this**, which is worth stating because it looks like it should:
+verified in a scratch repo, with a local modification *and* an upstream change to the same path,
+pull still exits *"Please commit your changes or stash them before you merge."* And
+`git checkout -- data/findings.json` "fixes" it by discarding the fresh sweep and serving a stale
+board until the next tick — which is exactly what happened once.
+
+The committed `data/findings.json` stays in the repo as the **wall's fallback** for when this host
+is unreachable. It is not the live board.
 
 The agent runs with **no signing key** — no `WALLET_PRIVATE_KEY`, no `BUYER_PRIVATE_KEY`, no SERV
 key. This is enforced, not documented: `serve-remote.ts` refuses to start if any of them is in

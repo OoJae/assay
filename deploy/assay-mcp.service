@@ -20,6 +20,14 @@ Environment=MCP_TRUSTED_PROXIES=127.0.0.1,::1
 # the SSE transport must advertise the prefixed POST path -- it sends an ABSOLUTE path, and a bare
 # /messages would land on whatever else lives at the origin root. Remove this when the endpoint
 # moves to assay-mcp.sonar.my.id (see RUNBOOK).
+# Live artifact OUTSIDE the git working tree.
+#
+# The sweep rewrites this every 8 minutes. If it were the tracked data/findings.json, `git pull`
+# would abort the moment that file also changed upstream -- and skip-worktree does NOT prevent
+# that (verified: with a local modification and an upstream change to the same path, pull still
+# exits "Please commit your changes or stash them before you merge"). Writing outside the tree
+# keeps deploys a plain `git pull` and leaves the committed copy as the wall's fallback.
+Environment=ASSAY_FINDINGS_PATH=/home/ubuntu/assay-data/findings.json
 Environment=MCP_PUBLIC_PATH=/assay-mcp
 ExecStart=/usr/bin/env pnpm mcp:sse
 Restart=always
@@ -31,7 +39,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/ubuntu/assay
+ReadWritePaths=/home/ubuntu/assay /home/ubuntu/assay-data
 ProtectKernelTunables=true
 ProtectControlGroups=true
 RestrictSUIDSGID=true

@@ -19,6 +19,14 @@ ExecStart=/usr/bin/env pnpm sweep
 # The sweep refuses to overwrite a good board with a degraded one and exits 2. That is a correct
 # outcome, not a unit failure, so do not let it mark the service failed.
 SuccessExitStatus=0 2
+# Live artifact OUTSIDE the git working tree.
+#
+# The sweep rewrites this every 8 minutes. If it were the tracked data/findings.json, `git pull`
+# would abort the moment that file also changed upstream -- and skip-worktree does NOT prevent
+# that (verified: with a local modification and an upstream change to the same path, pull still
+# exits "Please commit your changes or stash them before you merge"). Writing outside the tree
+# keeps deploys a plain `git pull` and leaves the committed copy as the wall's fallback.
+Environment=ASSAY_FINDINGS_PATH=/home/ubuntu/assay-data/findings.json
 StandardOutput=append:/home/ubuntu/assay/sweep.log
 StandardError=append:/home/ubuntu/assay/sweep.log
 
@@ -26,5 +34,5 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/ubuntu/assay
+ReadWritePaths=/home/ubuntu/assay /home/ubuntu/assay-data
 RestrictSUIDSGID=true

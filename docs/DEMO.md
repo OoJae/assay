@@ -151,6 +151,9 @@ cast call 0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931 "uiMultiplier()" \
   the README frames it that way.
 - If a cited block has aged past RPC retention, the `cast` call errors. That is a **feature** and
   a good thing to show if it happens: unchecked is not disproven, and the finding page says so.
-  Re-run `pnpm sweep --symbols=CRWD` to mint a fresh citation and try again.
+  Citations die **8–17 minutes** after the sweep that minted them (measured), and the host re-sweeps
+  every 8 minutes — so just reload the page, do not re-run a sweep locally.
+  ⚠️ `pnpm sweep --symbols=CRWD` will **not** refresh the wall: scoped runs write to
+  `data/findings.scoped.json` and deliberately leave the published board alone.
 - Keep every claim on screen matched by something on screen. The one thing this project cannot
   afford in a demo is a number nobody can check.

@@ -118,8 +118,11 @@ export default async function Pricing() {
       </p>
 
       <footer>
-        Every figure on this page is either a number from the current sweep or a transaction you can
-        open on Basescan. Tiers marked roadmap are not purchasable and no checkout exists for them.
+        The findings count is read from the current sweep and the payment link is a transaction you
+        can open on Basescan. The marketplace figures in the section above — 471 listed services, 77
+        active, a $0.01 median — are from a snapshot of{' '}
+        <span className="mono">api.openserv.ai/x402-services</span> taken while building this, and
+        are not re-fetched. Tiers marked roadmap are not purchasable and no checkout exists for them.
       </footer>
     </div>
   )

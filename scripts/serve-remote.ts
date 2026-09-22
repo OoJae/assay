@@ -109,9 +109,12 @@ async function healthProbe() {
   try {
     const p = await truePosition(HEALTH_SYMBOL, HEALTH_HOLDER)
     const ms = Date.now() - started
+    const checks = Object.values(p.checks)
+    // Counted, not hardcoded. This printed "/4" and the reply grew a fifth check, so the healthy
+    // line on the deployed host read 4/4 while one check was silently uncounted.
     console.log(
       `health ok  ${HEALTH_SYMBOL} block=${p.blockNumber} confidence=${p.confidence} ` +
-        `checks=${Object.values(p.checks).filter(Boolean).length}/4 ${ms}ms`,
+        `checks=${checks.filter(Boolean).length}/${checks.length} ${ms}ms`,
     )
   } catch (err) {
     console.error(`health FAILED after ${Date.now() - started}ms: ${(err as Error).message}`)

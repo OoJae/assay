@@ -98,7 +98,9 @@ export function buildServer(): McpServer {
         content: [{ type: 'text', text: JSON.stringify(r, null, 2) }],
         // An unknown ticker is an error, not a clean bill of health. CRWDD is one keystroke from
         // the only 4.0x asset on the chain, and it used to come back as {published: 0}.
-        isError: Boolean(r.error),
+        // An asset that could not be READ is the same category: nothing was checked, so the caller
+        // must not be able to mistake it for a pass.
+        isError: Boolean(r.error) || r.assessed === false,
       }
     },
   )

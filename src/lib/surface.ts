@@ -14,7 +14,20 @@ import type { DefectClass, Severity } from '../sweep/types.js'
  * is a strange property for a verification product. These are the canonical shapes.
  */
 
-export const FINDINGS_PATH = 'data/findings.json'
+/**
+ * Where the published sweep lives.
+ *
+ * Overridable because on the production host it must NOT be the git-tracked path. The sweep timer
+ * rewrites it every 8 minutes; if that is a tracked file, `git pull` aborts the moment the artifact
+ * also changes upstream — and `git update-index --skip-worktree` does not help, which I verified
+ * rather than assumed: with a local modification AND an upstream change to the same path, pull
+ * still exits "Please commit your changes or stash them before you merge."
+ *
+ * So the host writes outside the working tree (ASSAY_FINDINGS_PATH=/home/ubuntu/assay-data/...),
+ * deploys stay a plain `git pull`, and the committed copy remains what it was always meant to be:
+ * the wall's fallback, not the live board.
+ */
+export const FINDINGS_PATH = process.env.ASSAY_FINDINGS_PATH || 'data/findings.json'
 
 export interface SweepSnapshot {
   blockNumber?: string
@@ -135,7 +148,9 @@ export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
      * the payload says everything is fine.
      */
     snapshotAgeSeconds: ageSeconds,
-    snapshotStale: ageSeconds !== null && ageSeconds > CITATION_LIFETIME_SECONDS,
+    // An UNKNOWN age is stale, not fresh. `ageSeconds !== null && ...` reported snapshotStale:false
+    // when there was no timestamp at all — the same error as reporting an unread asset as clean.
+    snapshotStale: ageSeconds === null || ageSeconds > CITATION_LIFETIME_SECONDS,
     citationsReproducible: ageSeconds !== null && ageSeconds <= CITATION_LIFETIME_SECONDS,
     citationLifetimeSeconds: CITATION_LIFETIME_SECONDS,
     totalPublished: snap.findings.length,
@@ -154,6 +169,10 @@ export function truePositionPayload(p: TruePosition) {
 export interface CheckSymbolResult {
   error?: string
   didYouMean?: string | null
+  /** False when the asset could not be read at all — NOT the same as "checked and clean". */
+  assessed?: boolean
+  notAssessed?: string[]
+  errors?: Array<{ symbol: string; error: string }>
   symbol?: string
   block?: string
   observedAt?: string
@@ -187,11 +206,24 @@ export async function checkSymbol(symbol: string): Promise<CheckSymbolResult> {
   }
 
   const r = await sweep({ symbols: [match] })
+  /**
+   * An asset we FAILED TO READ must never read as clean on the surface people pay for.
+   *
+   * detect.ts records that case in `errors` — but nothing carried it out to a caller, so
+   * `assay_check_symbol` returned `published: 0` for an asset whose uiMultiplier() read had failed
+   * outright, which is indistinguishable from an asset that was checked and found sound. The fix
+   * that put it in `errors` only helped whoever read the sweep artifact by hand.
+   */
+  const unread = r.errors.filter((e) => e.symbol.toUpperCase() === match.toUpperCase())
   return {
     symbol: match,
     block: r.blockNumber,
     observedAt: r.observedAt,
     assetsScanned: r.assetsScanned,
+    /** True only when the asset was actually read. `published: 0` with this false means NOTHING was checked. */
+    assessed: unread.length === 0,
+    ...(unread.length ? { notAssessed: unread.map((e) => e.error) } : {}),
+    errors: r.errors,
     // Exposed because the wall shows the corroborating context and the paid surface did not: a
     // caller cannot tell an expected weekend closure from an incident without it.
     marketClosed: r.marketClosed,
@@ -219,6 +251,8 @@ export async function checkSymbolSummary(symbol: string) {
   if (r.error) return { error: r.error, didYouMean: r.didYouMean }
   return {
     symbol: r.symbol,
+    assessed: r.assessed,
+    ...(r.notAssessed ? { notAssessed: r.notAssessed } : {}),
     block: r.block,
     observedAt: r.observedAt,
     marketClosed: r.marketClosed,
