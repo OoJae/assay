@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+import { keccak256, toHex } from 'viem'
 import { METHODOLOGY_SYSTEM_PROMPT, METHODOLOGY_VERSION } from './methodology.js'
 import type { VerifiedFinding } from '../verify/index.js'
 
@@ -46,6 +47,21 @@ export interface Adjudication {
     promptGuardTriggered: boolean
     shadowAgentExhausted: boolean
     adjudicatedAt: string
+    /** Wall-clock for the SERV call. */
+    latencyMs: number
+    /**
+     * Token usage AS REPORTED IN THE RESPONSE. Recorded because the harness used to discard it,
+     * so every cost figure in this project was an estimate derived from a console total. This is
+     * a lower bound, not the bill: Kronos compiles the reasoning prompt on the generator side and
+     * that cost may not appear per response. The console is authoritative.
+     */
+    usage: { promptTokens: number; completionTokens: number } | null
+    /**
+     * keccak256 of the exact user message sent. Lets a reader tell which INPUTS a verdict was
+     * measured on — the rubric version alone does not, because the finding text can change under
+     * an unchanged rubric, and did.
+     */
+    inputHash: `0x${string}`
   }
 }
 
@@ -176,6 +192,7 @@ export async function adjudicate(
     },
   ]
 
+  const userMessage = buildUserMessage(finding, declaredMandate)
   const started = Date.now()
   let promptGuardTriggered = false
   let shadowAgentExhausted = false
@@ -185,7 +202,7 @@ export async function adjudicate(
       model,
       messages: [
         { role: 'system', content: METHODOLOGY_SYSTEM_PROMPT },
-        { role: 'user', content: buildUserMessage(finding, declaredMandate) },
+        { role: 'user', content: userMessage },
       ],
       tools,
       response_format: {
@@ -201,6 +218,9 @@ export async function adjudicate(
     },
   )
 
+  const latencyMs = Date.now() - started
+  const u = (res as { usage?: { prompt_tokens?: number; completion_tokens?: number } }).usage
+  const usage = u ? { promptTokens: u.prompt_tokens ?? 0, completionTokens: u.completion_tokens ?? 0 } : null
   const choice = res.choices[0]
   const text = choice?.message?.content ?? ''
   const finish = choice?.finish_reason ?? ''
@@ -231,6 +251,9 @@ export async function adjudicate(
       promptGuardTriggered,
       shadowAgentExhausted,
       adjudicatedAt: new Date(started).toISOString(),
+      latencyMs,
+      usage,
+      inputHash: keccak256(toHex(userMessage)),
     },
   }
 }

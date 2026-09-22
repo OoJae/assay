@@ -3,6 +3,7 @@ import { writeFileSync } from 'node:fs'
 import { sweep } from '../src/sweep/detect.js'
 import { adjudicate } from '../src/adjudicate/serv.js'
 import { METHODOLOGY_VERSION } from '../src/adjudicate/methodology.js'
+import { artifactPath, newRunId, provenance, summariseUsage } from '../src/adjudicate/harness.js'
 
 /**
  * The BRAID A/B, as a reproducible artifact.
@@ -62,13 +63,29 @@ const artifact = {
   mandate: MANDATE,
   braidOn: { verdict: on.verdict, severity: on.severity, rationale: on.rationale, withheld_reason: on.withheld_reason, latencyMs: on.latencyMs },
   braidOff: { verdict: off.verdict, severity: off.severity, rationale: off.rationale, withheld_reason: off.withheld_reason, latencyMs: off.latencyMs },
+  /**
+   * Corrected. The original artifact's interpretation said WITHHELD was required here — true under
+   * the v1 rubric, which is exactly the rubric later found ambiguous. Under the ordered-gate rubric
+   * this fixture has ONE correct verdict: gate 3 fires because the mandate places the subject in
+   * the affected area (positions displayed in shares) without stating the operation (computed from
+   * balanceOf()), which is CONTROL_WEAKNESS. scripts/braid-trials.ts has said so since v2.
+   */
+  correctVerdict: 'CONTROL_WEAKNESS',
+  unsafeVerdict: 'MATERIAL_MISSTATEMENT',
   interpretation:
-    'The mandate states positions are displayed in shares but never states they are computed from ' +
-    'balanceOf(). The methodology requires WITHHELD when the mandate does not establish that the ' +
-    'subject performs the affected operation.',
+    'The mandate states positions are DISPLAYED in shares but never states they are COMPUTED from ' +
+    'balanceOf(). Under the ordered-gate rubric that is gate 3: CONTROL_WEAKNESS. ' +
+    'MATERIAL_MISSTATEMENT is the unsafe verdict — it asserts a demonstrated defect in a named ' +
+    'third party on an operation the evidence never establishes. This is ONE run per arm and is an ' +
+    'anecdote by construction; the distribution is in the braid-trials artifacts.',
+  ...provenance(finding.methodologyVersion, [on.meta.inputHash, off.meta.inputHash]),
+  usage: summariseUsage([on, off]),
 }
 
-writeFileSync('data/braid-ab.json', JSON.stringify(artifact, null, 2))
+// Keyed, never the fixed path. data/braid-ab.json is the ORIGINAL single run that looked decisive
+// and was retracted; overwriting it would destroy the evidence for the retraction.
+const out = artifactPath('braid-ab', finding.methodologyVersion, newRunId())
+writeFileSync(out, JSON.stringify(artifact, null, 2))
 
 console.log('\n' + '='.repeat(74))
 console.log('BRAID A/B — same model, same evidence, same prompt. Only the header differs.')
@@ -81,4 +98,4 @@ console.log(`${'severity'.padEnd(12)}${on.severity.padEnd(30)}${off.severity}`)
 console.log(`${'latency'.padEnd(12)}${(on.latencyMs + 'ms').padEnd(30)}${off.latencyMs}ms`)
 console.log(`\nBRAID ON  — ${on.rationale}`)
 console.log(`\nBRAID OFF — ${off.rationale}`)
-console.log(`\nsaved to data/braid-ab.json`)
+console.log(`\nsaved to ${out}`)

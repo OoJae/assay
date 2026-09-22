@@ -3,6 +3,8 @@ import { writeFileSync } from 'node:fs'
 import { sweep } from '../src/sweep/detect.js'
 import { adjudicate, type Verdict } from '../src/adjudicate/serv.js'
 import { METHODOLOGY_VERSION } from '../src/adjudicate/methodology.js'
+import { artifactPath, newRunId, provenance, summariseUsage } from '../src/adjudicate/harness.js'
+import type { Adjudication } from '../src/adjudicate/serv.js'
 
 /**
  * The BRAID A/B, run N times per arm.
@@ -64,6 +66,7 @@ async function arm(disableBraid: boolean, label: string) {
   const verdicts: Verdict[] = []
   const latencies: number[] = []
   const errors: string[] = []
+  const all: Adjudication[] = []
   for (let i = 0; i < n; i++) {
     const t0 = Date.now()
     try {
@@ -71,6 +74,7 @@ async function arm(disableBraid: boolean, label: string) {
       const ms = Date.now() - t0
       verdicts.push(a.verdict)
       latencies.push(ms)
+      all.push(a)
       console.error(`  ${label} ${i + 1}/${n}: ${a.verdict} (${ms}ms)`)
     } catch (e) {
       const msg = (e as Error).message.slice(0, 160)
@@ -99,6 +103,8 @@ async function arm(disableBraid: boolean, label: string) {
     unsafeCount: unsafe,
     unsafeRate: verdicts.length ? unsafe / verdicts.length : null,
     medianLatencyMs: latencies[Math.floor(latencies.length / 2)] ?? null,
+    usage: summariseUsage(all),
+    inputHashes: [...new Set(all.map((a) => a.meta.inputHash))],
   }
 }
 
@@ -106,7 +112,7 @@ console.error(`running ${n} trials per arm…\n`)
 const on = await arm(false, 'BRAID ON ')
 const off = await arm(true, 'BRAID OFF')
 
-const runId = new Date().toISOString().replace(/[:.]/g, '-')
+const runId = newRunId()
 const artifact = {
   generatedAt: new Date().toISOString(),
   methodologyVersion: METHODOLOGY_VERSION,
@@ -119,6 +125,13 @@ const artifact = {
   correctVerdict: CORRECT,
   braidOn: on,
   braidOff: off,
+  ...provenance(finding.methodologyVersion, [...on.inputHashes, ...off.inputHashes]),
+  usage: {
+    promptTokens: on.usage.promptTokens + off.usage.promptTokens,
+    completionTokens: on.usage.completionTokens + off.usage.completionTokens,
+    estimatedUsd: Number((on.usage.estimatedUsd + off.usage.estimatedUsd).toFixed(4)),
+    basis: on.usage.basis,
+  },
   note:
     'The mandate states positions are DISPLAYED in shares but never states they are COMPUTED ' +
     'from balanceOf(). MATERIAL_MISSTATEMENT is therefore the unsafe verdict: it asserts a ' +
@@ -132,10 +145,11 @@ const artifact = {
  * was the dominant variable. That claim is the actual contribution here, and it is only
  * supportable if both samples survive.
  */
-const keyed = `data/braid-trials-${METHODOLOGY_VERSION}-${runId}.json`
+// Keyed by rubric AND detection version AND run id. The rubric alone does not identify the input:
+// the finding text changed under an unchanged rubric. And NO "convenience pointer" over
+// data/braid-trials.json — that file is the published v2 sample the README cites.
+const keyed = artifactPath('braid-trials', finding.methodologyVersion, runId)
 writeFileSync(keyed, JSON.stringify(artifact, null, 2))
-// Convenience pointer to the newest run. The keyed file is the record.
-writeFileSync('data/braid-trials.json', JSON.stringify(artifact, null, 2))
 
 const pct = (x: number | null) => (x === null ? 'n/a' : `${(x * 100).toFixed(0)}%`)
 console.log('\n' + '='.repeat(72))

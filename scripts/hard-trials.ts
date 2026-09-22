@@ -3,6 +3,8 @@ import { writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { sweep } from '../src/sweep/detect.js'
 import { adjudicate, type Verdict } from '../src/adjudicate/serv.js'
 import { METHODOLOGY_VERSION } from '../src/adjudicate/methodology.js'
+import { provenance, summariseUsage, type UsageSummary } from '../src/adjudicate/harness.js'
+import type { Adjudication } from '../src/adjudicate/serv.js'
 import { HARD_CASES } from '../src/adjudicate/hard-cases.js'
 
 /**
@@ -51,16 +53,21 @@ interface CaseResult {
   errored?: number
   errors?: string[]
   correct: number
+  /** Optional so an artifact written before usage was recorded still resumes. */
+  usage?: UsageSummary
+  inputHashes?: string[]
 }
 
 async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<CaseResult> {
   const finding = c.findingClass === 'SHARE_COUNT_MISREAD_RISK' ? share! : stale!
   const verdicts: Verdict[] = []
   const errors: string[] = []
+  const all: Adjudication[] = []
   for (let i = 0; i < n; i++) {
     try {
       const a = await adjudicate(finding, c.mandate, { dev, disableBraid: !braid })
       verdicts.push(a.verdict)
+      all.push(a)
       const mark = a.verdict === c.expected ? '✓' : '✗'
       console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'} ${i + 1}/${n}: ${mark} ${a.verdict}`)
     } catch (e) {
@@ -79,6 +86,8 @@ async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<
     errored: errors.length,
     errors,
     correct: verdicts.filter((v) => v === c.expected).length,
+    usage: summariseUsage(all),
+    inputHashes: [...new Set(all.map((a) => a.meta.inputHash))],
   }
 }
 
@@ -97,16 +106,28 @@ let results: CaseResult[] = []
  * model configuration was the dominant variable. Keying it also makes resume correct: a run can
  * only resume a partial run of the SAME rubric, which is what the version check below intended.
  */
-const OUT = `data/hard-trials-${METHODOLOGY_VERSION}.json`
+/**
+ * The DETECTION methodology is part of the input. The rubric version alone did not identify what
+ * a number was measured on — the finding text changed under an unchanged rubric — so a resumed run
+ * could silently mix trials from two different inputs. No run id here, deliberately: a resumed run
+ * must find its own partial file.
+ */
+const DETECTION_VERSION = share!.methodologyVersion
+const OUT = `data/hard-trials-${METHODOLOGY_VERSION}-${DETECTION_VERSION}.json`
 
 if (existsSync(OUT)) {
   try {
     const prev = JSON.parse(readFileSync(OUT, 'utf8')) as {
       methodologyVersion?: string
+      detectionMethodologyVersion?: string
       trialsPerCase?: number
       results?: CaseResult[]
     }
-    if (prev.methodologyVersion === METHODOLOGY_VERSION && prev.trialsPerCase === n) {
+    if (
+      prev.methodologyVersion === METHODOLOGY_VERSION &&
+      prev.detectionMethodologyVersion === DETECTION_VERSION &&
+      prev.trialsPerCase === n
+    ) {
       results = (prev.results ?? []).filter((x) => x.verdicts.length === n)
       if (results.length) console.error(`resuming: ${results.length} case/arm pairs already done\n`)
     } else if (prev.results?.length) {
@@ -160,6 +181,13 @@ function persist(complete: boolean) {
         cohort: r.cohort,
         results,
         summary: { braidOn: summarise('braid-on'), braidOff: summarise('braid-off') },
+        ...provenance(DETECTION_VERSION, results.flatMap((x) => x.inputHashes ?? [])),
+        usage: {
+          promptTokens: results.reduce((t, x) => t + (x.usage?.promptTokens ?? 0), 0),
+          completionTokens: results.reduce((t, x) => t + (x.usage?.completionTokens ?? 0), 0),
+          estimatedUsd: Number(results.reduce((t, x) => t + (x.usage?.estimatedUsd ?? 0), 0).toFixed(4)),
+          basis: results.find((x) => x.usage)?.usage?.basis ?? '',
+        },
       },
       null,
       2,
