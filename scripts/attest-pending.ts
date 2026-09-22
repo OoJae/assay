@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import { privateKeyToAccount } from 'viem/accounts'
 import { validatorRequests } from '../src/attest/index.js'
 
 /**
@@ -9,7 +10,19 @@ import { validatorRequests } from '../src/attest/index.js'
  * it. ASSAY only ever writes a verdict a subject asked for, so this is the front door of the
  * solicited-attestation flow, and it needs to be a command someone actually runs.
  */
-const validator = (process.argv[2] ?? '0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5') as `0x${string}`
+/**
+ * Defaults to the address of the CURRENT WALLET_PRIVATE_KEY, not a hardcoded one. The hardcoded
+ * default was the wallet whose key was lost, so after the replacement this silently listed requests
+ * for a validator that can no longer answer anything.
+ */
+const fromKey = process.env.WALLET_PRIVATE_KEY
+  ? privateKeyToAccount(process.env.WALLET_PRIVATE_KEY as `0x${string}`).address
+  : undefined
+const validator = (process.argv[2] ?? fromKey) as `0x${string}` | undefined
+if (!validator) {
+  console.error('no validator address: pass one, or set WALLET_PRIVATE_KEY (pnpm wallets)')
+  process.exit(1)
+}
 
 const all = await validatorRequests(validator)
 const pending = all.filter((r) => !r.answered)

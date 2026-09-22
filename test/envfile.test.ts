@@ -133,3 +133,19 @@ describe('secret-loss guard — the thing that would have saved WALLET_PRIVATE_K
     expect(statSync(dest).mode & 0o077).toBe(0)
   })
 })
+
+describe('template placeholders are slots, not values', () => {
+  it('replaces a serv_... placeholder in place with the real key', () => {
+    // The .env.example line is `SERV_API_KEY=serv_...`. It is non-empty, and the old definition of
+    // "has a value" refused to overwrite it — so the real key could not be installed through the
+    // guarded path at all.
+    writeFileSync(env, `WALLET_PRIVATE_KEY=${KEY}\nSERV_API_KEY=serv_...\n`)
+    expect(hasEnvValue('SERV_API_KEY', env)).toBe(false)
+
+    appendEnvSecret('SERV_API_KEY', 'serv_' + 'x'.repeat(40), env)
+    const body = readFileSync(env, 'utf8')
+    expect(readEnv(env).SERV_API_KEY).toBe('serv_' + 'x'.repeat(40))
+    expect(body.match(/SERV_API_KEY=/g)).toHaveLength(1)
+    expect(readEnv(env).WALLET_PRIVATE_KEY).toBe(KEY)
+  })
+})

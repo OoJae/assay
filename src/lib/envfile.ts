@@ -105,8 +105,9 @@ export function hasEnvKey(name: string, path = ENV_PATH): boolean {
  * is a slot to fill, not a value to protect.
  */
 export function hasEnvValue(name: string, path = ENV_PATH): boolean {
-  const v = readEnv(path)[name]
-  return typeof v === 'string' && v.trim() !== ''
+  // Same definition the loss guard uses. A template placeholder like `serv_...` is non-empty, and
+  // treating it as a value made appendEnvSecret refuse to replace it with the real key.
+  return isPopulated(readEnv(path)[name])
 }
 
 /** Restrict to owner-only, and say so loudly if it was not. */
@@ -139,7 +140,12 @@ export function appendEnvSecret(name: string, value: string, path = ENV_PATH): v
   const prev = existsSync(path) ? readFileSync(path, 'utf8') : ''
   // An EMPTY placeholder (from .env.example) is filled in place rather than appended to, so the
   // file keeps one assignment per name and the surrounding comments stay attached to it.
-  const placeholder = new RegExp(`^(\\s*(?:export\\s+)?${name}\\s*=)\\s*(?:""|'')?\\s*$`, 'm')
+  // Fill the existing line in place when it holds nothing real — empty, quoted-empty, or a template
+  // placeholder such as `serv_...` — so the file keeps one assignment per name.
+  const placeholder = new RegExp(
+    `^(\\s*(?:export\\s+)?${name}\\s*=)(?:\\s*(?:""|'')?\\s*|\\s*[^\\n]*\\.\\.\\.\\s*|\\s*<[^\\n]*>\\s*)$`,
+    'm',
+  )
   const body = placeholder.test(prev)
     ? prev.replace(placeholder, `$1${value}`)
     : (prev.trimEnd() + (prev.trim() ? '\n' : '') + `${name}=${value}\n`).replace(/^\n+/, '')
