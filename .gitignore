@@ -23,3 +23,5 @@ data/findings.scoped.json
 test/zz-*.test.ts
 **/*.scratch.*
 src/**/*.head.ts
+data/findings.tmp.*.json
+.env.tmp

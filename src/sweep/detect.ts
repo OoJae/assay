@@ -277,7 +277,13 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
       const observedAt = lastObservedAt
       const nowSeconds = lastNow
     const reading = await readStockToken(token, blockNumber)
-    if (!reading) continue
+    if (!reading) {
+      // Recorded, not silently skipped. A bare `continue` meant a failed uiMultiplier() read (or a
+      // pruned block) dropped the asset with no trace: `errors` stayed empty, `assetsScanned`
+      // still counted it, and the wall reported a clean sweep over assets it had never read.
+      errors.push({ symbol: sym, error: 'uiMultiplier() unreadable at this block — asset not assessed' })
+      continue
+    }
 
     const feed: ChainlinkFeed | null = feedForSymbol(feeds, sym)
     const mult = reading.multiplierFloat
@@ -291,7 +297,17 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
      * that figure was the ratio expressed as a gain (true = 4x raw), not an understatement.
      * It was the headline number on the wall and in the README.
      */
-    const understatementPct = mult > 0 ? (1 - 1 / mult) * 100 : 0
+    /**
+     * Signed on purpose, and named for what it is.
+     *
+     * (1 - 1/mult) is NEGATIVE when the multiplier is below 1 — a reverse split, which ERC-8056
+     * permits and Robinhood has not done yet but can. That published the title "understates by
+     * -300.0000%", which is not a sentence anyone should read on an audit finding. The magnitude
+     * and the direction are now separated, so the copy says "overstates" when it overstates.
+     */
+    const misreadPct = mult > 0 ? (1 - 1 / mult) * 100 : 0
+    const understatementPct = Math.abs(misreadPct)
+    const direction = misreadPct >= 0 ? 'understates' : 'overstates'
 
     // --- Class 4: share-count misreport (only meaningful when multiplier != 1) ---
     if (divergenceBps > 0.01) {
@@ -299,7 +315,9 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
       // C-9: scale by the token's OWN decimals(), read above and previously discarded while the
       // code hardcoded 1e18. Divide in bigint first so a large supply keeps full precision, then
       // convert once at the end.
-      const unit = 10n ** BigInt(reading.decimals)
+      // Scale by the token's OWN decimals(). When that read failed the supply figure is simply
+      // not quoted — the same treatment totalSupply itself gets — rather than assuming 18.
+      const unit = reading.decimals === null ? null : 10n ** BigInt(reading.decimals)
       /**
        * totalSupply is CORROBORATING, not load-bearing.
        *
@@ -309,10 +327,11 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
        * nobody returned. Previously it published `totalSupply() == 0` against the literal bytes
        * `0x`, which the verifier then correctly refused to reproduce, discarding the whole finding.
        */
-      const haveSupply = reading.totalSupply !== null && reading.rawTotalSupply !== null
-      const rawShares = haveSupply ? Number((reading.totalSupply! * 10_000n) / unit) / 10_000 : null
+      const haveSupply =
+        reading.totalSupply !== null && reading.rawTotalSupply !== null && unit !== null
+      const rawShares = haveSupply ? Number((reading.totalSupply! * 10_000n) / unit!) / 10_000 : null
       const trueShares = haveSupply
-        ? Number((reading.totalSupply! * reading.multiplier * 10_000n) / (unit * ONE_E18)) / 10_000
+        ? Number((reading.totalSupply! * reading.multiplier * 10_000n) / (unit! * ONE_E18)) / 10_000
         : null
       findings.push({
         id: `${sym}-share-count`,
@@ -322,14 +341,14 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
         affectedParty:
           `Any integrator that presents ${sym} balanceOf() as a share count. The contract itself ` +
           `is behaving as ERC-8056 specifies and is not at fault.`,
-        title: `${sym}: reading balanceOf() as shares understates by ${understatementPct.toFixed(4)}% (multiplier ${mult.toFixed(9)}x)`,
+        title: `${sym}: reading balanceOf() as shares ${direction} by ${understatementPct.toFixed(4)}% (multiplier ${mult.toFixed(9)}x)`,
         statement:
           `${sym} reports uiMultiplier() = ${reading.multiplier.toString()} (${mult.toFixed(9)}), which is ` +
           `CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the ` +
           `token contract. It records the exposure carried by a caller that reads balanceOf() as shares. ` +
           `Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() ` +
           `returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting ` +
-          `the raw balance as a share count understates it by ${understatementPct.toFixed(4)}% ` +
+          `the raw balance as a share count ${direction} it by ${understatementPct.toFixed(4)}% ` +
           `(the true count is ${mult.toFixed(4)}x the raw balance). ` +
           `Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.`,
         impact: {
@@ -340,10 +359,10 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
             (rawShares !== null && trueShares !== null
               ? `totalSupply raw ${rawShares.toFixed(4)} tokens vs ${trueShares.toFixed(4)} share-equivalents ` +
                 `(delta ${(trueShares - rawShares).toFixed(4)}). `
-              : `totalSupply() could not be read at this block, so no supply figure is quoted — the finding rests ` +
+              : `totalSupply() or decimals() could not be read at this block, so no supply figure is quoted — the finding rests ` +
                 `on uiMultiplier(), which is byte-verified below. `) +
             `Presenting the raw balance as a share count ` +
-            `understates by ${understatementPct.toFixed(4)}%; equivalently the true count is ${mult.toFixed(4)}x the raw.`,
+            `${direction} by ${understatementPct.toFixed(4)}%; equivalently the true count is ${mult.toFixed(4)}x the raw.`,
         },
         evidence: [
           evidence(`uiMultiplier() == ${reading.multiplier}`, token, 'uiMultiplier()', reading.rawMultiplier, blockNumber, observedAt),
@@ -397,7 +416,20 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
           // it lets our own RPC flakiness pick a subject's severity, and it always picked the
           // harsher one, because an unread feed used to count as "not stale".
           const equity = is24x5(feed)
-          const indeterminate = equity && !cohortM.quorum
+          /**
+           * INDETERMINATE applies to ANY feed, not just equities.
+           *
+           * This was gated on `equity &&`, so a crypto feed past its heartbeat skipped the
+           * indeterminate branch entirely and went straight to ORACLE_STALE_UNEXPECTED at high or
+           * critical — even when the cohort read had failed and we had no idea whether something
+           * market-wide was happening. The quorum exists to stop our own RPC flakiness picking a
+           * subject's severity; excluding a whole class of feeds from it defeated that.
+           *
+           * A crypto feed is never explained by an equity closure, so `scheduled` stays
+           * equity-only. But "we could not measure the cohort" is a statement about US, and it is
+           * true regardless of what kind of feed we are looking at.
+           */
+          const indeterminate = !cohortM.quorum
           const scheduled = equity && cohortM.quorum && marketClosed
           if (!scheduled && !indeterminate) stats.staleUnexpected++
           if (indeterminate) stats.staleIndeterminate++

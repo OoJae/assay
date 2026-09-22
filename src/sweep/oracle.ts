@@ -14,10 +14,22 @@ export function isTransient(message: string): boolean {
   if (m.includes('historical state')) return false
   return (
     m.includes('timeout') ||
+    // viem's own error CLASS NAMES, which appear in the message it throws. Matching only on
+    // free-text phrases missed the two most common faults on this RPC — a request that timed out
+    // and a rate-limit response — so the bounded retry never fired for either, and a single blip
+    // dropped an asset that one more attempt would have read.
+    m.includes('timeouterror') ||
+    m.includes('limitexceeded') ||
+    m.includes('httprequesterror') ||
+    m.includes('internalrpcerror') ||
     m.includes('econnreset') ||
+    m.includes('econnrefused') ||
+    m.includes('enotfound') ||
     m.includes('socket') ||
     m.includes('fetch failed') ||
+    m.includes('network') ||
     m.includes('rate limit') ||
+    m.includes('too many requests') ||
     m.includes('429') ||
     m.includes('502') ||
     m.includes('503') ||
@@ -147,7 +159,8 @@ export async function readFeed(
 export interface TokenReading {
   multiplier: bigint
   multiplierFloat: number
-  decimals: number
+  /** null when the read failed. NOT 18 by assumption. */
+  decimals: number | null
   /** null when the read failed. NOT the same as a zero supply. */
   totalSupply: bigint | null
   oraclePaused: boolean | null
@@ -187,7 +200,15 @@ export async function readStockToken(
   return {
     multiplier,
     multiplierFloat: Number(multiplier) / 1e18,
-    decimals: dec ? Number(dec.decoded as number) : 18,
+    /**
+     * null when the read failed, NOT 18 by assumption.
+     *
+     * readFeed was changed to stop defaulting decimals() to 8 because a wrong exponent is a 10^n
+     * error; this defaulted to 18 for the same reason and was left alone. Every Robinhood Stock
+     * Token is in fact 18dp, so the default was right in practice and wrong in principle — and a
+     * scaling assumption that happens to hold is exactly the kind that stops holding quietly.
+     */
+    decimals: dec ? Number(dec.decoded as number) : null,
     /**
      * null when the read FAILED — distinct from a genuine zero supply.
      *

@@ -6,7 +6,10 @@ const limitArg = args.find((a) => a.startsWith('--limit='))
 const symArg = args.find((a) => a.startsWith('--symbols='))
 const force = args.includes('--force')
 const OUT = 'data/findings.json'
-const TMP = 'data/findings.tmp.json'
+// Unique per process. A single fixed temp path meant two overlapping sweeps -- the 8-minute timer
+// against a manual run, which is now a realistic overlap -- wrote each other's bytes, and whichever
+// renamed second published a file the first had already moved away.
+const TMP = `data/findings.tmp.${process.pid}.json`
 
 /**
  * How far the published finding count may fall before this refuses to overwrite.
@@ -38,7 +41,11 @@ const target = publishing ? OUT : 'data/findings.scoped.json'
 
 // Refuse a large regression unless it was asked for, and write atomically so an interrupted
 // run cannot leave a truncated board behind.
-if (publishing && !scoped && !force && existsSync(OUT)) {
+//
+// The guard used to be gated on `!scoped`, so `--symbols=CRWD --publish` overwrote the full board
+// with a three-finding one at exit 0 and with no check at all -- the exact failure the guard
+// exists to prevent, reachable by the one flag that means "yes, publish this".
+if (publishing && !force && existsSync(OUT)) {
   try {
     const prev = JSON.parse(readFileSync(OUT, 'utf8')) as { findings?: unknown[] }
     const prevCount = prev.findings?.length ?? 0

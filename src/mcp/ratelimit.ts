@@ -93,7 +93,16 @@ export function trustedProxies(env: string | undefined = process.env.MCP_TRUSTED
     (env ?? '')
       .split(',')
       .map((s) => s.trim())
-      .filter(Boolean),
+      .filter(Boolean)
+      // NORMALISED, because that is what the peer address is compared as.
+      //
+      // The peer went through normaliseIp() and the configured entries did not, so `::1` — which
+      // deploy/assay-mcp.service actually ships — could never match: the peer normalises to
+      // `0:0:0:0::/64` and the literal `::1` does not. With nginx connecting over IPv6 loopback
+      // the proxy would never be trusted, X-Forwarded-For would be ignored, and EVERY client
+      // would share the proxy's single bucket — turning a per-IP limit into a global one and
+      // letting one caller lock out all the others.
+      .map(normaliseIp),
   )
 }
 

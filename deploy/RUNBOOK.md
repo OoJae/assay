@@ -116,9 +116,18 @@ ls -la /home/ubuntu/assay/*.log*                            # .log.1 should appe
 ## Deploying a change
 
 ```bash
-cd /home/ubuntu/assay && git pull && pnpm install --frozen-lockfile
+cd /home/ubuntu/assay
+# The sweep timer rewrites data/findings.json every 8 minutes, and that file is git-tracked, so a
+# bare `git pull` aborts with "local changes would be overwritten" and the && chain never restarts
+# anything -- leaving the host on old code while the command appears to have run.
+git checkout -- data/findings.json 2>/dev/null || true
+git pull && pnpm install --frozen-lockfile
 sudo systemctl restart assay-agent assay-mcp
 ```
+
+The host's copy of `data/findings.json` is *meant* to diverge: it is regenerated locally every 8
+minutes and served live at `/assay-mcp/findings.json`, which is where the wall reads it from. The
+committed copy is only the wall's fallback.
 
 The agent runs with **no signing key** — no `WALLET_PRIVATE_KEY`, no `BUYER_PRIVATE_KEY`, no SERV
 key. This is enforced, not documented: `serve-remote.ts` refuses to start if any of them is in

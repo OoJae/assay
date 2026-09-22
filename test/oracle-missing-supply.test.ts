@@ -129,7 +129,7 @@ describe('a failed totalSupply() read never becomes a fabricated citation', () =
     expect(f!.evidence.some((e) => e.call === 'uiMultiplier()')).toBe(true)
     // ...and no totalSupply citation is manufactured.
     expect(f!.evidence.some((e) => e.call === 'totalSupply()')).toBe(false)
-    expect(f!.impact.note).toMatch(/totalSupply\(\) could not be read/i)
+    expect(f!.impact.note).toMatch(/could not be read at this block/i)
   })
 
   it('NEVER publishes 0x as a raw return value', async () => {

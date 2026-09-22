@@ -51,6 +51,8 @@ export interface TruePosition {
     feedRead: boolean
     priceSane: boolean
     roundComplete: boolean
+    /** False when uiMultiplier() is zero or non-finite — the field this product is named after. */
+    multiplierSane: boolean
   }
   blockNumber: string
   observedAt: string
@@ -81,16 +83,42 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
  * Bounded retry on transient faults only, matching the discipline in sweep/oracle.ts. A revert
  * is a real answer and must not be retried into a timeout; a socket reset is worth one more go.
  */
+/**
+ * The whole read, bounded.
+ *
+ * viem already retries internally (4 attempts, 10s timeout each), so wrapping it in another 3
+ * attempts with backoff multiplied the worst case rather than capping it: a single unresponsive
+ * RPC could hold a PAID call for well over two minutes with no deadline anywhere in the chain.
+ * The buyer's x402 trigger times out at 60s, so past that they have paid and will get nothing.
+ *
+ * This puts one deadline over the whole thing. A bounded failure the caller can see beats an
+ * unbounded wait it cannot.
+ */
+const CALL_DEADLINE_MS = 12_000
+
 async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
+  const deadline = Date.now() + CALL_DEADLINE_MS
   let last: unknown
   for (let i = 0; i < attempts; i++) {
+    if (Date.now() >= deadline) {
+      throw last ?? new Error(`read exceeded the ${CALL_DEADLINE_MS}ms deadline`)
+    }
     try {
-      return await fn()
+      return await Promise.race([
+        fn(),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error(`read timed out after ${CALL_DEADLINE_MS}ms`)),
+            Math.max(1, deadline - Date.now()),
+          ).unref(),
+        ),
+      ])
     } catch (err) {
       last = err
       const msg = (err as Error)?.message ?? String(err)
       if (!isTransient(msg)) throw err
-      if (i < attempts - 1) await sleep(150 * 2 ** i)
+      if (i < attempts - 1 && Date.now() + 150 * 2 ** i < deadline) await sleep(150 * 2 ** i)
+      else break
     }
   }
   throw last
@@ -244,6 +272,16 @@ export async function truePosition(
   const tokenUnits = Number(balance) / 1e18
   const shareEquivalents = tokenUnits * multiplier
 
+  /**
+   * The feed answer got a sanity gate (`answer > 0n`); uiMultiplier() did not.
+   *
+   * A zero multiplier makes every share-equivalent zero and every derived underlying price
+   * infinite, and it sailed through to `confidence: 'high'` with `refusalReason: null` — the same
+   * class of defect as selling a $0 valuation from a zero feed answer, on the field this entire
+   * product is named after.
+   */
+  const multiplierSane = mult > 0n && Number.isFinite(multiplier) && multiplier > 0
+
   const feed = feedForSymbol(feeds, symbol)
   let tokenPriceUsd: number | null = null
   let feedAgeSeconds: number | null = null
@@ -291,7 +329,13 @@ export async function truePosition(
   let refusalReason: string | null = null
   let confidence: TruePosition['confidence'] = 'high'
 
-  if (paused === true) {
+  if (!multiplierSane) {
+    refusalReason =
+      `uiMultiplier() returned ${mult.toString()} for ${asset.tokenSymbol}, which is not a usable ` +
+      `scaling factor. Every share-equivalent derived from it would be zero and every derived ` +
+      `underlying price infinite, so no position is reported.`
+    confidence = 'refuse'
+  } else if (paused === true) {
     refusalReason = 'oraclePaused() is true for this token; price must not be trusted.'
     confidence = 'refuse'
   } else if (!pauseChecked) {
@@ -334,14 +378,15 @@ export async function truePosition(
     shareEquivalents,
     tokenUnits,
     tokenPriceUsd,
-    underlyingSharePriceUsd: tokenPriceUsd !== null ? tokenPriceUsd / multiplier : null,
+    underlyingSharePriceUsd:
+      tokenPriceUsd !== null && multiplierSane ? tokenPriceUsd / multiplier : null,
     positionValueUsd: tokenPriceUsd !== null ? tokenUnits * tokenPriceUsd : null,
     feed: feed?.proxyAddress ?? null,
     feedAgeSeconds,
     feedHeartbeat: feed?.heartbeat ?? null,
     feedStale,
     oraclePaused: paused,
-    checks: { pauseChecked, feedRead, priceSane, roundComplete },
+    checks: { pauseChecked, feedRead, priceSane, roundComplete, multiplierSane },
     blockNumber: blockNumber.toString(),
     observedAt,
     refusalReason,

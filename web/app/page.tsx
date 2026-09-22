@@ -84,9 +84,14 @@ export default async function Home() {
         </div>
         <div className="stat">
           <div className="n">
-            {d.cohort.stale}/{d.cohort.size}
+            {d.cohort.stale}/{d.cohort.read ?? d.cohort.size}
           </div>
-          <div className="k">24/5 feeds stale</div>
+          <div className="k">
+            {/* Denominator is feeds READ, not the cohort size. Printing stale/size re-presents a
+                failed RPC read as a fresh feed — the exact defect the sweeper was fixed for. */}
+            24/5 feeds stale
+            {d.cohort.failed ? ` · ${d.cohort.failed} unread` : ''}
+          </div>
         </div>
         <div className="stat">
           <div className="n" style={{ color: 'var(--crit)' }}>{bySev.critical ?? 0}</div>
@@ -98,13 +103,21 @@ export default async function Home() {
         {fresh ? (
           <>
             Swept at block <span className="mono">{d.blockNumber}</span> ({fmtAge(d.observedAt)}).{' '}
-            {d.marketClosed ? (
+            {d.cohort.quorum === false ? (
               <>
-                <strong>US equity market is closed.</strong> {d.cohort.stale} of {d.cohort.size} 24/5
-                feeds are stale at this same block, which corroborates a scheduled closure rather
-                than an oracle incident — so those are reported as expected, not as failures. The
-                defect is that <span className="mono">latestRoundData()</span> returns a price
-                either way and gives callers no on-chain way to tell the difference.
+                <strong>Market state undetermined.</strong> Only {d.cohort.read ?? 0} of{' '}
+                {d.cohort.size} 24/5 equity feeds could be read at this block, below the 80% quorum
+                this methodology requires before drawing any market-wide conclusion. Staleness found
+                here is reported without a cause, because we could not measure one.
+              </>
+            ) : d.marketClosed ? (
+              <>
+                <strong>US equity market is closed.</strong> {d.cohort.stale} of the{' '}
+                {d.cohort.read ?? d.cohort.size} 24/5 feeds that could be read are stale, which
+                corroborates a scheduled closure rather than an oracle incident — so those are
+                reported as expected, not as failures. The defect is that{' '}
+                <span className="mono">latestRoundData()</span> returns a price either way and gives
+                callers no on-chain way to tell the difference.
               </>
             ) : (
               <>
@@ -117,11 +130,17 @@ export default async function Home() {
             <span className="badge">STALE SNAPSHOT</span>{' '}
             Swept at block <span className="mono">{d.blockNumber}</span>, {fmtAge(d.observedAt)}.
             Market conditions below describe <strong>that moment, not now</strong>.{' '}
-            {d.marketClosed ? (
+            {d.cohort.quorum === false ? (
               <>
-                At that block the US equity market <strong>was closed</strong>: {d.cohort.stale} of{' '}
-                {d.cohort.size} 24/5 feeds were stale, corroborating a scheduled closure rather than
-                an oracle incident.
+                At that block the market state was <strong>undetermined</strong>: only{' '}
+                {d.cohort.read ?? 0} of {d.cohort.size} 24/5 feeds could be read, below the quorum
+                needed to draw a conclusion.
+              </>
+            ) : d.marketClosed ? (
+              <>
+                At that block the US equity market <strong>was closed</strong>: {d.cohort.stale} of
+                the {d.cohort.read ?? d.cohort.size} feeds read were stale, corroborating a
+                scheduled closure rather than an oracle incident.
               </>
             ) : (
               <>

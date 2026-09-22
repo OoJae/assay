@@ -46,7 +46,12 @@ if that slips, the delay is disclosed on the finding rather than quietly absorbe
 
 `data/replies.json`, committed to the public repo, keyed by finding id. Each entry carries the
 reply text verbatim, who sent it, when it was received and published, and optionally an ASSAY
-response clearly labelled as such. The wall renders it on the finding page and badges the row.
+response clearly labelled as such.
+
+The wall renders it on the finding page, in its own panel above the footer, with any ASSAY response
+visually separated from the reply itself. A finding with no reply says so there and links this
+document. *(An earlier version of this paragraph also promised a badge on the findings table row.
+There is no such badge — the claim was written before the feature and never matched it.)*
 
 Nothing in that file is ever edited after publication except to add an ASSAY response or a
 correction notice. The git history is the audit trail.

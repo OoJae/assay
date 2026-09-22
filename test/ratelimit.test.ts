@@ -3,6 +3,7 @@ import {
   RateLimiter,
   clientIp,
   normaliseIp,
+  trustedProxies,
   LIMITS,
   EXPENSIVE_TOOLS,
   MAX_TRACKED_CLIENTS,
@@ -194,5 +195,34 @@ describe('IPv6 bucketing — the /64 collapse must survive compressed notation',
   it('falls back to the literal for unparseable input instead of inventing a prefix', () => {
     expect(normaliseIp('not:a:valid:::address:::')).toBe('not:a:valid:::address:::')
     expect(normaliseIp('unknown')).toBe('unknown')
+  })
+})
+
+describe('trusted proxies are compared on the same footing as the peer', () => {
+  it('honours an IPv6 loopback proxy, which deploy/assay-mcp.service actually ships', () => {
+    // The bug: the peer went through normaliseIp() and the configured entries did not, so the
+    // `::1` in MCP_TRUSTED_PROXIES could never match — the peer normalises to `0:0:0:0::/64`.
+    // With nginx on IPv6 loopback the proxy would never be trusted, XFF would be ignored, and
+    // every client would share the proxy's single bucket: a per-IP limit silently becomes a
+    // global one, and one caller locks out all the others.
+    const trusted = trustedProxies('127.0.0.1,::1')
+    expect(clientIp({ 'x-forwarded-for': '8.8.8.8' }, '::1', trusted)).toBe('8.8.8.8')
+  })
+
+  it('still honours the IPv4 loopback entry', () => {
+    const trusted = trustedProxies('127.0.0.1,::1')
+    expect(clientIp({ 'x-forwarded-for': '8.8.8.8' }, '127.0.0.1', trusted)).toBe('8.8.8.8')
+  })
+
+  it('does NOT trust an address that merely shares the proxy’s /64', () => {
+    // Normalising both sides must not widen who is trusted: a /64 entry trusts that /64, and a
+    // literal IPv4 entry trusts exactly that address.
+    const trusted = trustedProxies('127.0.0.1')
+    expect(clientIp({ 'x-forwarded-for': '8.8.8.8' }, '127.0.0.2', trusted)).toBe('127.0.0.2')
+  })
+
+  it('ignores an empty or absent configuration rather than trusting everything', () => {
+    expect(clientIp({ 'x-forwarded-for': '8.8.8.8' }, '127.0.0.1', trustedProxies(''))).toBe('127.0.0.1')
+    expect(clientIp({ 'x-forwarded-for': '8.8.8.8' }, '127.0.0.1', trustedProxies(undefined))).toBe('127.0.0.1')
   })
 })

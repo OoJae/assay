@@ -56,6 +56,49 @@ const PUBLIC_PATH = (process.env.MCP_PUBLIC_PATH ?? '').replace(/\/$/, '')
 /** One transport per connected client, routed by sessionId on the POST leg. */
 const sessions = new Map<string, SSEServerTransport>()
 
+/**
+ * Who owns each session, and when it was last used.
+ *
+ * THE GLOBAL CAP WAS NOT ENOUGH. 50 concurrent sessions with no per-address limit and no idle
+ * timeout meant a single caller could open 50 streams, hold them open doing nothing, and keep the
+ * public endpoint closed to everyone else indefinitely — at a cost of 50 requests, which is inside
+ * the connection rate limit. The rate limiter governs how FAST you may connect; nothing governed
+ * how many you could HOLD.
+ */
+const MAX_SESSIONS_PER_IP = 6
+const SESSION_IDLE_MS = 10 * 60_000
+const sessionMeta = new Map<string, { ip: string; lastSeen: number }>()
+
+function sessionsForIp(ip: string): number {
+  let n = 0
+  for (const m of sessionMeta.values()) if (m.ip === ip) n++
+  return n
+}
+
+function dropSession(id: string) {
+  const t = sessions.get(id)
+  sessions.delete(id)
+  sessionMeta.delete(id)
+  // Closing the transport releases the underlying response; without it an abandoned stream keeps
+  // its socket and its slot until the client happens to disconnect.
+  try {
+    void t?.close?.()
+  } catch {
+    /* already gone */
+  }
+}
+
+// Reap idle sessions so a slot cannot be held forever by a client that stopped talking.
+setInterval(() => {
+  const cutoff = Date.now() - SESSION_IDLE_MS
+  for (const [id, m] of sessionMeta) {
+    if (m.lastSeen < cutoff) {
+      console.warn(`[mcp] reaping idle session ${id} (${m.ip})`)
+      dropSession(id)
+    }
+  }
+}, 60_000).unref()
+
 const limiter = new RateLimiter()
 // Reap expired buckets periodically; unref so this timer never holds the process open.
 setInterval(() => limiter.sweep(), 60_000).unref()
@@ -192,12 +235,21 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       tooMany(res, wait, 'too many connections from this address')
       return
     }
+    if (sessionsForIp(ip) >= MAX_SESSIONS_PER_IP) {
+      tooMany(
+        res,
+        60,
+        `this address already holds ${MAX_SESSIONS_PER_IP} open sessions; close one before opening another`,
+      )
+      return
+    }
     const transport = new SSEServerTransport(`${PUBLIC_PATH}/messages`, res)
     const server = buildServer()
     sessions.set(transport.sessionId, transport)
+    sessionMeta.set(transport.sessionId, { ip, lastSeen: Date.now() })
     // Drop the session when the client disconnects, or the map leaks one entry per connection.
-    transport.onclose = () => sessions.delete(transport.sessionId)
-    res.on('close', () => sessions.delete(transport.sessionId))
+    transport.onclose = () => dropSession(transport.sessionId)
+    res.on('close', () => dropSession(transport.sessionId))
     await server.connect(transport)
     return
   }
@@ -217,6 +269,10 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 
     const sessionId = url.searchParams.get('sessionId')
     const transport = sessionId ? sessions.get(sessionId) : undefined
+    if (sessionId) {
+      const m = sessionMeta.get(sessionId)
+      if (m) m.lastSeen = Date.now()
+    }
     if (!transport) {
       res.writeHead(404, { 'content-type': 'application/json' })
       res.end(JSON.stringify({ error: 'unknown or expired sessionId — reopen GET /sse' }))
@@ -236,8 +292,18 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
         buf += c
         if (buf.length > MAX_BODY) {
           // reject() alone left the listener attached and kept buffering to Content-Length;
-          // a 300MB body reached the heap limit. Detach and destroy the socket instead.
+          // a 300MB body reached the heap limit. Detach first, then ANSWER, then tear down.
+          //
+          // The 413 below used to be unreachable: req.destroy() ran here, so by the time
+          // res.writeHead(413) was called the socket was already gone and the client saw a reset
+          // instead of a status. Telling a caller their body was too large is the whole point of
+          // having a limit — a connection reset is indistinguishable from the server crashing,
+          // which is exactly the wrong impression for this endpoint to give.
           req.off('data', onData)
+          if (!res.headersSent) {
+            res.writeHead(413, { 'content-type': 'application/json', connection: 'close' })
+            res.end(JSON.stringify({ error: 'payload too large', maxBytes: MAX_BODY }))
+          }
           req.destroy()
           resolve(null)
         }
@@ -248,8 +314,12 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     })
 
     if (raw === null) {
-      res.writeHead(413, { 'content-type': 'application/json' })
-      res.end(JSON.stringify({ error: 'payload too large' }))
+      // The oversized case already answered above, before destroying the socket. This covers a
+      // stream that errored for another reason.
+      if (!res.headersSent) {
+        res.writeHead(400, { 'content-type': 'application/json' })
+        res.end(JSON.stringify({ error: 'could not read request body' }))
+      }
       return
     }
 

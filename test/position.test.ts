@@ -65,6 +65,7 @@ describe('truePosition — a check that did not complete is never reported as on
       feedRead: true,
       priceSane: true,
       roundComplete: true,
+      multiplierSane: true,
     })
     // ERC-8056: 13.0262 tokens at a 4.0x multiplier is 52.1048 share-equivalents.
     expect(p.shareEquivalents).toBeCloseTo(52.1048, 4)
@@ -174,6 +175,17 @@ describe('truePosition — a check that did not complete is never reported as on
       expect(p.confidence).not.toBe('high')
       expect(p.refusalReason).not.toBeNull()
     }
+  })
+
+  it('REFUSES a zero uiMultiplier — the field this product is named after', async () => {
+    // The feed answer got a sanity gate; the multiplier did not. A zero multiplier makes every
+    // share-equivalent zero and every derived underlying price infinite, and it reached
+    // confidence 'high' with refusalReason null.
+    const p = await run(reader({ uiMultiplier: async () => 0n }))
+    expect(p.confidence).toBe('refuse')
+    expect(p.refusalReason).toMatch(/not a usable scaling factor/i)
+    expect(p.checks.multiplierSane).toBe(false)
+    expect(p.underlyingSharePriceUsd).toBeNull()
   })
 
   it('names an unknown symbol as an error and offers the near miss', async () => {

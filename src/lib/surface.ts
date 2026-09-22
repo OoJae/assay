@@ -25,9 +25,12 @@ export interface SweepSnapshot {
   findings: VerifiedFinding[]
   rejected?: Array<{ reason: string; detail: string; finding: { id: string; subject: string } }>
   chainNotes?: Array<{ id: string; severity: Severity; title: string }>
+  /** False when no sweep could be loaded. An empty board and an absent one are different answers. */
+  available?: boolean
+  unavailableReason?: string
 }
 
-const EMPTY: SweepSnapshot = { findings: [] }
+const EMPTY: SweepSnapshot = { findings: [], available: false }
 
 /**
  * Cached read of the published sweep.
@@ -38,16 +41,34 @@ const EMPTY: SweepSnapshot = { findings: [] }
  */
 let cached: { mtimeMs: number; size: number; data: SweepSnapshot } | null = null
 
+/**
+ * The published sweep, or an explicit statement that there isn't one.
+ *
+ * FAILING OPEN WAS THE DEFECT. A missing or unparsable artifact returned a well-formed
+ * `{findings: []}`, which findingsPayload then published as `totalPublished: 0` — indistinguishable
+ * from a clean sweep that genuinely found nothing. A buyer asking "is this asset clean?" would be
+ * told yes because a file was absent. `available` makes the difference explicit and every caller
+ * surfaces it.
+ */
 export function loadSnapshot(path = FINDINGS_PATH): SweepSnapshot {
-  if (!existsSync(path)) return EMPTY
+  if (!existsSync(path)) return { ...EMPTY, available: false, unavailableReason: `no sweep artifact at ${path}` }
   try {
     const st = statSync(path)
     if (cached && cached.mtimeMs === st.mtimeMs && cached.size === st.size) return cached.data
-    const data = JSON.parse(readFileSync(path, 'utf8')) as SweepSnapshot
+    const parsed = JSON.parse(readFileSync(path, 'utf8')) as SweepSnapshot
+    if (!Array.isArray(parsed.findings)) {
+      return { ...EMPTY, available: false, unavailableReason: 'sweep artifact has no findings array' }
+    }
+    const data = { ...parsed, available: true }
     cached = { mtimeMs: st.mtimeMs, size: st.size, data }
     return data
-  } catch {
-    return cached?.data ?? EMPTY
+  } catch (err) {
+    if (cached?.data) return cached.data
+    return {
+      ...EMPTY,
+      available: false,
+      unavailableReason: `sweep artifact unreadable: ${(err as Error).message.slice(0, 120)}`,
+    }
   }
 }
 
@@ -79,12 +100,26 @@ export interface FindingsQuery {
 
 export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
   let out = snap.findings
-  if (q.symbol) out = out.filter((f) => f.subject.toUpperCase().startsWith(q.symbol!.toUpperCase()))
+  if (q.symbol) {
+    // EXACT ticker, not a prefix. `subject` is formatted "SYM (0x…)" or "SYM feed (0x…)", and
+    // startsWith meant a caller asking about NVDA was handed findings for NVDAX — someone else's
+    // asset, published under their own question. On a tool whose entire value is not confusing one
+    // subject with another, a prefix match is the wrong comparison.
+    const want = q.symbol.toUpperCase()
+    out = out.filter((f) => (f.subject.split(' ')[0] ?? '').toUpperCase() === want)
+  }
   if (q.defectClass) out = out.filter((f) => f.defectClass === q.defectClass)
   if (q.minSeverity) out = out.filter((f) => RANK[f.severity] <= RANK[q.minSeverity!])
   out = [...out].sort((a, b) => RANK[a.severity] - RANK[b.severity]).slice(0, q.limit ?? 25)
   const ageSeconds = snapshotAgeSeconds(snap)
   return {
+    /**
+     * False when no sweep could be loaded at all. A caller MUST distinguish this from a clean
+     * result: `count: 0` with `available: false` means nothing was checked, not that nothing
+     * was found.
+     */
+    available: snap.available !== false,
+    ...(snap.unavailableReason ? { unavailableReason: snap.unavailableReason } : {}),
     sweepBlock: snap.blockNumber,
     observedAt: snap.observedAt,
     /**
