@@ -70,6 +70,20 @@ happened once, invisibly. `serve-remote.ts` now polls the tunnel state and exits
 terminal state so `Restart=always` can do its job, and logs a real capability round-trip every
 five minutes. Grep `agent.log` for `health ok` / `health FAILED` and for `tunnel state:`.
 
+## A known-better production posture, deliberately not taken yet
+
+OpenServ's own SDK skill (`.agents/skills/openserv-agent-sdk/SKILL.md`) says the tunnel is the
+**development** path, and that production should set `DISABLE_TUNNEL=true` and serve the agent's
+HTTP server at a public `endpointUrl` instead.
+
+That would remove the entire failure class the watchdog above exists to catch — a tunnel that
+reaches a terminal `failed` state cannot happen if there is no tunnel. nginx and a valid
+certificate are already here, so the serving half is nearly free.
+
+It is **not** done yet because the endpoint URL is bound at provision time, and getting it wrong
+takes the paid x402 endpoint down entirely, whereas the current setup is verified working. Recorded
+here rather than left as an unexamined default: the watchdog is a mitigation, not the right answer.
+
 ## Logs
 
 `agent.log`, `mcp.log`, `sweep.log` in `/home/ubuntu/assay`. Rotated daily, 7 kept, 50 MB cap,
