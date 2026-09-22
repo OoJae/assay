@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { loadSweep } from '@/lib/findings'
+import { loadSweep, repliesFor } from '@/lib/findings'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,6 +9,7 @@ export default async function FindingPage({ params }: { params: Promise<{ id: st
   const d = loadSweep()
   const f = d.findings.find((x) => x.id === decodeURIComponent(id))
   if (!f) notFound()
+  const replies = repliesFor(f.id)
 
   return (
     <div className="wrap">
@@ -23,8 +24,18 @@ export default async function FindingPage({ params }: { params: Promise<{ id: st
         </div>
         <h1 style={{ fontSize: 24, marginTop: 12 }}>{f.title}</h1>
         <div className="meta" style={{ marginTop: 8 }}>
-          subject {f.subject} · methodology {f.methodologyVersion} · detected {f.detectedAt}
+          read from {f.subject} · methodology {f.methodologyVersion} · detected {f.detectedAt}
         </div>
+        {f.affectedParty ? (
+          <div className="card" style={{ marginTop: 14 }}>
+            <div className="tag">Who carries the exposure</div>
+            <div style={{ marginTop: 8, lineHeight: 1.7, fontSize: 14 }}>{f.affectedParty}</div>
+            <div className="meta" style={{ marginTop: 10 }}>
+              The contract named above is what was READ. Naming it is not an accusation against it:
+              a Stock Token that moves uiMultiplier() is doing what ERC-8056 specifies.
+            </div>
+          </div>
+        ) : null}
       </header>
 
       <div className="card">
@@ -88,6 +99,54 @@ export default async function FindingPage({ params }: { params: Promise<{ id: st
           ))}
         </div>
       ) : null}
+
+      {replies.length ? (
+        <div className="card" style={{ borderColor: 'var(--low)' }}>
+          <div className="tag">Reply from a named party — published verbatim</div>
+          {replies.map((r, i) => (
+            <div className="ev" key={i} style={{ borderLeftColor: 'var(--low)' }}>
+              <div className="claim">{r.from}</div>
+              <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.7, fontSize: 14, margin: '8px 0' }}>
+                {r.text}
+              </div>
+              <div className="meta">
+                received {r.receivedAt} · published {r.publishedAt}
+                {r.outcome ? ` · outcome: ${r.outcome}` : ''}
+                {r.sourceUrl ? (
+                  <>
+                    <br />
+                    <a href={r.sourceUrl} target="_blank" rel="noreferrer">{r.sourceUrl}</a>
+                  </>
+                ) : null}
+              </div>
+              {r.assayResponse ? (
+                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
+                  <div className="tag">ASSAY&apos;s response — not part of the reply above</div>
+                  <div style={{ marginTop: 8, lineHeight: 1.7, fontSize: 14 }}>{r.assayResponse}</div>
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="card">
+          <div className="tag">Right of reply</div>
+          <div className="meta" style={{ marginTop: 8, lineHeight: 1.8 }}>
+            No reply has been received for this finding. Anyone named here can have a response
+            published <strong>verbatim and unedited</strong> alongside it, and any finding shown to
+            be wrong is corrected or withdrawn.{' '}
+            <a href="https://github.com/OoJae/assay/issues/new?template=right-of-reply.md">
+              Open a right-of-reply issue
+            </a>{' '}
+            or see{' '}
+            <a href="https://github.com/OoJae/assay/blob/main/docs/RIGHT-OF-REPLY.md">
+              docs/RIGHT-OF-REPLY.md
+            </a>
+            . Pre-publication notice is deliberately <em>not</em> claimed: the sweep publishes on a
+            timer and for most findings the subject is a contract, not a person to notify.
+          </div>
+        </div>
+      )}
 
       <footer>
         Reproduce this yourself:

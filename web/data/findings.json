@@ -1,11 +1,16 @@
 {
-  "blockNumber": "69096337",
-  "observedAt": "2026-09-21T20:48:37.000Z",
+  "blockNumber": "69217928",
+  "observedAt": "2026-09-22T00:12:26.000Z",
   "marketClosed": false,
   "cohort": {
     "size": 35,
+    "read": 35,
+    "failed": 0,
     "stale": 0,
-    "clockHint": false
+    "quorum": true,
+    "clockHint": false,
+    "marketClosed": false,
+    "blockNumber": "69217928"
   },
   "chainNotes": [
     {
@@ -18,7 +23,7 @@
         "https://reference-data-directory.vercel.app/feeds-robinhood-mainnet.json",
         "https://docs.chain.link/data-feeds/l2-sequencer-feeds"
       ],
-      "observedAt": "2026-09-21T20:48:37.000Z"
+      "observedAt": "2026-09-22T00:12:26.000Z"
     },
     {
       "id": "rh-chain-assets-without-price-feed",
@@ -30,7 +35,7 @@
         "https://docs.robinhood.com/chain/oracles-and-price-feeds/",
         "https://api.robinhood.com/rhj/assets"
       ],
-      "observedAt": "2026-09-21T20:48:37.000Z"
+      "observedAt": "2026-09-22T00:12:26.000Z"
     }
   ],
   "assetsScanned": 195,
@@ -38,15 +43,16 @@
   "findings": [
     {
       "id": "CRM-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "CRM (0xd95B44124e475743a7589e68F3D74008A5536D44)",
-      "title": "CRM: balanceOf() is 1.001148323x away from share-equivalents",
-      "statement": "CRM reports uiMultiplier() = 1001148322800714293 (1.001148323). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1147% (the true count is 1.0011x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents CRM balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "CRM: reading balanceOf() as shares understates by 0.1147% (multiplier 1.001148323x)",
+      "statement": "CRM reports uiMultiplier() = 1001148322800714293 (1.001148323), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.1147% (the true count is 1.0011x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 11.48,
         "percent": 0.1147,
-        "note": "totalSupply raw 302.6430 tokens vs 302.9906 share-equivalents (delta 0.3475). Presenting the raw balance as a share count understates by 0.1147%; equivalently the true count is 1.0011x the raw."
+        "note": "totalSupply raw 302.6430 tokens vs 302.9905 share-equivalents (delta 0.3475). Presenting the raw balance as a share count understates by 0.1147%; equivalently the true count is 1.0011x the raw."
       },
       "evidence": [
         {
@@ -55,9 +61,9 @@
           "contract": "0xd95B44124e475743a7589e68F3D74008A5536D44",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4cb186403c235",
-          "blockNumber": "69096514",
+          "blockNumber": "69218010",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd95B44124e475743a7589e68F3D74008A5536D44",
-          "observedAt": "2026-09-21T20:48:55.000Z"
+          "observedAt": "2026-09-22T00:12:34.000Z"
         },
         {
           "claim": "totalSupply() == 302643028120000000000",
@@ -65,33 +71,34 @@
           "contract": "0xd95B44124e475743a7589e68F3D74008A5536D44",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000106804069a8927f000",
-          "blockNumber": "69096514",
+          "blockNumber": "69218010",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd95B44124e475743a7589e68F3D74008A5536D44",
-          "observedAt": "2026-09-21T20:48:55.000Z"
+          "observedAt": "2026-09-22T00:12:34.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:48:55.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:12:34.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:49:02.730Z"
+        "verifiedAt": "2026-09-22T00:12:39.608Z"
       }
     },
     {
       "id": "DELL-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "DELL (0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd)",
-      "title": "DELL: balanceOf() is 1.000063709x away from share-equivalents",
-      "statement": "DELL reports uiMultiplier() = 1000063708620124549 (1.000063709). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0064% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents DELL balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "DELL: reading balanceOf() as shares understates by 0.0064% (multiplier 1.000063709x)",
+      "statement": "DELL reports uiMultiplier() = 1000063708620124549 (1.000063709), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0064% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 0.64,
         "percent": 0.0064,
-        "note": "totalSupply raw 647.7460 tokens vs 647.7872 share-equivalents (delta 0.0413). Presenting the raw balance as a share count understates by 0.0064%; equivalently the true count is 1.0001x the raw."
+        "note": "totalSupply raw 647.7459 tokens vs 647.7872 share-equivalents (delta 0.0413). Presenting the raw balance as a share count understates by 0.0064%; equivalently the true count is 1.0001x the raw."
       },
       "evidence": [
         {
@@ -100,9 +107,9 @@
           "contract": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0f0a4f90ff185",
-          "blockNumber": "69097216",
+          "blockNumber": "69218495",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
-          "observedAt": "2026-09-21T20:50:08.000Z"
+          "observedAt": "2026-09-22T00:13:23.000Z"
         },
         {
           "claim": "totalSupply() == 647745952970000000000",
@@ -110,33 +117,34 @@
           "contract": "0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000231d47e85231bb6400",
-          "blockNumber": "69097216",
+          "blockNumber": "69218495",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x941AE714EC6D8130c7B75d67160Ca08f1e7d11Dd",
-          "observedAt": "2026-09-21T20:50:08.000Z"
+          "observedAt": "2026-09-22T00:13:23.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:08.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:13:23.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:50:18.150Z"
+        "verifiedAt": "2026-09-22T00:13:30.245Z"
       }
     },
     {
       "id": "CRWD-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "critical",
       "subject": "CRWD (0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931)",
-      "title": "CRWD: balanceOf() is 4.000000000x away from share-equivalents",
-      "statement": "CRWD reports uiMultiplier() = 4000000000000000000 (4.000000000). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 75.0000% (the true count is 4.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents CRWD balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "CRWD: reading balanceOf() as shares understates by 75.0000% (multiplier 4.000000000x)",
+      "statement": "CRWD reports uiMultiplier() = 4000000000000000000 (4.000000000), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 75.0000% (the true count is 4.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 30000,
         "percent": 75,
-        "note": "totalSupply raw 19.5068 tokens vs 78.0270 share-equivalents (delta 58.5203). Presenting the raw balance as a share count understates by 75.0000%; equivalently the true count is 4.0000x the raw."
+        "note": "totalSupply raw 19.5067 tokens vs 78.0270 share-equivalents (delta 58.5203). Presenting the raw balance as a share count understates by 75.0000%; equivalently the true count is 4.0000x the raw."
       },
       "evidence": [
         {
@@ -145,9 +153,9 @@
           "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000003782dace9d900000",
-          "blockNumber": "69097549",
+          "blockNumber": "69218790",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "observedAt": "2026-09-21T20:50:42.000Z"
+          "observedAt": "2026-09-22T00:13:53.000Z"
         },
         {
           "claim": "totalSupply() == 19506750000000000000",
@@ -155,33 +163,34 @@
           "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000010eb5e5c61859e000",
-          "blockNumber": "69097549",
+          "blockNumber": "69218790",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "observedAt": "2026-09-21T20:50:42.000Z"
+          "observedAt": "2026-09-22T00:13:53.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:42.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:13:53.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:50:52.795Z"
+        "verifiedAt": "2026-09-22T00:13:58.599Z"
       }
     },
     {
       "id": "AVGO-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "AVGO (0x156E175DD063a8cE274C50654eF40e0032b3fbcF)",
-      "title": "AVGO: balanceOf() is 1.001257319x away from share-equivalents",
-      "statement": "AVGO reports uiMultiplier() = 1001257318662278132 (1.001257319). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1256% (the true count is 1.0013x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents AVGO balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "AVGO: reading balanceOf() as shares understates by 0.1256% (multiplier 1.001257319x)",
+      "statement": "AVGO reports uiMultiplier() = 1001257318662278132 (1.001257319), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.1256% (the true count is 1.0013x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 12.57,
         "percent": 0.1256,
-        "note": "totalSupply raw 570.8575 tokens vs 571.5752 share-equivalents (delta 0.7177). Presenting the raw balance as a share count understates by 0.1256%; equivalently the true count is 1.0013x the raw."
+        "note": "totalSupply raw 570.8574 tokens vs 571.5752 share-equivalents (delta 0.7178). Presenting the raw balance as a share count understates by 0.1256%; equivalently the true count is 1.0013x the raw."
       },
       "evidence": [
         {
@@ -190,9 +199,9 @@
           "contract": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de52e39f7a00bf4",
-          "blockNumber": "69097649",
+          "blockNumber": "69218840",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
-          "observedAt": "2026-09-21T20:50:52.000Z"
+          "observedAt": "2026-09-22T00:13:58.000Z"
         },
         {
           "claim": "totalSupply() == 570857480240000000000",
@@ -200,33 +209,34 @@
           "contract": "0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000001ef23d2dbee7c5e000",
-          "blockNumber": "69097649",
+          "blockNumber": "69218840",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x156E175DD063a8cE274C50654eF40e0032b3fbcF",
-          "observedAt": "2026-09-21T20:50:52.000Z"
+          "observedAt": "2026-09-22T00:13:58.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:52.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:13:58.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:50:58.145Z"
+        "verifiedAt": "2026-09-22T00:14:04.043Z"
       }
     },
     {
       "id": "SPY-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "SPY (0x117cc2133c37B721F49dE2A7a74833232B3B4C0C)",
-      "title": "SPY: balanceOf() is 1.001717991x away from share-equivalents",
-      "statement": "SPY reports uiMultiplier() = 1001717991187472003 (1.001717991). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1715% (the true count is 1.0017x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents SPY balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "SPY: reading balanceOf() as shares understates by 0.1715% (multiplier 1.001717991x)",
+      "statement": "SPY reports uiMultiplier() = 1001717991187472003 (1.001717991), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.1715% (the true count is 1.0017x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 17.18,
         "percent": 0.1715,
-        "note": "totalSupply raw 27545.5999 tokens vs 27592.9230 share-equivalents (delta 47.3231). Presenting the raw balance as a share count understates by 0.1715%; equivalently the true count is 1.0017x the raw."
+        "note": "totalSupply raw 27305.1689 tokens vs 27352.0789 share-equivalents (delta 46.9100). Presenting the raw balance as a share count understates by 0.1715%; equivalently the true count is 1.0017x the raw."
       },
       "evidence": [
         {
@@ -235,30 +245,30 @@
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69097699",
+          "blockNumber": "69218896",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-21T20:50:57.000Z"
+          "observedAt": "2026-09-22T00:14:03.000Z"
         },
         {
-          "claim": "totalSupply() == 27545599852230000000000",
+          "claim": "totalSupply() == 27305168940420000000000",
           "chainId": 4663,
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000005d53ffd62c2a5a43c00",
-          "blockNumber": "69097699",
+          "rawReturn": "0x0000000000000000000000000000000000000000000005c837573253a3522800",
+          "blockNumber": "69218896",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-21T20:50:57.000Z"
+          "observedAt": "2026-09-22T00:14:03.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:57.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:14:03.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:51:08.719Z"
+        "verifiedAt": "2026-09-22T00:14:11.320Z"
       }
     },
     {
@@ -266,12 +276,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "medium",
       "subject": "SPY (0x117cc2133c37B721F49dE2A7a74833232B3B4C0C)",
+      "affectedParty": "Any caller that values SPY with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "SPY: off-chain share price and on-chain token price differ by 0.172%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (773.0897), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 772.9550). These are different quantities related by uiMultiplier(): underlying x 1.001717991 = 774.2829 (residual -0.154%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.172%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (773.0897), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 774.1200). These are different quantities related by uiMultiplier(): underlying x 1.001717991 = 775.4499, leaving a residual of -0.304% against the observed feed price. That residual is NOT small relative to the 0.172% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.172%.",
       "impact": {
         "basisPoints": 17.18,
         "percent": 0.1718,
-        "note": "feed 773.0897 vs underlying-mid 772.9550 x multiplier 1.001717991 = 774.2829"
+        "note": "feed 773.0897 vs underlying-mid 774.1200 x multiplier 1.001717991 = 775.4499"
       },
       "evidence": [
         {
@@ -280,9 +291,9 @@
           "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69097699",
+          "blockNumber": "69218896",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "observedAt": "2026-09-21T20:50:57.000Z"
+          "observedAt": "2026-09-22T00:14:03.000Z"
         },
         {
           "claim": "latestRoundData().answer == 77308968340",
@@ -290,40 +301,41 @@
           "contract": "0x319724394D3A0e3669269846abE664Cd621f9f6A",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000008d00000000000000000000000000000000000000000000000000000011fff93d94000000000000000000000000000000000000000000000000000000006ab1570d000000000000000000000000000000000000000000000000000000006ab15719000000000000000000000000000000000000000000000001000000000000008d",
-          "blockNumber": "69097699",
+          "blockNumber": "69218896",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x319724394D3A0e3669269846abE664Cd621f9f6A",
-          "observedAt": "2026-09-21T20:50:57.000Z"
+          "observedAt": "2026-09-22T00:14:03.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/SPY",
-          "describes": "underlying share bid/ask used for the mid 772.9550 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:50:53.521127772Z"
+          "describes": "underlying share bid/ask used for the mid 774.1200 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:14:01.006153888Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:50:57.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:14:03.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:51:09.279Z"
+        "verifiedAt": "2026-09-22T00:14:11.831Z"
       }
     },
     {
       "id": "CCL-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "high",
       "subject": "CCL (0x9651342CeA770aE9a2969Ba2A52611523146aef9)",
-      "title": "CCL: balanceOf() is 1.021486445x away from share-equivalents",
-      "statement": "CCL reports uiMultiplier() = 1021486444855206408 (1.021486445). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 2.1034% (the true count is 1.0215x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents CCL balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "CCL: reading balanceOf() as shares understates by 2.1034% (multiplier 1.021486445x)",
+      "statement": "CCL reports uiMultiplier() = 1021486444855206408 (1.021486445), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 2.1034% (the true count is 1.0215x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 214.86,
         "percent": 2.1034,
-        "note": "totalSupply raw 2117.5474 tokens vs 2163.0460 share-equivalents (delta 45.4986). Presenting the raw balance as a share count understates by 2.1034%; equivalently the true count is 1.0215x the raw."
+        "note": "totalSupply raw 2117.5474 tokens vs 2163.0459 share-equivalents (delta 45.4985). Presenting the raw balance as a share count understates by 2.1034%; equivalently the true count is 1.0215x the raw."
       },
       "evidence": [
         {
@@ -332,9 +344,9 @@
           "contract": "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000e2d0c827078a208",
-          "blockNumber": "69097810",
+          "blockNumber": "69218959",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9651342CeA770aE9a2969Ba2A52611523146aef9",
-          "observedAt": "2026-09-21T20:51:08.000Z"
+          "observedAt": "2026-09-22T00:14:11.000Z"
         },
         {
           "claim": "totalSupply() == 2117547414450000000000",
@@ -342,33 +354,34 @@
           "contract": "0x9651342CeA770aE9a2969Ba2A52611523146aef9",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000072cadfaa31fb1e7400",
-          "blockNumber": "69097810",
+          "blockNumber": "69218959",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x9651342CeA770aE9a2969Ba2A52611523146aef9",
-          "observedAt": "2026-09-21T20:51:08.000Z"
+          "observedAt": "2026-09-22T00:14:11.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:51:08.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:14:11.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:51:16.750Z"
+        "verifiedAt": "2026-09-22T00:14:16.744Z"
       }
     },
     {
       "id": "PR-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "PR (0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C)",
-      "title": "PR: balanceOf() is 1.004477942x away from share-equivalents",
-      "statement": "PR reports uiMultiplier() = 1004477942292229526 (1.004477942). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.4458% (the true count is 1.0045x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents PR balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "PR: reading balanceOf() as shares understates by 0.4458% (multiplier 1.004477942x)",
+      "statement": "PR reports uiMultiplier() = 1004477942292229526 (1.004477942), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.4458% (the true count is 1.0045x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 44.78,
         "percent": 0.4458,
-        "note": "totalSupply raw 573.3370 tokens vs 575.9044 share-equivalents (delta 2.5674). Presenting the raw balance as a share count understates by 0.4458%; equivalently the true count is 1.0045x the raw."
+        "note": "totalSupply raw 573.3370 tokens vs 575.9043 share-equivalents (delta 2.5673). Presenting the raw balance as a share count understates by 0.4458%; equivalently the true count is 1.0045x the raw."
       },
       "evidence": [
         {
@@ -377,9 +390,9 @@
           "contract": "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df09f5dd70b2d96",
-          "blockNumber": "69098015",
+          "blockNumber": "69219130",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
-          "observedAt": "2026-09-21T20:51:29.000Z"
+          "observedAt": "2026-09-22T00:14:28.000Z"
         },
         {
           "claim": "totalSupply() == 573337000000000000000",
@@ -387,33 +400,133 @@
           "contract": "0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000001f14a633d494228000",
-          "blockNumber": "69098015",
+          "blockNumber": "69219130",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4189F0c66EBBB0bfeF1C31f763131361EF32f77C",
-          "observedAt": "2026-09-21T20:51:29.000Z"
+          "observedAt": "2026-09-22T00:14:28.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:51:29.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:14:28.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:51:39.375Z"
+        "verifiedAt": "2026-09-22T00:14:34.008Z"
+      }
+    },
+    {
+      "id": "QQQ-share-count",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
+      "severity": "low",
+      "subject": "QQQ (0xD5f3879160bc7c32ebb4dC785F8a4F505888de68)",
+      "affectedParty": "Any integrator that presents QQQ balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "QQQ: reading balanceOf() as shares understates by 0.0700% (multiplier 1.000700791x)",
+      "statement": "QQQ reports uiMultiplier() = 1000700791241405425 (1.000700791), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0700% (the true count is 1.0007x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "impact": {
+        "basisPoints": 7.01,
+        "percent": 0.07,
+        "note": "totalSupply raw 6771.1320 tokens vs 6775.8771 share-equivalents (delta 4.7451). Presenting the raw balance as a share count understates by 0.0700%; equivalently the true count is 1.0007x the raw."
+      },
+      "evidence": [
+        {
+          "claim": "uiMultiplier() == 1000700791241405425",
+          "chainId": 4663,
+          "contract": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+          "call": "uiMultiplier()",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000000de33411546573f1",
+          "blockNumber": "69219180",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+          "observedAt": "2026-09-22T00:14:33.000Z"
+        },
+        {
+          "claim": "totalSupply() == 6771132000000000000000",
+          "chainId": 4663,
+          "contract": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+          "call": "totalSupply()",
+          "rawReturn": "0x00000000000000000000000000000000000000000000016f1055470150460000",
+          "blockNumber": "69219180",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+          "observedAt": "2026-09-22T00:14:33.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:14:33.000Z",
+      "verification": {
+        "checked": 2,
+        "reproduced": 2,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T00:14:40.712Z"
+      }
+    },
+    {
+      "id": "QQQ-cross-surface",
+      "defectClass": "CROSS_SURFACE_PRICE_MIX",
+      "severity": "low",
+      "subject": "QQQ (0xD5f3879160bc7c32ebb4dC785F8a4F505888de68)",
+      "affectedParty": "Any caller that values QQQ with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
+      "title": "QQQ: off-chain share price and on-chain token price differ by 0.070%",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (741.8701), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 743.7100). These are different quantities related by uiMultiplier(): underlying x 1.000700791 = 744.2312, leaving a residual of -0.317% against the observed feed price. That residual is NOT small relative to the 0.070% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.070%.",
+      "impact": {
+        "basisPoints": 7.01,
+        "percent": 0.0701,
+        "note": "feed 741.8701 vs underlying-mid 743.7100 x multiplier 1.000700791 = 744.2312"
+      },
+      "evidence": [
+        {
+          "claim": "uiMultiplier() == 1000700791241405425",
+          "chainId": 4663,
+          "contract": "0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+          "call": "uiMultiplier()",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000000de33411546573f1",
+          "blockNumber": "69219180",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xD5f3879160bc7c32ebb4dC785F8a4F505888de68",
+          "observedAt": "2026-09-22T00:14:33.000Z"
+        },
+        {
+          "claim": "latestRoundData().answer == 74187010000",
+          "chainId": 4663,
+          "contract": "0x80901d846d5D7B030F26B480776EE3b29374C2ae",
+          "call": "latestRoundData()",
+          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000016d0000000000000000000000000000000000000000000000000000001145e3efd0000000000000000000000000000000000000000000000000000000006ab18412000000000000000000000000000000000000000000000000000000006ab1841f000000000000000000000000000000000000000000000001000000000000016d",
+          "blockNumber": "69219180",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x80901d846d5D7B030F26B480776EE3b29374C2ae",
+          "observedAt": "2026-09-22T00:14:33.000Z"
+        }
+      ],
+      "offChainSources": [
+        {
+          "url": "https://api.robinhood.com/rhj/prices/QQQ",
+          "describes": "underlying share bid/ask used for the mid 743.7100 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:14:34.073354354Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:14:33.000Z",
+      "verification": {
+        "checked": 2,
+        "reproduced": 2,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-22T00:14:41.243Z"
       }
     },
     {
       "id": "TSM-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "TSM (0x58FfE4a942d3885bAa22D7520691F611EF09e7AA)",
-      "title": "TSM: balanceOf() is 1.001463024x away from share-equivalents",
-      "statement": "TSM reports uiMultiplier() = 1001463024159690554 (1.001463024). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1461% (the true count is 1.0015x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents TSM balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "TSM: reading balanceOf() as shares understates by 0.1461% (multiplier 1.001463024x)",
+      "statement": "TSM reports uiMultiplier() = 1001463024159690554 (1.001463024), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.1461% (the true count is 1.0015x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 14.63,
         "percent": 0.1461,
-        "note": "totalSupply raw 3407.8944 tokens vs 3412.8803 share-equivalents (delta 4.9858). Presenting the raw balance as a share count understates by 0.1461%; equivalently the true count is 1.0015x the raw."
+        "note": "totalSupply raw 3407.8944 tokens vs 3412.8802 share-equivalents (delta 4.9858). Presenting the raw balance as a share count understates by 0.1461%; equivalently the true count is 1.0015x the raw."
       },
       "evidence": [
         {
@@ -422,9 +535,9 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de5e95082ba0f3a",
-          "blockNumber": "69098455",
+          "blockNumber": "69219506",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-21T20:52:11.000Z"
+          "observedAt": "2026-09-22T00:15:06.000Z"
         },
         {
           "claim": "totalSupply() == 3407894428120000000000",
@@ -432,20 +545,20 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000b8be0926939d947000",
-          "blockNumber": "69098455",
+          "blockNumber": "69219506",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-21T20:52:11.000Z"
+          "observedAt": "2026-09-22T00:15:06.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:11.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:15:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:52:23.388Z"
+        "verifiedAt": "2026-09-22T00:15:17.209Z"
       }
     },
     {
@@ -453,12 +566,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "medium",
       "subject": "TSM (0x58FfE4a942d3885bAa22D7520691F611EF09e7AA)",
+      "affectedParty": "Any caller that values TSM with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "TSM: off-chain share price and on-chain token price differ by 0.146%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (445.8463), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 444.3950). These are different quantities related by uiMultiplier(): underlying x 1.001463024 = 445.0452 (residual 0.180%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.146%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (445.8463), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 447.1100). These are different quantities related by uiMultiplier(): underlying x 1.001463024 = 447.7641, leaving a residual of -0.428% against the observed feed price. That residual is NOT small relative to the 0.146% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.146%.",
       "impact": {
         "basisPoints": 14.63,
         "percent": 0.1463,
-        "note": "feed 445.8463 vs underlying-mid 444.3950 x multiplier 1.001463024 = 445.0452"
+        "note": "feed 445.8463 vs underlying-mid 447.1100 x multiplier 1.001463024 = 447.7641"
       },
       "evidence": [
         {
@@ -467,9 +581,9 @@
           "contract": "0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de5e95082ba0f3a",
-          "blockNumber": "69098455",
+          "blockNumber": "69219506",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x58FfE4a942d3885bAa22D7520691F611EF09e7AA",
-          "observedAt": "2026-09-21T20:52:11.000Z"
+          "observedAt": "2026-09-22T00:15:06.000Z"
         },
         {
           "claim": "latestRoundData().answer == 44584633104",
@@ -477,40 +591,41 @@
           "contract": "0x874cF94aa8eC88Fd9560094dD065f2fB3E41Fc2F",
           "call": "latestRoundData()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000005830000000000000000000000000000000000000000000000000000000a61738310000000000000000000000000000000000000000000000000000000006ab182f7000000000000000000000000000000000000000000000000000000006ab183040000000000000000000000000000000000000000000000010000000000000583",
-          "blockNumber": "69098455",
+          "blockNumber": "69219506",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x874cF94aa8eC88Fd9560094dD065f2fB3E41Fc2F",
-          "observedAt": "2026-09-21T20:52:11.000Z"
+          "observedAt": "2026-09-22T00:15:06.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/TSM",
-          "describes": "underlying share bid/ask used for the mid 444.3950 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:52:10.838271028Z"
+          "describes": "underlying share bid/ask used for the mid 447.1100 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:15:13.941997578Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:11.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:15:06.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:52:24.452Z"
+        "verifiedAt": "2026-09-22T00:15:17.790Z"
       }
     },
     {
       "id": "MSFT-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "MSFT (0xe93237C50D904957Cf27E7B1133b510C669c2e74)",
-      "title": "MSFT: balanceOf() is 1.000412953x away from share-equivalents",
-      "statement": "MSFT reports uiMultiplier() = 1000412952576205964 (1.000412953). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0413% (the true count is 1.0004x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents MSFT balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "MSFT: reading balanceOf() as shares understates by 0.0413% (multiplier 1.000412953x)",
+      "statement": "MSFT reports uiMultiplier() = 1000412952576205964 (1.000412953), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0413% (the true count is 1.0004x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 4.13,
         "percent": 0.0413,
-        "note": "totalSupply raw 5923.0888 tokens vs 5925.5348 share-equivalents (delta 2.4460). Presenting the raw balance as a share count understates by 0.0413%; equivalently the true count is 1.0004x the raw."
+        "note": "totalSupply raw 5843.4567 tokens vs 5845.8698 share-equivalents (delta 2.4131). Presenting the raw balance as a share count understates by 0.0413%; equivalently the true count is 1.0004x the raw."
       },
       "evidence": [
         {
@@ -519,30 +634,30 @@
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de22e47ab01248c",
-          "blockNumber": "69098673",
+          "blockNumber": "69219702",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-21T20:52:33.000Z"
+          "observedAt": "2026-09-22T00:15:25.000Z"
         },
         {
-          "claim": "totalSupply() == 5923088845200000000000",
+          "claim": "totalSupply() == 5843456729490000000000",
           "chainId": 4663,
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "totalSupply()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000141175ec2d6f8aba000",
-          "blockNumber": "69098673",
+          "rawReturn": "0x00000000000000000000000000000000000000000000013cc640a782b1513400",
+          "blockNumber": "69219702",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-21T20:52:33.000Z"
+          "observedAt": "2026-09-22T00:15:25.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:33.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:15:25.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:52:40.388Z"
+        "verifiedAt": "2026-09-22T00:15:32.806Z"
       }
     },
     {
@@ -550,12 +665,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "low",
       "subject": "MSFT (0xe93237C50D904957Cf27E7B1133b510C669c2e74)",
+      "affectedParty": "Any caller that values MSFT with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "MSFT: off-chain share price and on-chain token price differ by 0.041%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (499.9864), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 501.6900). These are different quantities related by uiMultiplier(): underlying x 1.000412953 = 501.8972 (residual -0.381%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.041%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (499.9864), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 501.5950). These are different quantities related by uiMultiplier(): underlying x 1.000412953 = 501.8021, leaving a residual of -0.362% against the observed feed price. That residual is NOT small relative to the 0.041% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.041%.",
       "impact": {
         "basisPoints": 4.13,
         "percent": 0.0413,
-        "note": "feed 499.9864 vs underlying-mid 501.6900 x multiplier 1.000412953 = 501.8972"
+        "note": "feed 499.9864 vs underlying-mid 501.5950 x multiplier 1.000412953 = 501.8021"
       },
       "evidence": [
         {
@@ -564,9 +680,9 @@
           "contract": "0xe93237C50D904957Cf27E7B1133b510C669c2e74",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de22e47ab01248c",
-          "blockNumber": "69098673",
+          "blockNumber": "69219702",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xe93237C50D904957Cf27E7B1133b510C669c2e74",
-          "observedAt": "2026-09-21T20:52:33.000Z"
+          "observedAt": "2026-09-22T00:15:25.000Z"
         },
         {
           "claim": "latestRoundData().answer == 49998638543",
@@ -574,40 +690,41 @@
           "contract": "0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
           "call": "latestRoundData()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000003030000000000000000000000000000000000000000000000000000000ba426adcf000000000000000000000000000000000000000000000000000000006ab183f0000000000000000000000000000000000000000000000000000000006ab183fd0000000000000000000000000000000000000000000000010000000000000303",
-          "blockNumber": "69098673",
+          "blockNumber": "69219702",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x45C3C877C15E6BA2EBB19eA114Ea508d14C1Af2E",
-          "observedAt": "2026-09-21T20:52:33.000Z"
+          "observedAt": "2026-09-22T00:15:25.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/MSFT",
-          "describes": "underlying share bid/ask used for the mid 501.6900 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:52:35.991100031Z"
+          "describes": "underlying share bid/ask used for the mid 501.5950 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:15:18.819521525Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:33.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:15:25.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:52:42.487Z"
+        "verifiedAt": "2026-09-22T00:15:33.400Z"
       }
     },
     {
       "id": "META-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "META (0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35)",
-      "title": "META: balanceOf() is 1.000541460x away from share-equivalents",
-      "statement": "META reports uiMultiplier() = 1000541459879451635 (1.000541460). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0541% (the true count is 1.0005x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents META balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "META: reading balanceOf() as shares understates by 0.0541% (multiplier 1.000541460x)",
+      "statement": "META reports uiMultiplier() = 1000541459879451635 (1.000541460), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0541% (the true count is 1.0005x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 5.41,
         "percent": 0.0541,
-        "note": "totalSupply raw 6703.2453 tokens vs 6706.8748 share-equivalents (delta 3.6295). Presenting the raw balance as a share count understates by 0.0541%; equivalently the true count is 1.0005x the raw."
+        "note": "totalSupply raw 7198.3143 tokens vs 7202.2119 share-equivalents (delta 3.8976). Presenting the raw balance as a share count understates by 0.0541%; equivalently the true count is 1.0005x the raw."
       },
       "evidence": [
         {
@@ -616,30 +733,30 @@
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2a3281b2a5bf3",
-          "blockNumber": "69098872",
+          "blockNumber": "69219928",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-21T20:52:53.000Z"
+          "observedAt": "2026-09-22T00:15:48.000Z"
         },
         {
-          "claim": "totalSupply() == 6703245301630000000000",
+          "claim": "totalSupply() == 7198314311610000000000",
           "chainId": 4663,
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000016b623746844a556c00",
-          "blockNumber": "69098872",
+          "rawReturn": "0x00000000000000000000000000000000000000000000018638adb81b048cc400",
+          "blockNumber": "69219928",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-21T20:52:53.000Z"
+          "observedAt": "2026-09-22T00:15:48.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:53.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:15:48.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:53:05.172Z"
+        "verifiedAt": "2026-09-22T00:15:55.526Z"
       }
     },
     {
@@ -647,12 +764,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "low",
       "subject": "META (0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35)",
+      "affectedParty": "Any caller that values META with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "META: off-chain share price and on-chain token price differ by 0.054%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (743.5656), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 740.8950). These are different quantities related by uiMultiplier(): underlying x 1.000541460 = 741.2962 (residual 0.306%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.054%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (739.5802), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 739.0250). These are different quantities related by uiMultiplier(): underlying x 1.000541460 = 739.4252, leaving a residual of 0.021% against the observed feed price. That residual is small relative to the 0.054% multiplier effect, consistent with bid/ask spread and the timing gap between the REST quote and the feed's updatedAt. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.054%.",
       "impact": {
         "basisPoints": 5.41,
         "percent": 0.0541,
-        "note": "feed 743.5656 vs underlying-mid 740.8950 x multiplier 1.000541460 = 741.2962"
+        "note": "feed 739.5802 vs underlying-mid 739.0250 x multiplier 1.000541460 = 739.4252"
       },
       "evidence": [
         {
@@ -661,50 +779,51 @@
           "contract": "0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2a3281b2a5bf3",
-          "blockNumber": "69098872",
+          "blockNumber": "69219928",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xc0D6457C16Cc70d6790Dd43521C899C87ce02f35",
-          "observedAt": "2026-09-21T20:52:53.000Z"
+          "observedAt": "2026-09-22T00:15:48.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 74356559305",
+          "claim": "latestRoundData().answer == 73958023631",
           "chainId": 4663,
           "contract": "0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
           "call": "latestRoundData()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000004e5000000000000000000000000000000000000000000000000000000114fff0dc9000000000000000000000000000000000000000000000000000000006ab18bf4000000000000000000000000000000000000000000000000000000006ab18c0100000000000000000000000000000000000000000000000100000000000004e5",
-          "blockNumber": "69098872",
+          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000004e600000000000000000000000000000000000000000000000000000011383de1cf000000000000000000000000000000000000000000000000000000006ab1c637000000000000000000000000000000000000000000000000000000006ab1c64300000000000000000000000000000000000000000000000100000000000004e6",
+          "blockNumber": "69219928",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x7C38C00C30BEe9378381E7B6135d7283356D71b1",
-          "observedAt": "2026-09-21T20:52:53.000Z"
+          "observedAt": "2026-09-22T00:15:48.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/META",
-          "describes": "underlying share bid/ask used for the mid 740.8950 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:53:02.993799368Z"
+          "describes": "underlying share bid/ask used for the mid 739.0250 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:15:46.641598821Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:52:53.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:15:48.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:53:05.835Z"
+        "verifiedAt": "2026-09-22T00:15:56.085Z"
       }
     },
     {
       "id": "UPS-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "UPS (0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2)",
-      "title": "UPS: balanceOf() is 1.002208725x away from share-equivalents",
-      "statement": "UPS reports uiMultiplier() = 1002208724969205741 (1.002208725). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.2204% (the true count is 1.0022x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents UPS balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "UPS: reading balanceOf() as shares understates by 0.2204% (multiplier 1.002208725x)",
+      "statement": "UPS reports uiMultiplier() = 1002208724969205741 (1.002208725), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.2204% (the true count is 1.0022x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 22.09,
         "percent": 0.2204,
-        "note": "totalSupply raw 2964.7409 tokens vs 2971.2892 share-equivalents (delta 6.5483). Presenting the raw balance as a share count understates by 0.2204%; equivalently the true count is 1.0022x the raw."
+        "note": "totalSupply raw 2964.7408 tokens vs 2971.2891 share-equivalents (delta 6.5483). Presenting the raw balance as a share count understates by 0.2204%; equivalently the true count is 1.0022x the raw."
       },
       "evidence": [
         {
@@ -713,9 +832,9 @@
           "contract": "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de88f8682962fed",
-          "blockNumber": "69099176",
+          "blockNumber": "69220155",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
-          "observedAt": "2026-09-21T20:53:23.000Z"
+          "observedAt": "2026-09-22T00:16:11.000Z"
         },
         {
           "claim": "totalSupply() == 2964740892740000000000",
@@ -723,29 +842,30 @@
           "contract": "0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000a0b80b86139a2da800",
-          "blockNumber": "69099176",
+          "blockNumber": "69220155",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf23250dac154D05Bb671CB0d0eBEf3c635c79CE2",
-          "observedAt": "2026-09-21T20:53:23.000Z"
+          "observedAt": "2026-09-22T00:16:11.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:53:23.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:16:11.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:53:30.572Z"
+        "verifiedAt": "2026-09-22T00:16:17.192Z"
       }
     },
     {
       "id": "LHX-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "LHX (0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25)",
-      "title": "LHX: balanceOf() is 1.004922488x away from share-equivalents",
-      "statement": "LHX reports uiMultiplier() = 1004922488323561562 (1.004922488). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.4898% (the true count is 1.0049x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents LHX balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "LHX: reading balanceOf() as shares understates by 0.4898% (multiplier 1.004922488x)",
+      "statement": "LHX reports uiMultiplier() = 1004922488323561562 (1.004922488), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.4898% (the true count is 1.0049x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 49.22,
         "percent": 0.4898,
@@ -758,9 +878,9 @@
           "contract": "0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df233adc753d85a",
-          "blockNumber": "69099317",
+          "blockNumber": "69220205",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
-          "observedAt": "2026-09-21T20:53:38.000Z"
+          "observedAt": "2026-09-22T00:16:16.000Z"
         },
         {
           "claim": "totalSupply() == 60378000000000000000",
@@ -768,33 +888,34 @@
           "contract": "0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000345e9bf1a88890000",
-          "blockNumber": "69099317",
+          "blockNumber": "69220205",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x48d60243c66437c6ac3c2495Be94747aEd5Dfe25",
-          "observedAt": "2026-09-21T20:53:38.000Z"
+          "observedAt": "2026-09-22T00:16:16.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:53:38.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:16:16.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:53:43.819Z"
+        "verifiedAt": "2026-09-22T00:16:25.881Z"
       }
     },
     {
       "id": "VST-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "VST (0x561e2a49212b7cCF47f2744Ccb83e200722fADBc)",
-      "title": "VST: balanceOf() is 1.001114739x away from share-equivalents",
-      "statement": "VST reports uiMultiplier() = 1001114738710796417 (1.001114739). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1113% (the true count is 1.0011x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents VST balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "VST: reading balanceOf() as shares understates by 0.1113% (multiplier 1.001114739x)",
+      "statement": "VST reports uiMultiplier() = 1001114738710796417 (1.001114739), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.1113% (the true count is 1.0011x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 11.15,
         "percent": 0.1113,
-        "note": "totalSupply raw 105.2955 tokens vs 105.4129 share-equivalents (delta 0.1174). Presenting the raw balance as a share count understates by 0.1113%; equivalently the true count is 1.0011x the raw."
+        "note": "totalSupply raw 105.2955 tokens vs 105.4128 share-equivalents (delta 0.1173). Presenting the raw balance as a share count understates by 0.1113%; equivalently the true count is 1.0011x the raw."
       },
       "evidence": [
         {
@@ -803,9 +924,9 @@
           "contract": "0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4ac8cfc43d881",
-          "blockNumber": "69099864",
+          "blockNumber": "69220744",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
-          "observedAt": "2026-09-21T20:54:33.000Z"
+          "observedAt": "2026-09-22T00:17:09.000Z"
         },
         {
           "claim": "totalSupply() == 105295513020000000000",
@@ -813,33 +934,34 @@
           "contract": "0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000005b544cf364f9e5800",
-          "blockNumber": "69099864",
+          "blockNumber": "69220744",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x561e2a49212b7cCF47f2744Ccb83e200722fADBc",
-          "observedAt": "2026-09-21T20:54:33.000Z"
+          "observedAt": "2026-09-22T00:17:09.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:54:33.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:17:09.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:54:39.656Z"
+        "verifiedAt": "2026-09-22T00:17:14.391Z"
       }
     },
     {
       "id": "GOOGL-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "GOOGL (0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3)",
-      "title": "GOOGL: balanceOf() is 1.000193924x away from share-equivalents",
-      "statement": "GOOGL reports uiMultiplier() = 1000193924414112587 (1.000193924). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0194% (the true count is 1.0002x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents GOOGL balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "GOOGL: reading balanceOf() as shares understates by 0.0194% (multiplier 1.000193924x)",
+      "statement": "GOOGL reports uiMultiplier() = 1000193924414112587 (1.000193924), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0194% (the true count is 1.0002x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 1.94,
         "percent": 0.0194,
-        "note": "totalSupply raw 15142.8730 tokens vs 15145.8096 share-equivalents (delta 2.9366). Presenting the raw balance as a share count understates by 0.0194%; equivalently the true count is 1.0002x the raw."
+        "note": "totalSupply raw 15142.8730 tokens vs 15145.8095 share-equivalents (delta 2.9365). Presenting the raw balance as a share count understates by 0.0194%; equivalently the true count is 1.0002x the raw."
       },
       "evidence": [
         {
@@ -848,9 +970,9 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de167133335034b",
-          "blockNumber": "69100049",
+          "blockNumber": "69220868",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-21T20:54:51.000Z"
+          "observedAt": "2026-09-22T00:17:21.000Z"
         },
         {
           "claim": "totalSupply() == 15142873007160000000000",
@@ -858,20 +980,20 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000334e59411a1df043000",
-          "blockNumber": "69100049",
+          "blockNumber": "69220868",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-21T20:54:51.000Z"
+          "observedAt": "2026-09-22T00:17:21.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:54:51.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:17:21.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:54:59.791Z"
+        "verifiedAt": "2026-09-22T00:17:29.258Z"
       }
     },
     {
@@ -879,12 +1001,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "low",
       "subject": "GOOGL (0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3)",
+      "affectedParty": "Any caller that values GOOGL with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "GOOGL: off-chain share price and on-chain token price differ by 0.019%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (354.9037), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 355.5800). These are different quantities related by uiMultiplier(): underlying x 1.000193924 = 355.6490 (residual -0.210%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.019%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (354.9037), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 355.9050). These are different quantities related by uiMultiplier(): underlying x 1.000193924 = 355.9740, leaving a residual of -0.301% against the observed feed price. That residual is NOT small relative to the 0.019% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.019%.",
       "impact": {
         "basisPoints": 1.94,
         "percent": 0.0194,
-        "note": "feed 354.9037 vs underlying-mid 355.5800 x multiplier 1.000193924 = 355.6490"
+        "note": "feed 354.9037 vs underlying-mid 355.9050 x multiplier 1.000193924 = 355.9740"
       },
       "evidence": [
         {
@@ -893,9 +1016,9 @@
           "contract": "0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de167133335034b",
-          "blockNumber": "69100049",
+          "blockNumber": "69220868",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x2e0847E8910a9732eB3fb1bb4b70a580ADAD4FE3",
-          "observedAt": "2026-09-21T20:54:51.000Z"
+          "observedAt": "2026-09-22T00:17:21.000Z"
         },
         {
           "claim": "latestRoundData().answer == 35490365690",
@@ -903,40 +1026,41 @@
           "contract": "0xF6f373a037c30F0e5010d854385cA89185AE638b",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000032b00000000000000000000000000000000000000000000000000000008436400fa000000000000000000000000000000000000000000000000000000006ab18cea000000000000000000000000000000000000000000000000000000006ab18cf6000000000000000000000000000000000000000000000001000000000000032b",
-          "blockNumber": "69100049",
+          "blockNumber": "69220868",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF6f373a037c30F0e5010d854385cA89185AE638b",
-          "observedAt": "2026-09-21T20:54:51.000Z"
+          "observedAt": "2026-09-22T00:17:21.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/GOOGL",
-          "describes": "underlying share bid/ask used for the mid 355.5800 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:54:46.180542133Z"
+          "describes": "underlying share bid/ask used for the mid 355.9050 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:17:23.286892454Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:54:51.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:17:21.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:55:00.556Z"
+        "verifiedAt": "2026-09-22T00:17:29.818Z"
       }
     },
     {
       "id": "SGOV-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "SGOV (0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5)",
-      "title": "SGOV: balanceOf() is 1.005101770x away from share-equivalents",
-      "statement": "SGOV reports uiMultiplier() = 1005101770003214918 (1.005101770). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.5076% (the true count is 1.0051x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents SGOV balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "SGOV: reading balanceOf() as shares understates by 0.5076% (multiplier 1.005101770x)",
+      "statement": "SGOV reports uiMultiplier() = 1005101770003214918 (1.005101770), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.5076% (the true count is 1.0051x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 51.02,
         "percent": 0.5076,
-        "note": "totalSupply raw 36836.3123 tokens vs 37024.2427 share-equivalents (delta 187.9304). Presenting the raw balance as a share count understates by 0.5076%; equivalently the true count is 1.0051x the raw."
+        "note": "totalSupply raw 36836.3122 tokens vs 37024.2426 share-equivalents (delta 187.9304). Presenting the raw balance as a share count understates by 0.5076%; equivalently the true count is 1.0051x the raw."
       },
       "evidence": [
         {
@@ -945,9 +1069,9 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df2d6bc0c287246",
-          "blockNumber": "69100536",
+          "blockNumber": "69221247",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-21T20:55:40.000Z"
+          "observedAt": "2026-09-22T00:17:59.000Z"
         },
         {
           "claim": "totalSupply() == 36836312296960000000000",
@@ -955,20 +1079,20 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000007cce68692f0264c0000",
-          "blockNumber": "69100536",
+          "blockNumber": "69221247",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-21T20:55:40.000Z"
+          "observedAt": "2026-09-22T00:17:59.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:55:40.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:17:59.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:55:51.474Z"
+        "verifiedAt": "2026-09-22T00:18:07.102Z"
       }
     },
     {
@@ -976,12 +1100,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "medium",
       "subject": "SGOV (0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5)",
+      "affectedParty": "Any caller that values SGOV with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "SGOV: off-chain share price and on-chain token price differ by 0.510%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (101.1082), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 100.5950). These are different quantities related by uiMultiplier(): underlying x 1.005101770 = 101.1082 (residual -0.000%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.510%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (101.1082), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 100.6050). These are different quantities related by uiMultiplier(): underlying x 1.005101770 = 101.1183, leaving a residual of -0.010% against the observed feed price. That residual is small relative to the 0.510% multiplier effect, consistent with bid/ask spread and the timing gap between the REST quote and the feed's updatedAt. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.510%.",
       "impact": {
         "basisPoints": 51.02,
         "percent": 0.5102,
-        "note": "feed 101.1082 vs underlying-mid 100.5950 x multiplier 1.005101770 = 101.1082"
+        "note": "feed 101.1082 vs underlying-mid 100.6050 x multiplier 1.005101770 = 101.1183"
       },
       "evidence": [
         {
@@ -990,50 +1115,51 @@
           "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df2d6bc0c287246",
-          "blockNumber": "69100536",
+          "blockNumber": "69221247",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
-          "observedAt": "2026-09-21T20:55:40.000Z"
+          "observedAt": "2026-09-22T00:17:59.000Z"
         },
         {
           "claim": "latestRoundData().answer == 10110821255",
           "chainId": 4663,
           "contract": "0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
           "call": "latestRoundData()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000003f000000000000000000000000000000000000000000000000000000025aa6e387000000000000000000000000000000000000000000000000000000006ab0738f000000000000000000000000000000000000000000000000000000006ab0739b000000000000000000000000000000000000000000000001000000000000003f",
-          "blockNumber": "69100536",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000040000000000000000000000000000000000000000000000000000000025aa6e387000000000000000000000000000000000000000000000000000000006ab1c520000000000000000000000000000000000000000000000000000000006ab1c52c0000000000000000000000000000000000000000000000010000000000000040",
+          "blockNumber": "69221247",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
-          "observedAt": "2026-09-21T20:55:40.000Z"
+          "observedAt": "2026-09-22T00:17:59.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/SGOV",
-          "describes": "underlying share bid/ask used for the mid 100.5950 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:55:36.570247268Z"
+          "describes": "underlying share bid/ask used for the mid 100.6050 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:17:59.874731992Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:55:40.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:17:59.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:55:52.234Z"
+        "verifiedAt": "2026-09-22T00:18:07.625Z"
       }
     },
     {
       "id": "UNH-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "UNH (0xcF364ea52787e289De6F32077834056E3E70D6A8)",
-      "title": "UNH: balanceOf() is 1.004241501x away from share-equivalents",
-      "statement": "UNH reports uiMultiplier() = 1004241501039702113 (1.004241501). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.4224% (the true count is 1.0042x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents UNH balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "UNH: reading balanceOf() as shares understates by 0.4224% (multiplier 1.004241501x)",
+      "statement": "UNH reports uiMultiplier() = 1004241501039702113 (1.004241501), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.4224% (the true count is 1.0042x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 42.42,
         "percent": 0.4224,
-        "note": "totalSupply raw 97.0095 tokens vs 97.4210 share-equivalents (delta 0.4115). Presenting the raw balance as a share count understates by 0.4224%; equivalently the true count is 1.0042x the raw."
+        "note": "totalSupply raw 97.0095 tokens vs 97.4209 share-equivalents (delta 0.4114). Presenting the raw balance as a share count understates by 0.4224%; equivalently the true count is 1.0042x the raw."
       },
       "evidence": [
         {
@@ -1042,9 +1168,9 @@
           "contract": "0xcF364ea52787e289De6F32077834056E3E70D6A8",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000defc853122d3061",
-          "blockNumber": "69101048",
+          "blockNumber": "69221684",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xcF364ea52787e289De6F32077834056E3E70D6A8",
-          "observedAt": "2026-09-21T20:56:32.000Z"
+          "observedAt": "2026-09-22T00:18:43.000Z"
         },
         {
           "claim": "totalSupply() == 97009504080000000000",
@@ -1052,29 +1178,30 @@
           "contract": "0xcF364ea52787e289De6F32077834056E3E70D6A8",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000054246fdfb7d352000",
-          "blockNumber": "69101048",
+          "blockNumber": "69221684",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xcF364ea52787e289De6F32077834056E3E70D6A8",
-          "observedAt": "2026-09-21T20:56:32.000Z"
+          "observedAt": "2026-09-22T00:18:43.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:56:32.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:18:43.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:56:43.770Z"
+        "verifiedAt": "2026-09-22T00:18:49.204Z"
       }
     },
     {
       "id": "WDC-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "WDC (0xF52597345A8Edf418bc4071b4a35112472277D3e)",
-      "title": "WDC: balanceOf() is 1.000217565x away from share-equivalents",
-      "statement": "WDC reports uiMultiplier() = 1000217565250523909 (1.000217565). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0218% (the true count is 1.0002x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents WDC balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "WDC: reading balanceOf() as shares understates by 0.0218% (multiplier 1.000217565x)",
+      "statement": "WDC reports uiMultiplier() = 1000217565250523909 (1.000217565), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0218% (the true count is 1.0002x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 2.18,
         "percent": 0.0218,
@@ -1087,9 +1214,9 @@
           "contract": "0xF52597345A8Edf418bc4071b4a35112472277D3e",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de17c9382dd1305",
-          "blockNumber": "69101449",
+          "blockNumber": "69221831",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF52597345A8Edf418bc4071b4a35112472277D3e",
-          "observedAt": "2026-09-21T20:57:12.000Z"
+          "observedAt": "2026-09-22T00:18:58.000Z"
         },
         {
           "claim": "totalSupply() == 182540415550000000000",
@@ -1097,33 +1224,34 @@
           "contract": "0xF52597345A8Edf418bc4071b4a35112472277D3e",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000009e541d4cd59f0ec00",
-          "blockNumber": "69101449",
+          "blockNumber": "69221831",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xF52597345A8Edf418bc4071b4a35112472277D3e",
-          "observedAt": "2026-09-21T20:57:12.000Z"
+          "observedAt": "2026-09-22T00:18:58.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:57:12.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:18:58.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:57:18.516Z"
+        "verifiedAt": "2026-09-22T00:19:07.587Z"
       }
     },
     {
       "id": "MU-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "MU (0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD)",
-      "title": "MU: balanceOf() is 1.000074823x away from share-equivalents",
-      "statement": "MU reports uiMultiplier() = 1000074823219171086 (1.000074823). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0075% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents MU balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "MU: reading balanceOf() as shares understates by 0.0075% (multiplier 1.000074823x)",
+      "statement": "MU reports uiMultiplier() = 1000074823219171086 (1.000074823), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0075% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 0.75,
         "percent": 0.0075,
-        "note": "totalSupply raw 4525.0483 tokens vs 4525.3869 share-equivalents (delta 0.3386). Presenting the raw balance as a share count understates by 0.0075%; equivalently the true count is 1.0001x the raw."
+        "note": "totalSupply raw 4525.0482 tokens vs 4525.3868 share-equivalents (delta 0.3386). Presenting the raw balance as a share count understates by 0.0075%; equivalently the true count is 1.0001x the raw."
       },
       "evidence": [
         {
@@ -1132,9 +1260,9 @@
           "contract": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0fac0caca4f0e",
-          "blockNumber": "69101646",
+          "blockNumber": "69222016",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
-          "observedAt": "2026-09-21T20:57:32.000Z"
+          "observedAt": "2026-09-22T00:19:17.000Z"
         },
         {
           "claim": "totalSupply() == 4525048271370000000000",
@@ -1142,33 +1270,34 @@
           "contract": "0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000f54da8e413e83fe400",
-          "blockNumber": "69101646",
+          "blockNumber": "69222016",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xfF080c8ce2E5feadaCa0Da81314Ae59D232d4afD",
-          "observedAt": "2026-09-21T20:57:32.000Z"
+          "observedAt": "2026-09-22T00:19:17.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:57:32.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:19:17.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:57:42.693Z"
+        "verifiedAt": "2026-09-22T00:19:24.086Z"
       }
     },
     {
       "id": "VRT-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "VRT (0xFA78C12E6488814A0262E4e802749a4a737d5fB7)",
-      "title": "VRT: balanceOf() is 1.000162789x away from share-equivalents",
-      "statement": "VRT reports uiMultiplier() = 1000162788892052072 (1.000162789). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0163% (the true count is 1.0002x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents VRT balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "VRT: reading balanceOf() as shares understates by 0.0163% (multiplier 1.000162789x)",
+      "statement": "VRT reports uiMultiplier() = 1000162788892052072 (1.000162789), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0163% (the true count is 1.0002x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 1.63,
         "percent": 0.0163,
-        "note": "totalSupply raw 55.4608 tokens vs 55.4699 share-equivalents (delta 0.0090). Presenting the raw balance as a share count understates by 0.0163%; equivalently the true count is 1.0002x the raw."
+        "note": "totalSupply raw 55.4608 tokens vs 55.4698 share-equivalents (delta 0.0090). Presenting the raw balance as a share count understates by 0.0163%; equivalently the true count is 1.0002x the raw."
       },
       "evidence": [
         {
@@ -1177,9 +1306,9 @@
           "contract": "0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de14ac1e5798a68",
-          "blockNumber": "69102409",
+          "blockNumber": "69222667",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
-          "observedAt": "2026-09-21T20:58:46.000Z"
+          "observedAt": "2026-09-22T00:20:22.000Z"
         },
         {
           "claim": "totalSupply() == 55460841590000000000",
@@ -1187,33 +1316,34 @@
           "contract": "0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000301ac7d94fc291c00",
-          "blockNumber": "69102409",
+          "blockNumber": "69222667",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xFA78C12E6488814A0262E4e802749a4a737d5fB7",
-          "observedAt": "2026-09-21T20:58:46.000Z"
+          "observedAt": "2026-09-22T00:20:22.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:58:46.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:20:22.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:58:53.155Z"
+        "verifiedAt": "2026-09-22T00:20:28.116Z"
       }
     },
     {
       "id": "XLK-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "XLK (0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43)",
-      "title": "XLK: balanceOf() is 1.000804405x away from share-equivalents",
-      "statement": "XLK reports uiMultiplier() = 1000804404520428861 (1.000804405). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0804% (the true count is 1.0008x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents XLK balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "XLK: reading balanceOf() as shares understates by 0.0804% (multiplier 1.000804405x)",
+      "statement": "XLK reports uiMultiplier() = 1000804404520428861 (1.000804405), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0804% (the true count is 1.0008x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 8.04,
         "percent": 0.0804,
-        "note": "totalSupply raw 86.2750 tokens vs 86.3444 share-equivalents (delta 0.0694). Presenting the raw balance as a share count understates by 0.0804%; equivalently the true count is 1.0008x the raw."
+        "note": "totalSupply raw 86.2750 tokens vs 86.3443 share-equivalents (delta 0.0693). Presenting the raw balance as a share count understates by 0.0804%; equivalently the true count is 1.0008x the raw."
       },
       "evidence": [
         {
@@ -1222,9 +1352,9 @@
           "contract": "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de3924dad16253d",
-          "blockNumber": "69102517",
+          "blockNumber": "69222717",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
-          "observedAt": "2026-09-21T20:58:57.000Z"
+          "observedAt": "2026-09-22T00:20:27.000Z"
         },
         {
           "claim": "totalSupply() == 86275000000000000000",
@@ -1232,33 +1362,34 @@
           "contract": "0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000004ad4e5f653cd38000",
-          "blockNumber": "69102517",
+          "blockNumber": "69222717",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x15Cd20759CE7F3285c29A319dE2D1A2e098c6f43",
-          "observedAt": "2026-09-21T20:58:57.000Z"
+          "observedAt": "2026-09-22T00:20:27.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:58:57.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:20:27.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:59:04.410Z"
+        "verifiedAt": "2026-09-22T00:20:37.107Z"
       }
     },
     {
       "id": "NVDA-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "NVDA (0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC)",
-      "title": "NVDA: balanceOf() is 1.000775159x away from share-equivalents",
-      "statement": "NVDA reports uiMultiplier() = 1000775159164630595 (1.000775159). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0775% (the true count is 1.0008x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents NVDA balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "NVDA: reading balanceOf() as shares understates by 0.0775% (multiplier 1.000775159x)",
+      "statement": "NVDA reports uiMultiplier() = 1000775159164630595 (1.000775159), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0775% (the true count is 1.0008x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 7.75,
         "percent": 0.0775,
-        "note": "totalSupply raw 85991.0210 tokens vs 86057.6777 share-equivalents (delta 66.6567). Presenting the raw balance as a share count understates by 0.0775%; equivalently the true count is 1.0008x the raw."
+        "note": "totalSupply raw 86463.1045 tokens vs 86530.1272 share-equivalents (delta 67.0227). Presenting the raw balance as a share count understates by 0.0775%; equivalently the true count is 1.0008x the raw."
       },
       "evidence": [
         {
@@ -1267,30 +1398,30 @@
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69102629",
+          "blockNumber": "69222803",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-21T20:59:09.000Z"
+          "observedAt": "2026-09-22T00:20:36.000Z"
         },
         {
-          "claim": "totalSupply() == 85991020961970000000000",
+          "claim": "totalSupply() == 86463104592020000000000",
           "chainId": 4663,
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000123595246cf4dee07400",
-          "blockNumber": "69102629",
+          "rawReturn": "0x00000000000000000000000000000000000000000000124f2c9e6547de0cc800",
+          "blockNumber": "69222803",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-21T20:59:09.000Z"
+          "observedAt": "2026-09-22T00:20:36.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:59:09.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:20:36.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:59:20.774Z"
+        "verifiedAt": "2026-09-22T00:20:47.223Z"
       }
     },
     {
@@ -1298,12 +1429,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "low",
       "subject": "NVDA (0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC)",
+      "affectedParty": "Any caller that values NVDA with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "NVDA: off-chain share price and on-chain token price differ by 0.078%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (227.3061), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 226.9500). These are different quantities related by uiMultiplier(): underlying x 1.000775159 = 227.1259 (residual 0.079%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.078%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (227.3061), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 227.4250). These are different quantities related by uiMultiplier(): underlying x 1.000775159 = 227.6013, leaving a residual of -0.130% against the observed feed price. That residual is NOT small relative to the 0.078% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.078%.",
       "impact": {
         "basisPoints": 7.75,
         "percent": 0.0775,
-        "note": "feed 227.3061 vs underlying-mid 226.9500 x multiplier 1.000775159 = 227.1259"
+        "note": "feed 227.3061 vs underlying-mid 227.4250 x multiplier 1.000775159 = 227.6013"
       },
       "evidence": [
         {
@@ -1312,9 +1444,9 @@
           "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69102629",
+          "blockNumber": "69222803",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "observedAt": "2026-09-21T20:59:09.000Z"
+          "observedAt": "2026-09-22T00:20:36.000Z"
         },
         {
           "claim": "latestRoundData().answer == 22730606190",
@@ -1322,40 +1454,41 @@
           "contract": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
           "call": "latestRoundData()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000432000000000000000000000000000000000000000000000000000000054ad9866e000000000000000000000000000000000000000000000000000000006ab18a8b000000000000000000000000000000000000000000000000000000006ab18a980000000000000000000000000000000000000000000000010000000000000432",
-          "blockNumber": "69102629",
+          "blockNumber": "69222803",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-          "observedAt": "2026-09-21T20:59:09.000Z"
+          "observedAt": "2026-09-22T00:20:36.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/NVDA",
-          "describes": "underlying share bid/ask used for the mid 226.9500 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T20:59:05.210760393Z"
+          "describes": "underlying share bid/ask used for the mid 227.4250 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:20:45.116792303Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:59:09.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:20:36.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:59:21.551Z"
+        "verifiedAt": "2026-09-22T00:20:47.814Z"
       }
     },
     {
       "id": "F-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "F (0x25C288E6D899b9BC30160965aD9644c67e73bE0C)",
-      "title": "F: balanceOf() is 1.000145503x away from share-equivalents",
-      "statement": "F reports uiMultiplier() = 1000145502866134027 (1.000145503). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0145% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents F balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "F: reading balanceOf() as shares understates by 0.0145% (multiplier 1.000145503x)",
+      "statement": "F reports uiMultiplier() = 1000145502866134027 (1.000145503), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0145% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 1.46,
         "percent": 0.0145,
-        "note": "totalSupply raw 18822.7078 tokens vs 18825.4466 share-equivalents (delta 2.7388). Presenting the raw balance as a share count understates by 0.0145%; equivalently the true count is 1.0001x the raw."
+        "note": "totalSupply raw 18822.7078 tokens vs 18825.4465 share-equivalents (delta 2.7387). Presenting the raw balance as a share count understates by 0.0145%; equivalently the true count is 1.0001x the raw."
       },
       "evidence": [
         {
@@ -1364,9 +1497,9 @@
           "contract": "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de13b092e0a540b",
-          "blockNumber": "69102939",
+          "blockNumber": "69223079",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
-          "observedAt": "2026-09-21T20:59:41.000Z"
+          "observedAt": "2026-09-22T00:21:04.000Z"
         },
         {
           "claim": "totalSupply() == 18822707821950000000000",
@@ -1374,29 +1507,30 @@
           "contract": "0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000003fc618b8d1558516c00",
-          "blockNumber": "69102939",
+          "blockNumber": "69223079",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x25C288E6D899b9BC30160965aD9644c67e73bE0C",
-          "observedAt": "2026-09-21T20:59:41.000Z"
+          "observedAt": "2026-09-22T00:21:04.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T20:59:41.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:21:04.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T20:59:50.450Z"
+        "verifiedAt": "2026-09-22T00:21:12.804Z"
       }
     },
     {
       "id": "XOM-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "XOM (0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5)",
-      "title": "XOM: balanceOf() is 1.001039564x away from share-equivalents",
-      "statement": "XOM reports uiMultiplier() = 1001039563764661900 (1.001039564). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1038% (the true count is 1.0010x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents XOM balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "XOM: reading balanceOf() as shares understates by 0.1038% (multiplier 1.001039564x)",
+      "statement": "XOM reports uiMultiplier() = 1001039563764661900 (1.001039564), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.1038% (the true count is 1.0010x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 10.4,
         "percent": 0.1038,
@@ -1409,9 +1543,9 @@
           "contract": "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de4682df44dfe8c",
-          "blockNumber": "69103150",
+          "blockNumber": "69223247",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
-          "observedAt": "2026-09-21T21:00:02.000Z"
+          "observedAt": "2026-09-22T00:21:20.000Z"
         },
         {
           "claim": "totalSupply() == 231041747380000000000",
@@ -1419,33 +1553,34 @@
           "contract": "0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000c86592d2166700800",
-          "blockNumber": "69103150",
+          "blockNumber": "69223247",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xf9B46d3D1B22199D4D1025a9cEDB540A33F1a2d5",
-          "observedAt": "2026-09-21T21:00:02.000Z"
+          "observedAt": "2026-09-22T00:21:20.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:00:02.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:21:20.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:00:10.507Z"
+        "verifiedAt": "2026-09-22T00:21:26.153Z"
       }
     },
     {
       "id": "AMAT-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "AMAT (0x36046893810a7E7fCE501229d57dc3FC8c8716d0)",
-      "title": "AMAT: balanceOf() is 1.000044656x away from share-equivalents",
-      "statement": "AMAT reports uiMultiplier() = 1000044656302636618 (1.000044656). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0045% (the true count is 1.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents AMAT balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "AMAT: reading balanceOf() as shares understates by 0.0045% (multiplier 1.000044656x)",
+      "statement": "AMAT reports uiMultiplier() = 1000044656302636618 (1.000044656), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0045% (the true count is 1.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 0.45,
         "percent": 0.0045,
-        "note": "totalSupply raw 254.2737 tokens vs 254.2850 share-equivalents (delta 0.0114). Presenting the raw balance as a share count understates by 0.0045%; equivalently the true count is 1.0000x the raw."
+        "note": "totalSupply raw 254.2736 tokens vs 254.2850 share-equivalents (delta 0.0114). Presenting the raw balance as a share count understates by 0.0045%; equivalently the true count is 1.0000x the raw."
       },
       "evidence": [
         {
@@ -1454,9 +1589,9 @@
           "contract": "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0df5102723e4a",
-          "blockNumber": "69103788",
+          "blockNumber": "69223721",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
-          "observedAt": "2026-09-21T21:01:06.000Z"
+          "observedAt": "2026-09-22T00:22:08.000Z"
         },
         {
           "claim": "totalSupply() == 254273655080000000000",
@@ -1464,33 +1599,34 @@
           "contract": "0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000dc8c17e187f999000",
-          "blockNumber": "69103788",
+          "blockNumber": "69223721",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x36046893810a7E7fCE501229d57dc3FC8c8716d0",
-          "observedAt": "2026-09-21T21:01:06.000Z"
+          "observedAt": "2026-09-22T00:22:08.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:01:06.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:22:08.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:01:12.659Z"
+        "verifiedAt": "2026-09-22T00:22:14.125Z"
       }
     },
     {
       "id": "LLY-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "LLY (0x8005d266423c7ea827372c9c864491e5786600ea)",
-      "title": "LLY: balanceOf() is 1.000002289x away from share-equivalents",
-      "statement": "LLY reports uiMultiplier() = 1000002288774375687 (1.000002289). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0002% (the true count is 1.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents LLY balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "LLY: reading balanceOf() as shares understates by 0.0002% (multiplier 1.000002289x)",
+      "statement": "LLY reports uiMultiplier() = 1000002288774375687 (1.000002289), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0002% (the true count is 1.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 0.02,
         "percent": 0.0002,
-        "note": "totalSupply raw 1706.6637 tokens vs 1706.6676 share-equivalents (delta 0.0039). Presenting the raw balance as a share count understates by 0.0002%; equivalently the true count is 1.0000x the raw."
+        "note": "totalSupply raw 1706.6636 tokens vs 1706.6675 share-equivalents (delta 0.0039). Presenting the raw balance as a share count understates by 0.0002%; equivalently the true count is 1.0000x the raw."
       },
       "evidence": [
         {
@@ -1499,9 +1635,9 @@
           "contract": "0x8005d266423c7ea827372c9c864491e5786600ea",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0b8c88cf96907",
-          "blockNumber": "69103918",
+          "blockNumber": "69223846",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8005d266423c7ea827372c9c864491e5786600ea",
-          "observedAt": "2026-09-21T21:01:20.000Z"
+          "observedAt": "2026-09-22T00:22:21.000Z"
         },
         {
           "claim": "totalSupply() == 1706663653830000000000",
@@ -1509,33 +1645,34 @@
           "contract": "0x8005d266423c7ea827372c9c864491e5786600ea",
           "call": "totalSupply()",
           "rawReturn": "0x00000000000000000000000000000000000000000000005c84b74edde7623c00",
-          "blockNumber": "69103918",
+          "blockNumber": "69223846",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x8005d266423c7ea827372c9c864491e5786600ea",
-          "observedAt": "2026-09-21T21:01:20.000Z"
+          "observedAt": "2026-09-22T00:22:21.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:01:20.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:22:21.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:01:26.518Z"
+        "verifiedAt": "2026-09-22T00:22:26.747Z"
       }
     },
     {
       "id": "JNJ-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "JNJ (0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80)",
-      "title": "JNJ: balanceOf() is 1.000021490x away from share-equivalents",
-      "statement": "JNJ reports uiMultiplier() = 1000021490286701962 (1.000021490). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0021% (the true count is 1.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents JNJ balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "JNJ: reading balanceOf() as shares understates by 0.0021% (multiplier 1.000021490x)",
+      "statement": "JNJ reports uiMultiplier() = 1000021490286701962 (1.000021490), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0021% (the true count is 1.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 0.21,
         "percent": 0.0021,
-        "note": "totalSupply raw 1019.3490 tokens vs 1019.3709 share-equivalents (delta 0.0219). Presenting the raw balance as a share count understates by 0.0021%; equivalently the true count is 1.0000x the raw."
+        "note": "totalSupply raw 1019.3489 tokens vs 1019.3708 share-equivalents (delta 0.0219). Presenting the raw balance as a share count understates by 0.0021%; equivalently the true count is 1.0000x the raw."
       },
       "evidence": [
         {
@@ -1544,9 +1681,9 @@
           "contract": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de0ca3f404bad8a",
-          "blockNumber": "69104035",
+          "blockNumber": "69223932",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
-          "observedAt": "2026-09-21T21:01:31.000Z"
+          "observedAt": "2026-09-22T00:22:29.000Z"
         },
         {
           "claim": "totalSupply() == 1019348953920000000000",
@@ -1554,29 +1691,30 @@
           "contract": "0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000037424ef8d917a08000",
-          "blockNumber": "69104035",
+          "blockNumber": "69223932",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x03DfbBE0AC4E7bCDaFd08eD41A400326B77D8c80",
-          "observedAt": "2026-09-21T21:01:31.000Z"
+          "observedAt": "2026-09-22T00:22:29.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:01:31.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:22:29.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:01:37.638Z"
+        "verifiedAt": "2026-09-22T00:22:35.454Z"
       }
     },
     {
       "id": "KSS-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "KSS (0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993)",
-      "title": "KSS: balanceOf() is 1.004610069x away from share-equivalents",
-      "statement": "KSS reports uiMultiplier() = 1004610068732316661 (1.004610069). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.4589% (the true count is 1.0046x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents KSS balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "KSS: reading balanceOf() as shares understates by 0.4589% (multiplier 1.004610069x)",
+      "statement": "KSS reports uiMultiplier() = 1004610068732316661 (1.004610069), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.4589% (the true count is 1.0046x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 46.1,
         "percent": 0.4589,
@@ -1589,9 +1727,9 @@
           "contract": "0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000df11788ec920bf5",
-          "blockNumber": "69104089",
+          "blockNumber": "69223983",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
-          "observedAt": "2026-09-21T21:01:37.000Z"
+          "observedAt": "2026-09-22T00:22:35.000Z"
         },
         {
           "claim": "totalSupply() == 959744939860000000000",
@@ -1599,33 +1737,34 @@
           "contract": "0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000340722f9db25f04800",
-          "blockNumber": "69104089",
+          "blockNumber": "69223983",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x12e3c047bf9AeCAF9dDC98c05C31BFD1dd043993",
-          "observedAt": "2026-09-21T21:01:37.000Z"
+          "observedAt": "2026-09-22T00:22:35.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:01:37.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:22:35.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:01:44.998Z"
+        "verifiedAt": "2026-09-22T00:22:40.683Z"
       }
     },
     {
       "id": "ORCL-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "ORCL (0xb0992820E760d836549ba69BC7598b4af75dEE03)",
-      "title": "ORCL: balanceOf() is 1.002210915x away from share-equivalents",
-      "statement": "ORCL reports uiMultiplier() = 1002210914971013375 (1.002210915). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.2206% (the true count is 1.0022x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents ORCL balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "ORCL: reading balanceOf() as shares understates by 0.2206% (multiplier 1.002210915x)",
+      "statement": "ORCL reports uiMultiplier() = 1002210914971013375 (1.002210915), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.2206% (the true count is 1.0022x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 22.11,
         "percent": 0.2206,
-        "note": "totalSupply raw 6230.6952 tokens vs 6244.4707 share-equivalents (delta 13.7755). Presenting the raw balance as a share count understates by 0.2206%; equivalently the true count is 1.0022x the raw."
+        "note": "totalSupply raw 6230.6951 tokens vs 6244.4706 share-equivalents (delta 13.7755). Presenting the raw balance as a share count understates by 0.2206%; equivalently the true count is 1.0022x the raw."
       },
       "evidence": [
         {
@@ -1634,9 +1773,9 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de8918468ddd0ff",
-          "blockNumber": "69104606",
+          "blockNumber": "69224375",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-21T21:02:29.000Z"
+          "observedAt": "2026-09-22T00:23:12.000Z"
         },
         {
           "claim": "totalSupply() == 6230695152870000000000",
@@ -1644,20 +1783,20 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000151c443e5e5c4897c00",
-          "blockNumber": "69104606",
+          "blockNumber": "69224375",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-21T21:02:29.000Z"
+          "observedAt": "2026-09-22T00:23:12.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:02:29.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:23:12.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:02:41.480Z"
+        "verifiedAt": "2026-09-22T00:23:25.610Z"
       }
     },
     {
@@ -1665,12 +1804,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "medium",
       "subject": "ORCL (0xb0992820E760d836549ba69BC7598b4af75dEE03)",
+      "affectedParty": "Any caller that values ORCL with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "ORCL: off-chain share price and on-chain token price differ by 0.221%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (149.0284), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 148.5300). These are different quantities related by uiMultiplier(): underlying x 1.002210915 = 148.8584 (residual 0.114%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.221%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (149.0284), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 149.3400). These are different quantities related by uiMultiplier(): underlying x 1.002210915 = 149.6702, leaving a residual of -0.429% against the observed feed price. That residual is NOT small relative to the 0.221% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.221%.",
       "impact": {
         "basisPoints": 22.11,
         "percent": 0.2211,
-        "note": "feed 149.0284 vs underlying-mid 148.5300 x multiplier 1.002210915 = 148.8584"
+        "note": "feed 149.0284 vs underlying-mid 149.3400 x multiplier 1.002210915 = 149.6702"
       },
       "evidence": [
         {
@@ -1679,9 +1819,9 @@
           "contract": "0xb0992820E760d836549ba69BC7598b4af75dEE03",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de8918468ddd0ff",
-          "blockNumber": "69104606",
+          "blockNumber": "69224375",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xb0992820E760d836549ba69BC7598b4af75dEE03",
-          "observedAt": "2026-09-21T21:02:29.000Z"
+          "observedAt": "2026-09-22T00:23:12.000Z"
         },
         {
           "claim": "latestRoundData().answer == 14902841228",
@@ -1689,40 +1829,41 @@
           "contract": "0x0e6a64a2B58A6693a531E6c555f3A5d042eEA844",
           "call": "latestRoundData()",
           "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000008380000000000000000000000000000000000000000000000000000000378474f8c000000000000000000000000000000000000000000000000000000006ab1686f000000000000000000000000000000000000000000000000000000006ab1687c0000000000000000000000000000000000000000000000010000000000000838",
-          "blockNumber": "69104606",
+          "blockNumber": "69224375",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x0e6a64a2B58A6693a531E6c555f3A5d042eEA844",
-          "observedAt": "2026-09-21T21:02:29.000Z"
+          "observedAt": "2026-09-22T00:23:12.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/ORCL",
-          "describes": "underlying share bid/ask used for the mid 148.5300 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T21:02:27.201310359Z"
+          "describes": "underlying share bid/ask used for the mid 149.3400 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:23:21.870844945Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:02:29.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:23:12.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:02:43.110Z"
+        "verifiedAt": "2026-09-22T00:23:26.131Z"
       }
     },
     {
       "id": "AAPL-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "AAPL (0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9)",
-      "title": "AAPL: balanceOf() is 1.000566080x away from share-equivalents",
-      "statement": "AAPL reports uiMultiplier() = 1000566080061092436 (1.000566080). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0566% (the true count is 1.0006x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents AAPL balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "AAPL: reading balanceOf() as shares understates by 0.0566% (multiplier 1.000566080x)",
+      "statement": "AAPL reports uiMultiplier() = 1000566080061092436 (1.000566080), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0566% (the true count is 1.0006x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 5.66,
         "percent": 0.0566,
-        "note": "totalSupply raw 15679.5673 tokens vs 15688.4432 share-equivalents (delta 8.8759). Presenting the raw balance as a share count understates by 0.0566%; equivalently the true count is 1.0006x the raw."
+        "note": "totalSupply raw 15679.5672 tokens vs 15688.4431 share-equivalents (delta 8.8759). Presenting the raw balance as a share count understates by 0.0566%; equivalently the true count is 1.0006x the raw."
       },
       "evidence": [
         {
@@ -1731,9 +1872,9 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2b98c7058b254",
-          "blockNumber": "69105012",
+          "blockNumber": "69224743",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-21T21:03:10.000Z"
+          "observedAt": "2026-09-22T00:23:50.000Z"
         },
         {
           "claim": "totalSupply() == 15679567269620000000000",
@@ -1741,20 +1882,20 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000351fdb51dcfc5948800",
-          "blockNumber": "69105012",
+          "blockNumber": "69224743",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-21T21:03:10.000Z"
+          "observedAt": "2026-09-22T00:23:50.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:03:10.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:23:50.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:03:20.624Z"
+        "verifiedAt": "2026-09-22T00:23:56.836Z"
       }
     },
     {
@@ -1762,12 +1903,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "low",
       "subject": "AAPL (0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9)",
+      "affectedParty": "Any caller that values AAPL with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "AAPL: off-chain share price and on-chain token price differ by 0.057%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (339.2419), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 338.7000). These are different quantities related by uiMultiplier(): underlying x 1.000566080 = 338.8917 (residual 0.103%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.057%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (339.2419), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 338.6450). These are different quantities related by uiMultiplier(): underlying x 1.000566080 = 338.8367, leaving a residual of 0.120% against the observed feed price. That residual is NOT small relative to the 0.057% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.057%.",
       "impact": {
         "basisPoints": 5.66,
         "percent": 0.0566,
-        "note": "feed 339.2419 vs underlying-mid 338.7000 x multiplier 1.000566080 = 338.8917"
+        "note": "feed 339.2419 vs underlying-mid 338.6450 x multiplier 1.000566080 = 338.8367"
       },
       "evidence": [
         {
@@ -1776,9 +1918,9 @@
           "contract": "0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2b98c7058b254",
-          "blockNumber": "69105012",
+          "blockNumber": "69224743",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xaF3D76f1834A1d425780943C99Ea8A608f8a93f9",
-          "observedAt": "2026-09-21T21:03:10.000Z"
+          "observedAt": "2026-09-22T00:23:50.000Z"
         },
         {
           "claim": "latestRoundData().answer == 33924192943",
@@ -1786,40 +1928,41 @@
           "contract": "0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
           "call": "latestRoundData()",
           "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000028a00000000000000000000000000000000000000000000000000000007e60a1aaf000000000000000000000000000000000000000000000000000000006ab15e92000000000000000000000000000000000000000000000000000000006ab15e9e000000000000000000000000000000000000000000000001000000000000028a",
-          "blockNumber": "69105012",
+          "blockNumber": "69224743",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x6B22A786bAa607d76728168703a39Ea9C99f2cD0",
-          "observedAt": "2026-09-21T21:03:10.000Z"
+          "observedAt": "2026-09-22T00:23:50.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/AAPL",
-          "describes": "underlying share bid/ask used for the mid 338.7000 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T21:03:12.061387362Z"
+          "describes": "underlying share bid/ask used for the mid 338.6450 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:23:45.714996001Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:03:10.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:23:50.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:03:21.742Z"
+        "verifiedAt": "2026-09-22T00:23:57.370Z"
       }
     },
     {
       "id": "HPE-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "medium",
       "subject": "HPE (0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1)",
-      "title": "HPE: balanceOf() is 1.001716958x away from share-equivalents",
-      "statement": "HPE reports uiMultiplier() = 1001716957939304938 (1.001716958). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1714% (the true count is 1.0017x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents HPE balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "HPE: reading balanceOf() as shares understates by 0.1714% (multiplier 1.001716958x)",
+      "statement": "HPE reports uiMultiplier() = 1001716957939304938 (1.001716958), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.1714% (the true count is 1.0017x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 17.17,
         "percent": 0.1714,
-        "note": "totalSupply raw 603.8940 tokens vs 604.9308 share-equivalents (delta 1.0369). Presenting the raw balance as a share count understates by 0.1714%; equivalently the true count is 1.0017x the raw."
+        "note": "totalSupply raw 603.8939 tokens vs 604.9308 share-equivalents (delta 1.0369). Presenting the raw balance as a share count understates by 0.1714%; equivalently the true count is 1.0017x the raw."
       },
       "evidence": [
         {
@@ -1828,9 +1971,9 @@
           "contract": "0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d044137509ea",
-          "blockNumber": "69105855",
+          "blockNumber": "69225430",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
-          "observedAt": "2026-09-21T21:04:34.000Z"
+          "observedAt": "2026-09-22T00:25:00.000Z"
         },
         {
           "claim": "totalSupply() == 603893959470000000000",
@@ -1838,29 +1981,30 @@
           "contract": "0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
           "call": "totalSupply()",
           "rawReturn": "0x000000000000000000000000000000000000000000000020bcb65492157e4c00",
-          "blockNumber": "69105855",
+          "blockNumber": "69225430",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x59dd09d4900C2E4B5F75b7c0d4E6796fcc234Cb1",
-          "observedAt": "2026-09-21T21:04:34.000Z"
+          "observedAt": "2026-09-22T00:25:00.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:04:34.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:25:00.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:04:42.176Z"
+        "verifiedAt": "2026-09-22T00:25:05.783Z"
       }
     },
     {
       "id": "COST-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "COST (0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2)",
-      "title": "COST: balanceOf() is 1.000612040x away from share-equivalents",
-      "statement": "COST reports uiMultiplier() = 1000612040296259656 (1.000612040). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0612% (the true count is 1.0006x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents COST balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "COST: reading balanceOf() as shares understates by 0.0612% (multiplier 1.000612040x)",
+      "statement": "COST reports uiMultiplier() = 1000612040296259656 (1.000612040), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0612% (the true count is 1.0006x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 6.12,
         "percent": 0.0612,
@@ -1873,9 +2017,9 @@
           "contract": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de2e35963d66048",
-          "blockNumber": "69106749",
+          "blockNumber": "69226079",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
-          "observedAt": "2026-09-21T21:06:03.000Z"
+          "observedAt": "2026-09-22T00:26:05.000Z"
         },
         {
           "claim": "totalSupply() == 1520780221550000000000",
@@ -1883,33 +2027,34 @@
           "contract": "0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000527110b20f8f9acc00",
-          "blockNumber": "69106749",
+          "blockNumber": "69226079",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x4EA005168D7F09a7A0Ba9D1DEf21a479950E44C2",
-          "observedAt": "2026-09-21T21:06:03.000Z"
+          "observedAt": "2026-09-22T00:26:05.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:06:03.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:26:05.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:06:09.141Z"
+        "verifiedAt": "2026-09-22T00:26:11.177Z"
       }
     },
     {
       "id": "SOXX-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "SOXX (0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38)",
-      "title": "SOXX: balanceOf() is 1.000450838x away from share-equivalents",
-      "statement": "SOXX reports uiMultiplier() = 1000450838210425960 (1.000450838). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0451% (the true count is 1.0005x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents SOXX balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "SOXX: reading balanceOf() as shares understates by 0.0451% (multiplier 1.000450838x)",
+      "statement": "SOXX reports uiMultiplier() = 1000450838210425960 (1.000450838), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0451% (the true count is 1.0005x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 4.51,
         "percent": 0.0451,
-        "note": "totalSupply raw 223.8669 tokens vs 223.9678 share-equivalents (delta 0.1009). Presenting the raw balance as a share count understates by 0.0451%; equivalently the true count is 1.0005x the raw."
+        "note": "totalSupply raw 222.0147 tokens vs 222.1148 share-equivalents (delta 0.1001). Presenting the raw balance as a share count understates by 0.0451%; equivalently the true count is 1.0005x the raw."
       },
       "evidence": [
         {
@@ -1918,43 +2063,44 @@
           "contract": "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de250bc9ac63468",
-          "blockNumber": "69107201",
+          "blockNumber": "69226413",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
-          "observedAt": "2026-09-21T21:06:48.000Z"
+          "observedAt": "2026-09-22T00:26:39.000Z"
         },
         {
-          "claim": "totalSupply() == 223866892260000000000",
+          "claim": "totalSupply() == 222014737280000000000",
           "chainId": 4663,
           "contract": "0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
           "call": "totalSupply()",
-          "rawReturn": "0x00000000000000000000000000000000000000000000000c22c6f869aff1e800",
-          "blockNumber": "69107201",
+          "rawReturn": "0x00000000000000000000000000000000000000000000000c0912cb458c130000",
+          "blockNumber": "69226413",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x75742c18BC1f1C5c5f448f4C9D9C6F66dafAAa38",
-          "observedAt": "2026-09-21T21:06:48.000Z"
+          "observedAt": "2026-09-22T00:26:39.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:06:48.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:26:39.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:06:54.505Z"
+        "verifiedAt": "2026-09-22T00:26:48.377Z"
       }
     },
     {
       "id": "ASML-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
       "severity": "low",
       "subject": "ASML (0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA)",
-      "title": "ASML: balanceOf() is 1.000101323x away from share-equivalents",
-      "statement": "ASML reports uiMultiplier() = 1000101323251417769 (1.000101323). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0101% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "affectedParty": "Any integrator that presents ASML balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "ASML: reading balanceOf() as shares understates by 0.0101% (multiplier 1.000101323x)",
+      "statement": "ASML reports uiMultiplier() = 1000101323251417769 (1.000101323), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 — this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 0.0101% (the true count is 1.0001x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
       "impact": {
         "basisPoints": 1.01,
         "percent": 0.0101,
-        "note": "totalSupply raw 112.5989 tokens vs 112.6104 share-equivalents (delta 0.0114). Presenting the raw balance as a share count understates by 0.0101%; equivalently the true count is 1.0001x the raw."
+        "note": "totalSupply raw 112.5989 tokens vs 112.6103 share-equivalents (delta 0.0114). Presenting the raw balance as a share count understates by 0.0101%; equivalently the true count is 1.0001x the raw."
       },
       "evidence": [
         {
@@ -1963,9 +2109,9 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de112dacfcc82a9",
-          "blockNumber": "69107251",
+          "blockNumber": "69226500",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-21T21:06:53.000Z"
+          "observedAt": "2026-09-22T00:26:47.000Z"
         },
         {
           "claim": "totalSupply() == 112598941140000000000",
@@ -1973,20 +2119,20 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "totalSupply()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000061a9fcc645ed14800",
-          "blockNumber": "69107251",
+          "blockNumber": "69226500",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-21T21:06:53.000Z"
+          "observedAt": "2026-09-22T00:26:47.000Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:06:53.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:26:47.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:07:02.654Z"
+        "verifiedAt": "2026-09-22T00:26:55.042Z"
       }
     },
     {
@@ -1994,12 +2140,13 @@
       "defectClass": "CROSS_SURFACE_PRICE_MIX",
       "severity": "low",
       "subject": "ASML (0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA)",
+      "affectedParty": "Any caller that values ASML with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
       "title": "ASML: off-chain share price and on-chain token price differ by 0.010%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (1712.8193), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 1710.8100). These are different quantities related by uiMultiplier(): underlying x 1.000101323 = 1710.9833 (residual 0.107%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.010%.",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (1721.7594), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 1722.9250). These are different quantities related by uiMultiplier(): underlying x 1.000101323 = 1723.0996, leaving a residual of -0.078% against the observed feed price. That residual is NOT small relative to the 0.010% multiplier effect, so it is reported as an observation and no cause is asserted for it. Bid/ask spread and quote timing are plausible contributors but are not established here; a trading halt on the underlying would also produce it, and this sweep does not test that. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.010%.",
       "impact": {
         "basisPoints": 1.01,
         "percent": 0.0101,
-        "note": "feed 1712.8193 vs underlying-mid 1710.8100 x multiplier 1.000101323 = 1710.9833"
+        "note": "feed 1721.7594 vs underlying-mid 1722.9250 x multiplier 1.000101323 = 1723.0996"
       },
       "evidence": [
         {
@@ -2008,45 +2155,46 @@
           "contract": "0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
           "call": "uiMultiplier()",
           "rawReturn": "0x0000000000000000000000000000000000000000000000000de112dacfcc82a9",
-          "blockNumber": "69107251",
+          "blockNumber": "69226500",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x47F93d52cBeC7C6D2CfC080e154002370a60dAEA",
-          "observedAt": "2026-09-21T21:06:53.000Z"
+          "observedAt": "2026-09-22T00:26:47.000Z"
         },
         {
-          "claim": "latestRoundData().answer == 171281928083",
+          "claim": "latestRoundData().answer == 172175943658",
           "chainId": 4663,
           "contract": "0xB4106147E8cce40b7d46124090d373A71b70f87D",
           "call": "latestRoundData()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000072900000000000000000000000000000000000000000000000000000027e132cf93000000000000000000000000000000000000000000000000000000006ab18df3000000000000000000000000000000000000000000000000000000006ab18e000000000000000000000000000000000000000000000000010000000000000729",
-          "blockNumber": "69107251",
+          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000072a00000000000000000000000000000000000000000000000000000028167c67ea000000000000000000000000000000000000000000000000000000006ab1c70a000000000000000000000000000000000000000000000000000000006ab1c716000000000000000000000000000000000000000000000001000000000000072a",
+          "blockNumber": "69226500",
           "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xB4106147E8cce40b7d46124090d373A71b70f87D",
-          "observedAt": "2026-09-21T21:06:53.000Z"
+          "observedAt": "2026-09-22T00:26:47.000Z"
         }
       ],
       "offChainSources": [
         {
           "url": "https://api.robinhood.com/rhj/prices/ASML",
-          "describes": "underlying share bid/ask used for the mid 1710.8100 (not multiplier-adjusted)",
-          "fetchedAt": "2026-09-21T21:06:52.050214587Z"
+          "describes": "underlying share bid/ask used for the mid 1722.9250 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-22T00:26:53.311155880Z"
         }
       ],
-      "methodologyVersion": "assay-rh-v0.2.0",
-      "detectedAt": "2026-09-21T21:06:53.000Z",
+      "methodologyVersion": "assay-rh-v0.3.0",
+      "detectedAt": "2026-09-22T00:26:47.000Z",
       "verification": {
         "checked": 2,
         "reproduced": 2,
         "mismatched": 0,
         "pruned": 0,
         "dropped": [],
-        "verifiedAt": "2026-09-21T21:07:03.753Z"
+        "verifiedAt": "2026-09-22T00:26:55.648Z"
       }
     }
   ],
   "rejected": [],
   "stats": {
-    "divergentMultipliers": 33,
+    "divergentMultipliers": 34,
     "staleFeeds": 0,
     "staleUnexpected": 0,
+    "staleIndeterminate": 0,
     "missingFeeds": 160,
     "pausedOracles": 0
   },

@@ -1,0 +1,4 @@
+{
+  "_comment": "Replies from parties named in findings, published verbatim. See docs/RIGHT-OF-REPLY.md. Keyed by finding id. Never edited after publication except to add a clearly-labelled ASSAY response or a correction notice; the git history is the audit trail.",
+  "replies": []
+}

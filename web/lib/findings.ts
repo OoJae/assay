@@ -140,3 +140,45 @@ export function snapshotAge(observedAt: string): { ms: number; fresh: boolean } 
   const ms = Date.now() - new Date(observedAt).getTime()
   return { ms, fresh: Number.isFinite(ms) && ms >= 0 && ms < SNAPSHOT_FRESH_MS }
 }
+
+/**
+ * Replies from parties named in a finding, published verbatim.
+ *
+ * The wall footer used to promise a right of reply that had no implementation behind it. This is
+ * the implementation: a committed file, keyed by finding id, rendered on the finding page.
+ * See docs/RIGHT-OF-REPLY.md.
+ */
+export interface Reply {
+  findingId: string
+  from: string
+  /** Published EXACTLY as received. Never trimmed, summarised or rebutted inline. */
+  text: string
+  receivedAt: string
+  publishedAt: string
+  /** Optional ASSAY response, always rendered as clearly separate from the reply itself. */
+  assayResponse?: string
+  /** Set when the reply led to a correction or withdrawal. */
+  outcome?: 'correction' | 'withdrawn' | 'no-change'
+  sourceUrl?: string
+}
+
+export function loadReplies(): Reply[] {
+  const candidates = [
+    path.join(process.cwd(), 'data', 'replies.json'),
+    path.join(process.cwd(), '..', 'data', 'replies.json'),
+  ]
+  for (const p of candidates) {
+    if (!existsSync(p)) continue
+    try {
+      const parsed = JSON.parse(readFileSync(p, 'utf8')) as { replies?: Reply[] }
+      return parsed.replies ?? []
+    } catch {
+      /* try the next candidate */
+    }
+  }
+  return []
+}
+
+export function repliesFor(findingId: string, all = loadReplies()): Reply[] {
+  return all.filter((r) => r.findingId === findingId)
+}

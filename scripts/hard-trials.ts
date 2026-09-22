@@ -46,12 +46,17 @@ interface CaseResult {
   expected: Verdict
   arm: 'braid-on' | 'braid-off'
   verdicts: Verdict[]
+  /** How many calls were ASKED for. Optional so an older artifact still resumes. */
+  attempted?: number
+  errored?: number
+  errors?: string[]
   correct: number
 }
 
 async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<CaseResult> {
   const finding = c.findingClass === 'SHARE_COUNT_MISREAD_RISK' ? share! : stale!
   const verdicts: Verdict[] = []
+  const errors: string[] = []
   for (let i = 0; i < n; i++) {
     try {
       const a = await adjudicate(finding, c.mandate, { dev, disableBraid: !braid })
@@ -59,6 +64,9 @@ async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<
       const mark = a.verdict === c.expected ? '✓' : '✗'
       console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'} ${i + 1}/${n}: ${mark} ${a.verdict}`)
     } catch (e) {
+      // Recorded, not discarded. Dropping a failed call silently shrinks the denominator, so an
+      // arm that mostly errored used to print as a confident accuracy figure.
+      errors.push((e as Error).message.slice(0, 160))
       console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'} ${i + 1}/${n}: ERROR ${(e as Error).message.slice(0, 50)}`)
     }
   }
@@ -67,6 +75,9 @@ async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<
     expected: c.expected,
     arm: braid ? 'braid-on' : 'braid-off',
     verdicts,
+    attempted: n,
+    errored: errors.length,
+    errors,
     correct: verdicts.filter((v) => v === c.expected).length,
   }
 }
@@ -78,9 +89,19 @@ async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<
  * A methodologyVersion change invalidates prior results, since the rubric IS the experiment.
  */
 let results: CaseResult[] = []
-if (existsSync('data/hard-trials.json')) {
+/**
+ * Keyed by methodology version.
+ *
+ * A fixed filename meant a rubric bump overwrote the sample measured under the previous one --
+ * destroying the only evidence for this project's actual finding, that SPECIFICATION rather than
+ * model configuration was the dominant variable. Keying it also makes resume correct: a run can
+ * only resume a partial run of the SAME rubric, which is what the version check below intended.
+ */
+const OUT = `data/hard-trials-${METHODOLOGY_VERSION}.json`
+
+if (existsSync(OUT)) {
   try {
-    const prev = JSON.parse(readFileSync('data/hard-trials.json', 'utf8')) as {
+    const prev = JSON.parse(readFileSync(OUT, 'utf8')) as {
       methodologyVersion?: string
       trialsPerCase?: number
       results?: CaseResult[]
@@ -102,9 +123,21 @@ const done = new Set(results.map((x) => `${x.id}:${x.arm}`))
 
 function summarise(arm: CaseResult['arm']) {
   const rows = results.filter((x) => x.arm === arm)
-  const trials = rows.reduce((s, x) => s + x.verdicts.length, 0)
+  const completed = rows.reduce((s, x) => s + x.verdicts.length, 0)
+  const attempted = rows.reduce((s, x) => s + (x.attempted ?? x.verdicts.length), 0)
+  const errored = rows.reduce((s, x) => s + (x.errored ?? 0), 0)
   const correct = rows.reduce((s, x) => s + x.correct, 0)
-  return { trials, correct, accuracy: trials ? correct / trials : 0 }
+  return {
+    // Both denominators, always. `trials` used to mean "completed" while the console printed
+    // "n per arm", so the committed artifact read 8 on one arm and 6 on the other.
+    attempted,
+    completed,
+    errored,
+    allCompleted: errored === 0,
+    correct,
+    accuracy: completed ? correct / completed : null,
+    accuracyOverAttempted: attempted ? correct / attempted : null,
+  }
 }
 
 /**
@@ -113,7 +146,7 @@ function summarise(arm: CaseResult['arm']) {
  */
 function persist(complete: boolean) {
   writeFileSync(
-    'data/hard-trials.json',
+    OUT,
     JSON.stringify(
       {
         generatedAt: new Date().toISOString(),
@@ -159,7 +192,7 @@ if (results.length !== expectedPairs) {
   console.error(`\nINCOMPLETE: ${results.length}/${expectedPairs} case/arm pairs. Re-run to resume.`)
 }
 
-const pct = (x: number) => `${(x * 100).toFixed(0)}%`
+const pct = (x: number | null) => (x === null ? 'n/a' : `${(x * 100).toFixed(1)}%`)
 console.log('\n' + '='.repeat(82))
 console.log(`HARD ADJUDICATION SET — ${cases.length} cases x ${n} trials per arm`)
 console.log('='.repeat(82))
@@ -172,5 +205,11 @@ for (const c of cases) {
   )
 }
 console.log(`\n${'ACCURACY'.padEnd(36)}${''.padEnd(24)}${pct(on.accuracy).padEnd(11)}${pct(off.accuracy)}`)
-console.log(`${'(correct/trials)'.padEnd(36)}${''.padEnd(24)}${`${on.correct}/${on.trials}`.padEnd(11)}${off.correct}/${off.trials}`)
-console.log('\nsaved to data/hard-trials.json')
+console.log(`${'(correct/completed)'.padEnd(36)}${''.padEnd(24)}${`${on.correct}/${on.completed}`.padEnd(11)}${off.correct}/${off.completed}`)
+if (on.errored || off.errored) {
+  console.log(
+    `\nWARNING: ${on.errored + off.errored} call(s) errored and are EXCLUDED from the accuracy above.\n` +
+      `Over all ATTEMPTED calls: braid-on ${pct(on.accuracyOverAttempted)}, braid-off ${pct(off.accuracyOverAttempted)}.`,
+  )
+}
+console.log(`\nsaved to ${OUT}`)

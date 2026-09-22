@@ -278,7 +278,10 @@ export default function Home() {
         <a href={`${REPO}/blob/main/README.md`}>the README</a>, and it is attached unedited.
         Methodology is versioned so any subject can reproduce their own grade. A subject&apos;s own
         declared mandate text is sent to OpenServ&apos;s inference API when a solicited verdict is
-        adjudicated. ASSAY rates itself first.
+        adjudicated, under this account&apos;s data-collection setting. Pre-publication notice is
+        deliberately not claimed: the sweep publishes on a timer, and for most findings the subject
+        is a contract rather than a person to notify. ASSAY rates itself first, and its own
+        self-attestation says on its face that it carries no independent assurance.
       </footer>
     </div>
   )

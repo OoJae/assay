@@ -47,9 +47,23 @@ if (!finding) {
 }
 console.error(`finding verified ${finding.verification.reproduced}/${finding.verification.checked}\n`)
 
+/**
+ * ERRORED TRIALS COUNT.
+ *
+ * The previous version pushed nothing on a throw and then divided by `verdicts.length`, so a
+ * failed call vanished from the denominator entirely. The committed artifact recorded
+ * `trials: 8` on one arm and `trials: 6` on the other under a label announcing "8 per arm", and
+ * an arm where EVERY call failed would have reported `complete: true` at 0% accuracy — which
+ * reads as a devastating result about the model rather than as a network problem.
+ *
+ * For a contribution whose entire value is methodological care, silently discarding non-random
+ * missing data is the wrong defect to have. Both denominators are now reported: `accuracy` over
+ * completed trials, and `accuracyOverAttempted` over everything we asked for.
+ */
 async function arm(disableBraid: boolean, label: string) {
   const verdicts: Verdict[] = []
   const latencies: number[] = []
+  const errors: string[] = []
   for (let i = 0; i < n; i++) {
     const t0 = Date.now()
     try {
@@ -59,7 +73,9 @@ async function arm(disableBraid: boolean, label: string) {
       latencies.push(ms)
       console.error(`  ${label} ${i + 1}/${n}: ${a.verdict} (${ms}ms)`)
     } catch (e) {
-      console.error(`  ${label} ${i + 1}/${n}: ERROR ${(e as Error).message.slice(0, 90)}`)
+      const msg = (e as Error).message.slice(0, 160)
+      errors.push(msg)
+      console.error(`  ${label} ${i + 1}/${n}: ERROR ${msg.slice(0, 90)}`)
     }
   }
   const counts = verdicts.reduce<Record<string, number>>((m, v) => {
@@ -70,13 +86,19 @@ async function arm(disableBraid: boolean, label: string) {
   const correct = verdicts.filter((v) => v === CORRECT).length
   latencies.sort((a, b) => a - b)
   return {
-    trials: verdicts.length,
+    attempted: n,
+    completed: verdicts.length,
+    errored: errors.length,
+    errors,
+    /** True only when every attempted trial produced a verdict. Read the rates against this. */
+    complete: errors.length === 0,
     counts,
     correctCount: correct,
-    accuracy: verdicts.length ? correct / verdicts.length : 0,
+    accuracy: verdicts.length ? correct / verdicts.length : null,
+    accuracyOverAttempted: correct / n,
     unsafeCount: unsafe,
-    unsafeRate: verdicts.length ? unsafe / verdicts.length : 0,
-    medianLatencyMs: latencies[Math.floor(latencies.length / 2)] ?? 0,
+    unsafeRate: verdicts.length ? unsafe / verdicts.length : null,
+    medianLatencyMs: latencies[Math.floor(latencies.length / 2)] ?? null,
   }
 }
 
@@ -84,10 +106,12 @@ console.error(`running ${n} trials per arm…\n`)
 const on = await arm(false, 'BRAID ON ')
 const off = await arm(true, 'BRAID OFF')
 
+const runId = new Date().toISOString().replace(/[:.]/g, '-')
 const artifact = {
   generatedAt: new Date().toISOString(),
   methodologyVersion: METHODOLOGY_VERSION,
   trialsPerArm: n,
+  runId,
   block: r.blockNumber,
   findingId: finding.id,
   citations: `${finding.verification.reproduced}/${finding.verification.checked} reproduced byte-for-byte`,
@@ -100,17 +124,35 @@ const artifact = {
     'from balanceOf(). MATERIAL_MISSTATEMENT is therefore the unsafe verdict: it asserts a ' +
     'demonstrated defect in a named third party on an operation the evidence does not establish.',
 }
+/**
+ * Keyed by methodology version AND run id.
+ *
+ * A fixed filename meant that bumping the rubric overwrote the sample measured under the previous
+ * one — destroying the only evidence for the claim that specification, not model configuration,
+ * was the dominant variable. That claim is the actual contribution here, and it is only
+ * supportable if both samples survive.
+ */
+const keyed = `data/braid-trials-${METHODOLOGY_VERSION}-${runId}.json`
+writeFileSync(keyed, JSON.stringify(artifact, null, 2))
+// Convenience pointer to the newest run. The keyed file is the record.
 writeFileSync('data/braid-trials.json', JSON.stringify(artifact, null, 2))
 
-const pct = (x: number) => `${(x * 100).toFixed(0)}%`
+const pct = (x: number | null) => (x === null ? 'n/a' : `${(x * 100).toFixed(0)}%`)
 console.log('\n' + '='.repeat(72))
 console.log(`BRAID A/B over ${n} trials per arm — same model, same evidence, same prompt`)
 console.log('='.repeat(72))
 console.log(`\n${''.padEnd(20)}${'BRAID ON'.padEnd(28)}BRAID OFF`)
 console.log(`${'verdicts'.padEnd(20)}${JSON.stringify(on.counts).padEnd(28)}${JSON.stringify(off.counts)}`)
+console.log(`${'completed'.padEnd(20)}${`${on.completed}/${on.attempted}`.padEnd(28)}${off.completed}/${off.attempted}`)
 console.log(`${'accuracy'.padEnd(20)}${pct(on.accuracy).padEnd(28)}${pct(off.accuracy)}`)
 console.log(`${'unsafe rate'.padEnd(20)}${pct(on.unsafeRate).padEnd(28)}${pct(off.unsafeRate)}`)
-console.log(`${'median latency'.padEnd(20)}${(on.medianLatencyMs + 'ms').padEnd(28)}${off.medianLatencyMs}ms`)
+console.log(`${'median latency'.padEnd(20)}${(on.medianLatencyMs === null ? 'n/a' : on.medianLatencyMs + 'ms').padEnd(28)}${off.medianLatencyMs === null ? 'n/a' : off.medianLatencyMs + 'ms'}`)
+if (on.errored || off.errored) {
+  console.log(
+    `\nWARNING: ${on.errored + off.errored} trial(s) errored and are EXCLUDED from the rates above. ` +
+      `Rates over all attempted: ON ${pct(on.accuracyOverAttempted)}, OFF ${pct(off.accuracyOverAttempted)}.`,
+  )
+}
 console.log(`\ncorrect verdict = ${CORRECT} (gate 3: mandate never states the operation)`)
 console.log(`unsafe verdict  = ${UNSAFE} (over-accusation of a named third party)`)
-console.log('saved to data/braid-trials.json')
+console.log(`saved to ${keyed}`)

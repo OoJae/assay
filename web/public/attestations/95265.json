@@ -1,126 +1,60 @@
 {
-  "agentId": "95265",
+  "schema": "assay-self-attestation-v2",
+  "subject": {
+    "agentId": "95265",
+    "name": "ASSAY Valuation Integrity",
+    "agentURI": "https://assay-steel.vercel.app/agent-card.json"
+  },
+  "validator": {
+    "address": "0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5",
+    "agentId": "95265"
+  },
+  "selfIssued": true,
+  "independence": "NONE. The subject and the validator are the same key, so this carries no independent assurance whatsoever. It is published to exercise the solicited-attestation mechanism against a subject that consented — ASSAY — and to demonstrate the rule that ASSAY grades itself before it grades anyone else. Treat it as a disclosure, not as a rating.",
+  "basis": "documented-self-assessment",
   "tag": "CLEAN",
   "score": 100,
-  "methodologyVersion": "assay-methodology-v3.0.0",
-  "rationale": "ASSAY converts share-equivalents explicitly as balance * uiMultiplier() / 1e36 in src/lib/position.ts, never mixes an off-chain share price with an on-chain token quantity, and returns a non-null refusalReason when a Chainlink feed is absent, paused, or past its published heartbeat. Under gate 4 the operation is explicitly stated and the handling is same-surface, same-defect-class and arithmetically sound. Self-issued: the subject and the validator are the same key, which is disclosed rather than presented as independent assurance.",
-  "observedAtBlock": "69106769",
-  "findings": [
+  "methodologyVersion": "assay-rh-v0.3.0",
+  "assessment": [
     {
-      "id": "CRWD-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
-      "severity": "critical",
-      "title": "CRWD: balanceOf() is 4.000000000x away from share-equivalents",
-      "statement": "CRWD reports uiMultiplier() = 4000000000000000000 (4.000000000). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 75.0000% (the true count is 4.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
-      "citations": [
-        {
-          "claim": "uiMultiplier() == 4000000000000000000",
-          "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "call": "uiMultiplier()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000003782dace9d900000",
-          "blockNumber": "69106859"
-        },
-        {
-          "claim": "totalSupply() == 19506750000000000000",
-          "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
-          "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000010eb5e5c61859e000",
-          "blockNumber": "69106859"
-        }
-      ]
+      "question": "Does ASSAY itself ever present a raw ERC-20 balance as a share count — the defect it grades?",
+      "finding": "No. truePosition() returns rawBalance, tokenUnits and shareEquivalents as three separate fields, computes shareEquivalents as tokenUnits * uiMultiplier/1e18, and never labels a raw balance as shares on any surface.",
+      "source": "src/lib/position.ts"
     },
     {
-      "id": "SPY-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
-      "severity": "medium",
-      "title": "SPY: balanceOf() is 1.001717991x away from share-equivalents",
-      "statement": "SPY reports uiMultiplier() = 1001717991187472003 (1.001717991). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.1715% (the true count is 1.0017x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
-      "citations": [
-        {
-          "claim": "uiMultiplier() == 1001717991187472003",
-          "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "call": "uiMultiplier()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69106920"
-        },
-        {
-          "claim": "totalSupply() == 27544601577260000000000",
-          "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000005d53222ccf6d6a0b800",
-          "blockNumber": "69106920"
-        }
-      ]
+      "question": "Does ASSAY ever mix an off-chain share price with an on-chain token quantity?",
+      "finding": "No. positionValueUsd is tokenUnits * the Chainlink TOKEN price, which is already multiplier-adjusted. The off-chain REST quote is used only to quantify the cross-surface gap and is disclosed under offChainSources, outside the byte-verified guarantee.",
+      "source": "src/lib/position.ts, src/sweep/detect.ts"
     },
     {
-      "id": "SPY-cross-surface",
-      "defectClass": "CROSS_SURFACE_PRICE_MIX",
-      "severity": "medium",
-      "title": "SPY: off-chain share price and on-chain token price differ by 0.172%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (773.0897), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 773.1900). These are different quantities related by uiMultiplier(): underlying x 1.001717991 = 774.5183 (residual -0.184%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.172%.",
-      "citations": [
-        {
-          "claim": "uiMultiplier() == 1001717991187472003",
-          "contract": "0x117cc2133c37B721F49dE2A7a74833232B3B4C0C",
-          "call": "uiMultiplier()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000000de6d134a5d8de83",
-          "blockNumber": "69106920"
-        },
-        {
-          "claim": "latestRoundData().answer == 77308968340",
-          "contract": "0x319724394D3A0e3669269846abE664Cd621f9f6A",
-          "call": "latestRoundData()",
-          "rawReturn": "0x000000000000000000000000000000000000000000000001000000000000008d00000000000000000000000000000000000000000000000000000011fff93d94000000000000000000000000000000000000000000000000000000006ab1570d000000000000000000000000000000000000000000000000000000006ab15719000000000000000000000000000000000000000000000001000000000000008d",
-          "blockNumber": "69106920"
-        }
-      ]
+      "question": "Does ASSAY refuse when a check it relies on did not complete?",
+      "finding": "Yes. A failed feed read, a failed decimals() read, a failed oraclePaused() read, a non-positive answer and an incomplete round each set refusalReason and drop confidence below high. A previous version returned confidence \"high\" with refusalReason null on a failed read; that is fixed and covered by an offline test matrix.",
+      "source": "src/lib/position.ts, test/position.test.ts"
     },
     {
-      "id": "NVDA-share-count",
-      "defectClass": "SHARE_COUNT_MISREPORT",
-      "severity": "low",
-      "title": "NVDA: balanceOf() is 1.000775159x away from share-equivalents",
-      "statement": "NVDA reports uiMultiplier() = 1000775159164630595 (1.000775159). Under ERC-8056 a corporate action moves this multiplier rather than balances, so balanceOf() returns tokens, not share-equivalents. Share-equivalents = balance * uiMultiplier() / 1e18. Any surface presenting balanceOf() as a share count understates it by 0.0775% (the true count is 1.0008x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
-      "citations": [
-        {
-          "claim": "uiMultiplier() == 1000775159164630595",
-          "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "call": "uiMultiplier()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69107010"
-        },
-        {
-          "claim": "totalSupply() == 85999545653980000000000",
-          "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "call": "totalSupply()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000012360b72372c82899800",
-          "blockNumber": "69107010"
-        }
-      ]
+      "question": "Is every citation ASSAY publishes actually re-fetched and byte-compared?",
+      "finding": "Yes, and verification is fused into the sweep at each asset's own block because this RPC prunes state within minutes. The corpus below records the counts for this run. Citations that do not reproduce are withheld with a reason, never softened.",
+      "source": "src/verify/index.ts, scripts/verify-attestation.ts"
     },
     {
-      "id": "NVDA-cross-surface",
-      "defectClass": "CROSS_SURFACE_PRICE_MIX",
-      "severity": "low",
-      "title": "NVDA: off-chain share price and on-chain token price differ by 0.078%",
-      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (227.3061), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 226.8150). These are different quantities related by uiMultiplier(): underlying x 1.000775159 = 226.9908 (residual 0.139%, attributable to bid/ask spread and quote timing). Valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.078%.",
-      "citations": [
-        {
-          "claim": "uiMultiplier() == 1000775159164630595",
-          "contract": "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
-          "call": "uiMultiplier()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000000de377b4760af643",
-          "blockNumber": "69107010"
-        },
-        {
-          "claim": "latestRoundData().answer == 22730606190",
-          "contract": "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-          "call": "latestRoundData()",
-          "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000432000000000000000000000000000000000000000000000000000000054ad9866e000000000000000000000000000000000000000000000000000000006ab18a8b000000000000000000000000000000000000000000000000000000006ab18a980000000000000000000000000000000000000000000000010000000000000432",
-          "blockNumber": "69107010"
-        }
-      ]
+      "question": "Does ASSAY assert a cause it has not established?",
+      "finding": "Not any longer, in the two places it did. Cohort market-closure conclusions now require an 80% read quorum and report ORACLE_STALE_INDETERMINATE otherwise, and the cross-surface residual is reported as an observation unless it is small relative to the effect.",
+      "source": "src/sweep/detect.ts"
     }
   ],
-  "issuedAt": "2026-09-21T21:06:05.000Z"
+  "corpus": {
+    "sweptAtBlock": "69232474",
+    "assetsScanned": 3,
+    "findingsPublished": 5,
+    "citationsChecked": 10,
+    "citationsReproduced": 10,
+    "findingsWithheld": 0
+  },
+  "limitations": [
+    "SELF-ISSUED. The subject and the validator are the same key. This is a disclosure, not assurance.",
+    "The tag is a documented self-assessment, not an output of the SERV adjudicator.",
+    "The corpus covers a three-symbol run, not the full 195-asset sweep published on the wall.",
+    "Citations are re-fetchable only while this RPC still serves the cited block — roughly 5k to 20k blocks at ~100ms each. Past that they are unchecked here, which is not the same as false."
+  ],
+  "issuedAt": "2026-09-22T00:36:47.000Z"
 }
