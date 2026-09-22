@@ -1,6 +1,6 @@
 import { readFileSync, existsSync, statSync } from 'node:fs'
 import { truePosition, didYouMean, type TruePosition } from './position.js'
-import { fetchRhAssets } from './sources.js'
+import { fetchRhAssets, fetchChainlinkFeeds, feedForSymbol } from './sources.js'
 import { sweep } from '../sweep/detect.js'
 import type { VerifiedFinding } from '../verify/index.js'
 import type { DefectClass, Severity } from '../sweep/types.js'
@@ -270,5 +270,119 @@ export async function checkSymbolSummary(symbol: string) {
       impact: f.impact,
       citationsVerified: `${f.verification.reproduced}/${f.verification.checked}`,
     })),
+  }
+}
+
+/**
+ * Audit ONE contract: does it handle ERC-8056, and what is it exposed on?
+ *
+ * The paid counterpart to the aggregate figures on the wall. The wall says "N contracts holding $X
+ * cannot call uiMultiplier()"; this names one and shows the bytecode evidence.
+ *
+ * Deliberately answerable about ANY address, not only ones already on the board — the question
+ * "is this counterparty multiplier-aware" is one an agent wants to ask before it acts, about an
+ * address nobody has swept yet.
+ */
+export interface ContractAuditResult {
+  address: string
+  /** AWARE | NOT_AWARE | PROXY_UNRESOLVED | EOA | TOO_SMALL */
+  verdict: string
+  /** False when no claim is made — a proxy that could not be resolved. */
+  conclusive: boolean
+  codeSize: number
+  /** The bytecode actually tested, which for a proxy is the implementation's. */
+  testedCodeSize?: number
+  implementation?: string
+  proxyKind?: string
+  beacon?: string
+  codeHash: string
+  blockNumber: string
+  observedAt: string
+  /** Divergent-multiplier Stock Tokens this address holds, and the exposure on each. */
+  holdings: Array<{
+    symbol: string
+    token: string
+    multiplier: number
+    tokenUnits: number
+    shareEquivalents: number
+    sharesUnaccounted: number
+    misreadPct: number
+    usdHeld: number | null
+  }>
+  totalUsdHeld: number
+  /** What this result does and does not establish. Always present. */
+  interpretation: string
+}
+
+export async function auditContract(address: `0x${string}`): Promise<ContractAuditResult> {
+  const { classifyIntegrator, integratorExposure } = await import('../sweep/integrators.js')
+  const { rhClient } = await import('./chains.js')
+  const { readFeed } = await import('../sweep/oracle.js')
+
+  const blockNumber = await rhClient.getBlockNumber()
+  const block = await rhClient.getBlock({ blockNumber })
+  const observedAt = new Date(Number(block.timestamp) * 1000).toISOString()
+
+  const reading = await classifyIntegrator(address, blockNumber)
+  if (!reading) throw new Error(`could not read code at ${address}`)
+
+  const [assets, feeds] = await Promise.all([fetchRhAssets(), fetchChainlinkFeeds()])
+  const holdings: ContractAuditResult['holdings'] = []
+  let totalUsdHeld = 0
+
+  for (const a of assets) {
+    const mult = Number((a as { currentMultiplier?: string }).currentMultiplier)
+    if (!Number.isFinite(mult) || Math.abs(mult - 1) <= 0.002) continue
+    const dep = a.deployments?.find((d: { chainId: number }) => d.chainId === 4663)
+    if (!dep) continue
+
+    const feed = feedForSymbol(feeds, a.tokenSymbol)
+    let price: number | null = null
+    if (feed) {
+      const fr = await readFeed(feed.proxyAddress, feed.heartbeat, Number(block.timestamp), blockNumber)
+      if (fr?.usable) price = fr.price
+    }
+    const e = await integratorExposure(reading, a.tokenSymbol, dep.contractAddress, mult, price)
+    if (!e) continue
+    holdings.push({
+      symbol: e.symbol,
+      token: e.token,
+      multiplier: e.multiplier,
+      tokenUnits: e.tokenUnits,
+      shareEquivalents: e.shareEquivalents,
+      sharesUnaccounted: e.sharesUnaccounted,
+      misreadPct: e.misreadPct,
+      usdHeld: e.usdHeld,
+    })
+    totalUsdHeld += e.usdHeld ?? 0
+  }
+
+  const conclusive = reading.verdict !== 'PROXY_UNRESOLVED'
+  const interpretation =
+    reading.verdict === 'AWARE'
+      ? 'This bytecode references uiMultiplier(), so it is capable of making the ERC-8056 correction. That it CAN does not prove it always DOES.'
+      : reading.verdict === 'NOT_AWARE'
+        ? 'This bytecode does not reference uiMultiplier(), so it cannot make that call directly. IT MAY NOT NEED TO — a contract that only custodies or routes the token is not wrong to lack it. What is established is the absence of the call, not the presence of a mistake.'
+        : reading.verdict === 'PROXY_UNRESOLVED'
+          ? 'This is a proxy whose implementation could not be resolved, so NO CLAIM IS MADE either way. Unchecked is not disproven.'
+          : reading.verdict === 'EOA'
+            ? 'No code at this address. An externally owned account holds tokens through whatever software controls its key, which cannot be inspected on-chain.'
+            : 'Too little bytecode to contain valuation logic — typically a stub or an unrecognised proxy. No claim is made.'
+
+  return {
+    address,
+    verdict: reading.verdict,
+    conclusive,
+    codeSize: reading.codeSize,
+    testedCodeSize: reading.testedCodeSize,
+    implementation: reading.implementation,
+    proxyKind: reading.proxyKind,
+    beacon: reading.beacon,
+    codeHash: reading.implementationCodeHash ?? reading.codeHash,
+    blockNumber: blockNumber.toString(),
+    observedAt,
+    holdings,
+    totalUsdHeld,
+    interpretation,
   }
 }

@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { checkSymbol, findingsPayload, truePositionFor } from '../lib/surface.js'
+import { auditContract, checkSymbol, findingsPayload, truePositionFor } from '../lib/surface.js'
 import type { DefectClass } from '../sweep/types.js'
 
 /**
@@ -100,6 +100,36 @@ export function buildServer(): McpServer {
         // An asset that could not be READ is the same category: nothing was checked, so the caller
         // must not be able to mistake it for a pass.
         isError: Boolean(r.error) || r.assessed === false,
+      }
+    },
+  )
+
+  server.registerTool(
+    'assay_check_contract',
+    {
+      title: 'Is this contract ERC-8056 aware?',
+      description:
+        'Audit any address that holds Robinhood Chain Stock Tokens. Returns whether its deployed ' +
+        'bytecode references uiMultiplier() — resolving EIP-1967, beacon and EIP-1167 proxies to ' +
+        'the implementation before deciding — plus the divergent-multiplier tokens it holds and ' +
+        'the share-equivalents unaccounted for if those balances are read as share counts. ' +
+        'A NOT_AWARE verdict establishes the ABSENCE OF A CALL, not the presence of a mistake: a ' +
+        'contract that only custodies or routes the token never needs the multiplier. A proxy that ' +
+        'cannot be resolved returns PROXY_UNRESOLVED and makes no claim at all. Call this before ' +
+        'relying on a counterparty\'s share accounting.',
+      inputSchema: {
+        address: z
+          .string()
+          .regex(/^0x[a-fA-F0-9]{40}$/)
+          .describe('Any address on Robinhood Chain 4663 — it need not already be on the findings wall'),
+      },
+    },
+    async ({ address }) => {
+      const r = await auditContract(address as `0x${string}`)
+      return {
+        content: [{ type: 'text', text: JSON.stringify(r, null, 2) }],
+        // An unresolved proxy is not a pass. The caller must not read it as one.
+        isError: !r.conclusive,
       }
     },
   )

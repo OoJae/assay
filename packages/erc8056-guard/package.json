@@ -1,0 +1,17 @@
+{
+  "name": "erc8056-guard",
+  "version": "0.1.0",
+  "description": "Read Robinhood Chain ERC-8056 Stock Tokens correctly, or refuse. balanceOf() is not a share count.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "files": ["dist", "README.md"],
+  "scripts": { "build": "tsc -p tsconfig.json" },
+  "keywords": ["erc8056", "robinhood-chain", "chainlink", "tokenized-equities", "scaled-ui-amount"],
+  "repository": { "type": "git", "url": "https://github.com/OoJae/assay", "directory": "packages/erc8056-guard" },
+  "peerDependencies": { "viem": "^2.0.0" },
+  "devDependencies": { "typescript": "^5.7.2", "viem": "^2.56.8" }
+}
