@@ -116,18 +116,25 @@ ls -la /home/ubuntu/assay/*.log*                            # .log.1 should appe
 ## Deploying a change
 
 ```bash
-cd /home/ubuntu/assay
-# The sweep timer rewrites data/findings.json every 8 minutes, and that file is git-tracked, so a
-# bare `git pull` aborts with "local changes would be overwritten" and the && chain never restarts
-# anything -- leaving the host on old code while the command appears to have run.
-git checkout -- data/findings.json 2>/dev/null || true
-git pull && pnpm install --frozen-lockfile
+cd /home/ubuntu/assay && git pull && pnpm install --frozen-lockfile
 sudo systemctl restart assay-agent assay-mcp
 ```
 
-The host's copy of `data/findings.json` is *meant* to diverge: it is regenerated locally every 8
-minutes and served live at `/assay-mcp/findings.json`, which is where the wall reads it from. The
-committed copy is only the wall's fallback.
+**One-time setup, without which that command aborts.** The sweep timer rewrites
+`data/findings.json` every 8 minutes and the file is git-tracked, so a bare `git pull` fails with
+*"local changes would be overwritten"* — and because of the `&&`, nothing restarts, leaving the host
+on old code while the command looks like it ran. Tell git the host's copy is allowed to diverge:
+
+```bash
+cd /home/ubuntu/assay && git update-index --skip-worktree data/findings.json
+git ls-files -v data/findings.json      # expect: S data/findings.json
+```
+
+Divergence is the intended state here. The host regenerates that file every 8 minutes and serves it
+at `/assay-mcp/findings.json`, which is where the wall actually reads from; the committed copy is
+only the wall's fallback for when this host is unreachable. `git checkout -- data/findings.json`
+would "fix" the conflict by throwing away the fresh sweep and serving a stale board until the next
+tick — which is exactly what happened once.
 
 The agent runs with **no signing key** — no `WALLET_PRIVATE_KEY`, no `BUYER_PRIVATE_KEY`, no SERV
 key. This is enforced, not documented: `serve-remote.ts` refuses to start if any of them is in
