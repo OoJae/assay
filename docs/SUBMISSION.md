@@ -28,8 +28,12 @@ terminal · the Basescan `transferWithAuthorization` · the withheld table (or `
 > The part I'd actually defend: it refuses. CRWD has no Chainlink feed, so the paid call returns
 > no price and says why, instead of guessing and being 300% wrong.
 >
-> Live wall, MCP over SSE, x402 at $0.01/call, ERC-8004 identity 8453:95265, and a self-attestation
-> whose on-chain hash matches the bytes it serves — verify it yourself with one command.
+> The wall also shows what it **withheld**, and names the asset it *read* separately from the party
+> who carries the risk — CRWD's contract is spec-perfect; the exposure is on whoever reads it wrong.
+>
+> Live wall, MCP over SSE behind TLS, x402 at $0.01/call, ERC-8004 identity 8453:95265, and a
+> self-attestation whose on-chain hash matches the bytes it serves — verify it yourself with one
+> command.
 >
 > 🔗 assay-steel.vercel.app
 > 🔗 github.com/OoJae/assay
@@ -109,11 +113,12 @@ reading on its own — the interesting content is the three times I was wrong.
 > A measurement you only publish when it's favourable isn't a measurement.
 
 **11/**
-> Then I adversarially reviewed my own project and found five P0s. Four were mine.
+> Then I adversarially reviewed my own project. Five P0s, four of them mine. I fixed them, then
+> reviewed the fixes — and found fourteen more, several *introduced by the fixes*.
 >
-> The worst: the attestation. I'd verified the on-chain hash matched the published document — then
-> my own `--dry` run overwrote the file, and I committed that copy. The attested bytes existed
-> nowhere on earth. My "anyone can verify this" was false for a day.
+> The worst of the first round: the attestation. I'd verified the on-chain hash matched the
+> published document — then my own `--dry` run overwrote the file, and I committed that copy. The
+> attested bytes existed nowhere on earth. My "anyone can verify this" was false for a day.
 
 **12/**
 > Second worst: the paid call — the one people spend money on before moving money — returned
@@ -137,16 +142,37 @@ reading on its own — the interesting content is the three times I was wrong.
 >
 > I'd reopened the exact bypass I'd closed that morning.
 
+**14b/**
+> The second review round was worse, because those bugs were *newer*. I'd stopped `decimals()`
+> silently defaulting to 8 — right call, a wrong exponent is a 10^n error — by returning null.
+>
+> But the caller reads null as "no feed here." So an unrelated failed read now silently deleted a
+> true staleness finding. I'd re-created the retention bug, in a different shape.
+
+**14c/**
+> And the log rotation I'd added that morning? Never ran once. systemd opens the log as root
+> before dropping to the service user, so my `su ubuntu ubuntu` couldn't truncate it.
+>
+> `logrotate -f` → exit 1, permission denied, nothing rotated. I only knew because I ran it.
+
 **15/**
-> Every one of those was found by testing, not by reading. The pattern is uncomfortable and
-> consistent: I was most wrong where I was most confident, and only measurement fixed it.
+> Every one was found by testing, not by reading. The pattern is uncomfortable and consistent: I
+> was most wrong where I was most confident, and only measurement fixed it.
+>
+> Including the numbers themselves. "The RPC prunes within roughly 1k–10k blocks" appeared in six
+> files and I'd never measured it. Binary-searched it: 5,000–10,000 blocks, 0.101s each. Citations
+> die in 8–17 minutes.
+>
+> My sweep timer was set to 30. The board spent most of its life publishing "reproduce this
+> yourself" commands that had already expired.
 
 **16/**
 > Where it landed:
 >
-> 45 findings, 90/90 citations byte-verified, 195 assets, live MCP over SSE, x402 settled on Base,
-> ERC-8004 identity, and a self-attestation that says on its face it carries zero independent
-> assurance — because it's me grading me.
+> 45 findings, 90/90 citations byte-verified, 195 assets swept every 8 minutes, MCP over SSE
+> behind TLS, x402 settled on Base, ERC-8004 identity, 96 tests of which 78 need no network at
+> all, and a self-attestation that says on its face it carries zero independent assurance —
+> because it's me grading me.
 
 **17/**
 > The wall also shows what it WITHHELD, and every finding names the asset it READ separately from
