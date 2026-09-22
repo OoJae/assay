@@ -221,7 +221,8 @@ pnpm sweep                    # full 195-asset sweep, verification fused in
 pnpm sweep --symbols=CRWD,NVDA,SPY       # scoped: writes data/findings.scoped.json,
                                          # NOT the published board (pass --publish to overwrite)
 pnpm readme:stats             # regenerate this README's numbers from the artifact
-pnpm test                     # 72 tests; the chain-dependent ones are marked
+pnpm test                     # all 72 tests (18 of them hit live chain state)
+pnpm test:offline             # 54 tests, no network at all — the CI gate
 pnpm typecheck
 
 npx tsx scripts/true-position.ts CRWD 0x8366a39CC670B4001A1121B8F6A443A643e40951
