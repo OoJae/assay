@@ -96,3 +96,17 @@ describe('isAnswered', () => {
     expect(isAnswered(h.toUpperCase().replace('0X', '0x') as `0x${string}`)).toBe(true)
   })
 })
+
+describe('isPlaceholderKey', () => {
+  it('treats the .env.example placeholder as no key — it is truthy, which is the trap', async () => {
+    const { isPlaceholderKey } = await import('../src/adjudicate/serv.js')
+    expect(isPlaceholderKey('serv_...')).toBe(true)
+    expect(isPlaceholderKey('')).toBe(true)
+    expect(isPlaceholderKey(undefined)).toBe(true)
+    expect(isPlaceholderKey('<your key>')).toBe(true)
+  })
+  it('accepts something shaped like a real key', async () => {
+    const { isPlaceholderKey } = await import('../src/adjudicate/serv.js')
+    expect(isPlaceholderKey('serv_' + 'a'.repeat(40))).toBe(false)
+  })
+})

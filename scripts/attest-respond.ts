@@ -12,7 +12,7 @@ import {
   walletFor,
   type AttestationTag,
 } from '../src/attest/index.js'
-import { adjudicate, type Verdict } from '../src/adjudicate/serv.js'
+import { adjudicate, isPlaceholderKey, type Verdict } from '../src/adjudicate/serv.js'
 import { sweep } from '../src/sweep/detect.js'
 import { METHODOLOGY_VERSION } from '../src/sweep/detect.js'
 
@@ -49,9 +49,12 @@ if (!requestHash || !/^0x[0-9a-fA-F]{64}$/.test(requestHash)) {
 
 const pk = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined
 if (!pk) throw new Error('WALLET_PRIVATE_KEY missing — run pnpm wallets')
-if (!process.env.SERV_API_KEY) {
-  console.error('SERV_API_KEY missing. The adjudicator is the whole point of this script:')
-  console.error('a verdict about a named third party must not be hand-authored.')
+// Checked BEFORE the sweep, not discovered as a 401 after it. The placeholder copied from
+// .env.example is truthy, so a bare presence check let it through.
+if (isPlaceholderKey(process.env.SERV_API_KEY)) {
+  console.error('SERV_API_KEY is missing or still the .env.example placeholder.')
+  console.error('The adjudicator is the whole point of this script: a verdict about a named third')
+  console.error('party must not be hand-authored, so without it nothing is issued.')
   process.exit(1)
 }
 const account = privateKeyToAccount(pk)

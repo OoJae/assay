@@ -72,8 +72,28 @@ const ADJUDICATION_SCHEMA = {
   additionalProperties: false,
 } as const
 
+/**
+ * True when the key is absent OR still the `.env.example` placeholder.
+ *
+ * `serv_...` is truthy, so a bare `if (!apiKey)` let it through, and the failure surfaced only
+ * later as an unexplained 401 from inference-api.openserv.ai — after a caller had already swept
+ * the chain for a minute. The placeholder is what `.env` holds after a template is copied over it,
+ * which is precisely how the real key was lost, so this is the state most worth naming clearly.
+ */
+export function isPlaceholderKey(apiKey: string | undefined): boolean {
+  const k = (apiKey ?? '').trim()
+  return k === '' || k.endsWith('...') || k.startsWith('<') || k.length < 16
+}
+
 export function servClient(apiKey = process.env.SERV_API_KEY): OpenAI {
-  if (!apiKey) throw new Error('SERV_API_KEY is not set')
+  if (isPlaceholderKey(apiKey)) {
+    throw new Error(
+      'SERV_API_KEY is missing or still the .env.example placeholder, so the SERV adjudicator cannot ' +
+        'run. Nothing live depends on it — the wall, the sweep, the paid tiers, the MCP server and ' +
+        'the on-chain guard are all pure chain reads. Set a real key from ' +
+        'console.openserv.ai/settings/keys to use attest:respond or the BRAID harness.',
+    )
+  }
   return new OpenAI({ baseURL: SERV_BASE_URL, apiKey })
 }
 
