@@ -158,6 +158,18 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   }
 
   if (req.method === 'POST' && is('/messages')) {
+    // METER FIRST, before the session lookup.
+    //
+    // The unknown-session 404 used to return ahead of the limiter, so POSTing a bogus sessionId
+    // was an unmetered path: unlimited requests, each doing a map lookup and a response write,
+    // and none of them counted. A limiter with a free door next to it is not a limiter.
+    const entry = limiter.check(`post:${ip}`, LIMITS.cheapCall)
+    if (entry !== null) {
+      tooMany(res, entry, 'too many requests from this address')
+      req.destroy()
+      return
+    }
+
     const sessionId = url.searchParams.get('sessionId')
     const transport = sessionId ? sessions.get(sessionId) : undefined
     if (!transport) {
@@ -168,16 +180,10 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 
     // Read the body ourselves so the tool name can be inspected BEFORE any work happens, then hand
     // the parsed body to the transport (its handlePostMessage accepts one, so nothing is re-read).
-    // Meter BEFORE buffering. Previously only `tools/call` was metered, and only after the whole
-    // body had been read and parsed — so initialize/tools/list/ping and every notification were
-    // free, and the read itself was the cheapest way to make the server do work.
-    const entry = limiter.check(`post:${ip}`, LIMITS.cheapCall)
-    if (entry !== null) {
-      tooMany(res, entry, 'too many requests from this address')
-      req.destroy()
-      return
-    }
-
+    // The cheap-call meter already ran above, before the session lookup: previously only
+    // `tools/call` was metered, and only after the whole body had been read and parsed — so
+    // initialize/tools/list/ping and every notification were free, and the read itself was the
+    // cheapest way to make the server do work.
     const MAX_BODY = 64 * 1024
     const raw = await new Promise<string | null>((resolve) => {
       let buf = ''
