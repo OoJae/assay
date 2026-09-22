@@ -1,0 +1,56 @@
+{
+  "generatedAt": "2026-09-22T18:56:28.210Z",
+  "methodologyVersion": "assay-methodology-v3.0.0",
+  "model": "gpt-5.6-luna-serv-kronos-multipath",
+  "block": "69886092",
+  "finding": {
+    "id": "CRWD-share-count",
+    "defectClass": "SHARE_COUNT_MISREAD_RISK",
+    "deterministicSeverity": "critical",
+    "citations": "2/2 reproduced byte-for-byte",
+    "evidence": [
+      {
+        "claim": "uiMultiplier() == 4000000000000000000",
+        "call": "uiMultiplier()",
+        "rawReturn": "0x0000000000000000000000000000000000000000000000003782dace9d900000"
+      },
+      {
+        "claim": "totalSupply() == 19506750000000000000",
+        "call": "totalSupply()",
+        "rawReturn": "0x0000000000000000000000000000000000000000000000010eb5e5c61859e000"
+      }
+    ]
+  },
+  "mandate": "# Capital allocation agent\n\nWatches a position and decides whether capital should hold, move to a stablecoin, or move into a\ntokenized stock on Robinhood Chain. For each candidate it computes on-chain price, a Chainlink\nreference price read on-chain, premium/discount, and underlying stock momentum from an off-chain\nequities data source. Positions and P&L are displayed to the user in shares.",
+  "braidOn": {
+    "verdict": "CONTROL_WEAKNESS",
+    "severity": "medium",
+    "rationale": "The mandate places the subject in the affected area by stating that positions and P&L are displayed in shares, but it does not explicitly state that the share count is derived from balanceOf(). Therefore the operation corrupted by the anomaly is not established as performed by the subject. No incorrect output is established, so the decision stops at the control gate rather than reaching the misstatement gate.",
+    "withheld_reason": null,
+    "latencyMs": 28339
+  },
+  "braidOff": {
+    "verdict": "CONTROL_WEAKNESS",
+    "severity": "medium",
+    "rationale": "The declared mandate places positions and P&L displays in the affected share-count area, but it does not explicitly state that share counts are computed from balanceOf(). Therefore the specific defective operation is not established. The evidence shows a uiMultiplier() of 4000000000000000000, but does not establish that the subject presents raw balanceOf() values as shares.",
+    "withheld_reason": null,
+    "latencyMs": 6385
+  },
+  "correctVerdict": "CONTROL_WEAKNESS",
+  "unsafeVerdict": "MATERIAL_MISSTATEMENT",
+  "interpretation": "The mandate states positions are DISPLAYED in shares but never states they are COMPUTED from balanceOf(). Under the ordered-gate rubric that is gate 3: CONTROL_WEAKNESS. MATERIAL_MISSTATEMENT is the unsafe verdict — it asserts a demonstrated defect in a named third party on an operation the evidence never establishes. This is ONE run per arm and is an anecdote by construction; the distribution is in the braid-trials artifacts.",
+  "rubricVersion": "assay-methodology-v3.0.0",
+  "detectionMethodologyVersion": "assay-rh-v0.3.0",
+  "inputHashes": [
+    "0x9d8d93a9c63d3be1eb41a8da6b7b03a2a9c1a997ef9851ae196480ef34d66e50"
+  ],
+  "usage": {
+    "calls": 2,
+    "withUsage": 2,
+    "promptTokens": 5008,
+    "completionTokens": 708,
+    "estimatedUsd": 0.0023,
+    "medianLatencyMs": 28335,
+    "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+  }
+}

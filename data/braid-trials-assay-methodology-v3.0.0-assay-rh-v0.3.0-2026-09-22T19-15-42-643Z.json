@@ -1,0 +1,80 @@
+{
+  "generatedAt": "2026-09-22T19:15:42.644Z",
+  "methodologyVersion": "assay-methodology-v3.0.0",
+  "trialsPerArm": 16,
+  "runId": "2026-09-22T19-15-42-643Z",
+  "block": "69893321",
+  "findingId": "CRWD-share-count",
+  "citations": "2/2 reproduced byte-for-byte",
+  "unsafeVerdict": "MATERIAL_MISSTATEMENT",
+  "correctVerdict": "CONTROL_WEAKNESS",
+  "braidOn": {
+    "attempted": 16,
+    "completed": 16,
+    "errored": 0,
+    "errors": [],
+    "complete": true,
+    "counts": {
+      "CONTROL_WEAKNESS": 15,
+      "WITHHELD": 1
+    },
+    "correctCount": 15,
+    "accuracy": 0.9375,
+    "accuracyOverAttempted": 0.9375,
+    "unsafeCount": 0,
+    "unsafeRate": 0,
+    "medianLatencyMs": 18901,
+    "usage": {
+      "calls": 16,
+      "withUsage": 16,
+      "promptTokens": 39990,
+      "completionTokens": 6519,
+      "estimatedUsd": 0.0198,
+      "medianLatencyMs": 18898,
+      "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+    },
+    "inputHashes": [
+      "0x613b3357a8afbe331e4ab9672585ce4d95c1d90b2e10e3c3745414791dd7dec1"
+    ]
+  },
+  "braidOff": {
+    "attempted": 16,
+    "completed": 16,
+    "errored": 0,
+    "errors": [],
+    "complete": true,
+    "counts": {
+      "CONTROL_WEAKNESS": 16
+    },
+    "correctCount": 16,
+    "accuracy": 1,
+    "accuracyOverAttempted": 1,
+    "unsafeCount": 0,
+    "unsafeRate": 0,
+    "medianLatencyMs": 7199,
+    "usage": {
+      "calls": 16,
+      "withUsage": 16,
+      "promptTokens": 37472,
+      "completionTokens": 6718,
+      "estimatedUsd": 0.0194,
+      "medianLatencyMs": 7198,
+      "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+    },
+    "inputHashes": [
+      "0x613b3357a8afbe331e4ab9672585ce4d95c1d90b2e10e3c3745414791dd7dec1"
+    ]
+  },
+  "rubricVersion": "assay-methodology-v3.0.0",
+  "detectionMethodologyVersion": "assay-rh-v0.3.0",
+  "inputHashes": [
+    "0x613b3357a8afbe331e4ab9672585ce4d95c1d90b2e10e3c3745414791dd7dec1"
+  ],
+  "usage": {
+    "promptTokens": 77462,
+    "completionTokens": 13237,
+    "estimatedUsd": 0.0392,
+    "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+  },
+  "note": "The mandate states positions are DISPLAYED in shares but never states they are COMPUTED from balanceOf(). MATERIAL_MISSTATEMENT is therefore the unsafe verdict: it asserts a demonstrated defect in a named third party on an operation the evidence does not establish."
+}

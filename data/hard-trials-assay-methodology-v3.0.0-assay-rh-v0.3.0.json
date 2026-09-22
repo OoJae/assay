@@ -1,0 +1,416 @@
+{
+  "generatedAt": "2026-09-22T19:30:41.055Z",
+  "complete": true,
+  "methodologyVersion": "assay-methodology-v3.0.0",
+  "trialsPerCase": 4,
+  "block": "69898210",
+  "cases": [
+    {
+      "id": "explicit-op-no-handling",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "rationale": "Gate 3 passes: the mandate explicitly states the share count is computed from balanceOf(). Gate 4 fires MATERIAL_MISSTATEMENT because no conversion via uiMultiplier is documented."
+    },
+    {
+      "id": "explicit-op-correct-handling",
+      "expected": "BENIGN",
+      "rationale": "Gate 3 passes, then gate 4 fires BENIGN: correct handling via uiMultiplier is documented."
+    },
+    {
+      "id": "handling-on-wrong-surface",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "rationale": "Gate 3 passes for the P&L surface, which explicitly uses balanceOf(). Gate 4 fires MATERIAL_MISSTATEMENT: handling is documented for the holdings table but NOT for P&L, which is the surface the defect corrupts. Partial handling elsewhere is not a defence."
+    },
+    {
+      "id": "explicit-exclusion-moots-defect",
+      "expected": "BENIGN",
+      "rationale": "Gate 3 passes, then gate 4 fires BENIGN: the documented exclusion means the defect cannot reach a user-facing number. An exclusion IS correct handling."
+    },
+    {
+      "id": "adjacent-scope-only",
+      "expected": "BENIGN",
+      "rationale": "Gate 2 fires BENIGN: the mandate describes no activity in the affected area at all."
+    },
+    {
+      "id": "red-herring-handling",
+      "expected": "CONTROL_WEAKNESS",
+      "rationale": "Gate 2 passes (it values equity positions). Gate 3 fires CONTROL_WEAKNESS: decimals handling is documented but that is a DIFFERENT defect class, and the mandate never states that share counts are computed from balanceOf(). Documented care elsewhere does not establish the operation."
+    }
+  ],
+  "skippedCases": [
+    "threshold-documented-but-insufficient",
+    "stale-feed-no-freshness-check"
+  ],
+  "marketClosed": false,
+  "cohort": {
+    "size": 35,
+    "read": 35,
+    "failed": 0,
+    "stale": 0,
+    "quorum": true,
+    "clockHint": false,
+    "marketClosed": false,
+    "blockNumber": "69898210"
+  },
+  "results": [
+    {
+      "id": "explicit-op-no-handling",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-on",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 10496,
+        "completionTokens": 2108,
+        "estimatedUsd": 0.0058,
+        "medianLatencyMs": 32982,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0xbb929acb1a66a3eb52a4256623a692bfe850ef479e317accd885d70b6e6cb3a9"
+      ]
+    },
+    {
+      "id": "explicit-op-no-handling",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-off",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 9200,
+        "completionTokens": 1628,
+        "estimatedUsd": 0.0047,
+        "medianLatencyMs": 8007,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0xbb929acb1a66a3eb52a4256623a692bfe850ef479e317accd885d70b6e6cb3a9"
+      ]
+    },
+    {
+      "id": "explicit-op-correct-handling",
+      "expected": "BENIGN",
+      "arm": "braid-on",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN",
+        "BENIGN",
+        "BENIGN"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 10496,
+        "completionTokens": 1351,
+        "estimatedUsd": 0.0047,
+        "medianLatencyMs": 24321,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0x6aa0988c6f9987a03d7237db6295d108e91fb466f48ce9b6b2d1a41c376de3f5"
+      ]
+    },
+    {
+      "id": "explicit-op-correct-handling",
+      "expected": "BENIGN",
+      "arm": "braid-off",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN",
+        "BENIGN",
+        "BENIGN"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 9200,
+        "completionTokens": 1133,
+        "estimatedUsd": 0.004,
+        "medianLatencyMs": 5265,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0x6aa0988c6f9987a03d7237db6295d108e91fb466f48ce9b6b2d1a41c376de3f5"
+      ]
+    },
+    {
+      "id": "handling-on-wrong-surface",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-on",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 10508,
+        "completionTokens": 1864,
+        "estimatedUsd": 0.0054,
+        "medianLatencyMs": 37421,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0xce52879aca10990620507a431d2ed835aaca96226de2ca368b0cfe55835fd0ad"
+      ]
+    },
+    {
+      "id": "handling-on-wrong-surface",
+      "expected": "MATERIAL_MISSTATEMENT",
+      "arm": "braid-off",
+      "verdicts": [
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT",
+        "MATERIAL_MISSTATEMENT"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 9212,
+        "completionTokens": 1801,
+        "estimatedUsd": 0.005,
+        "medianLatencyMs": 6824,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0xce52879aca10990620507a431d2ed835aaca96226de2ca368b0cfe55835fd0ad"
+      ]
+    },
+    {
+      "id": "explicit-exclusion-moots-defect",
+      "expected": "BENIGN",
+      "arm": "braid-on",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN",
+        "BENIGN",
+        "BENIGN"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 10476,
+        "completionTokens": 1550,
+        "estimatedUsd": 0.0049,
+        "medianLatencyMs": 36643,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0x63150b9c8e5ad97675db2c5ce3be082c91ea7c978034bf11377136b5e8538452"
+      ]
+    },
+    {
+      "id": "explicit-exclusion-moots-defect",
+      "expected": "BENIGN",
+      "arm": "braid-off",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN",
+        "BENIGN",
+        "BENIGN"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 9180,
+        "completionTokens": 1239,
+        "estimatedUsd": 0.0042,
+        "medianLatencyMs": 5092,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0x63150b9c8e5ad97675db2c5ce3be082c91ea7c978034bf11377136b5e8538452"
+      ]
+    },
+    {
+      "id": "adjacent-scope-only",
+      "expected": "BENIGN",
+      "arm": "braid-on",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN",
+        "BENIGN",
+        "BENIGN"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 10468,
+        "completionTokens": 1233,
+        "estimatedUsd": 0.0045,
+        "medianLatencyMs": 21400,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0xdf6108ab8f3959e00819e0ca3033b0bd5e4a81da8d673455ad33783d08aa5ffb"
+      ]
+    },
+    {
+      "id": "adjacent-scope-only",
+      "expected": "BENIGN",
+      "arm": "braid-off",
+      "verdicts": [
+        "BENIGN",
+        "BENIGN",
+        "BENIGN",
+        "BENIGN"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 9172,
+        "completionTokens": 1050,
+        "estimatedUsd": 0.0039,
+        "medianLatencyMs": 4922,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0xdf6108ab8f3959e00819e0ca3033b0bd5e4a81da8d673455ad33783d08aa5ffb"
+      ]
+    },
+    {
+      "id": "red-herring-handling",
+      "expected": "CONTROL_WEAKNESS",
+      "arm": "braid-on",
+      "verdicts": [
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 10524,
+        "completionTokens": 1882,
+        "estimatedUsd": 0.0055,
+        "medianLatencyMs": 27123,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0x69e73fc462f5c21815823b27b4c926ed7df25d8259584f8648fa3218091f6f58"
+      ]
+    },
+    {
+      "id": "red-herring-handling",
+      "expected": "CONTROL_WEAKNESS",
+      "arm": "braid-off",
+      "verdicts": [
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS",
+        "CONTROL_WEAKNESS"
+      ],
+      "attempted": 4,
+      "errored": 0,
+      "errors": [],
+      "correct": 4,
+      "usage": {
+        "calls": 4,
+        "withUsage": 4,
+        "promptTokens": 9228,
+        "completionTokens": 1654,
+        "estimatedUsd": 0.0048,
+        "medianLatencyMs": 7765,
+        "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+      },
+      "inputHashes": [
+        "0x69e73fc462f5c21815823b27b4c926ed7df25d8259584f8648fa3218091f6f58"
+      ]
+    }
+  ],
+  "summary": {
+    "braidOn": {
+      "attempted": 24,
+      "completed": 24,
+      "errored": 0,
+      "allCompleted": true,
+      "correct": 24,
+      "accuracy": 1,
+      "accuracyOverAttempted": 1
+    },
+    "braidOff": {
+      "attempted": 24,
+      "completed": 24,
+      "errored": 0,
+      "allCompleted": true,
+      "correct": 24,
+      "accuracy": 1,
+      "accuracyOverAttempted": 1
+    }
+  },
+  "rubricVersion": "assay-methodology-v3.0.0",
+  "detectionMethodologyVersion": "assay-rh-v0.3.0",
+  "inputHashes": [
+    "0xbb929acb1a66a3eb52a4256623a692bfe850ef479e317accd885d70b6e6cb3a9",
+    "0x6aa0988c6f9987a03d7237db6295d108e91fb466f48ce9b6b2d1a41c376de3f5",
+    "0xce52879aca10990620507a431d2ed835aaca96226de2ca368b0cfe55835fd0ad",
+    "0x63150b9c8e5ad97675db2c5ce3be082c91ea7c978034bf11377136b5e8538452",
+    "0xdf6108ab8f3959e00819e0ca3033b0bd5e4a81da8d673455ad33783d08aa5ffb",
+    "0x69e73fc462f5c21815823b27b4c926ed7df25d8259584f8648fa3218091f6f58"
+  ],
+  "usage": {
+    "promptTokens": 118160,
+    "completionTokens": 18493,
+    "estimatedUsd": 0.0574,
+    "basis": "Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: Kronos compiles the reasoning prompt generator-side and that cost may not appear per response. The console bill for the API key is authoritative."
+  }
+}
