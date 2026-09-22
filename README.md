@@ -73,6 +73,53 @@ Worked examples, all reproducible:
   incident is precisely the error this tool exists to catch — so the wall renders its own market
   claims in the past tense once its snapshot is more than two hours old.
 
+### The other side of the trade
+
+Every finding above names the asset that was **read**. All 195 of them behave exactly as ERC-8056
+specifies; not one is at fault. The exposure is on the contracts **holding** them, and those are
+on-chain and countable:
+
+| Measured on chain 4663 | |
+|---|---|
+| Priced Stock Tokens | **$122,286,368** across 35 feed-covered assets |
+| Of the addresses moving SPY and NVDA, how many are **contracts** | **~80%** |
+| Contracts holding divergent-multiplier tokens that reference `uiMultiplier()` | **0** |
+
+So ASSAY audits the readers too. For each one it fetches `eth_getCode` and checks for the
+`uiMultiplier()` selector — a byte-verifiable absence, re-runnable by the verifier like any other
+citation.
+
+**Proxies are resolved or withheld, never guessed.** A proxy's own bytecode is a delegatecall stub
+containing no application selectors, so a naive selector test reports every proxy on the chain as
+unaware. The Stock Tokens are *themselves* EIP-1967 **beacon** proxies — SGOV's address is a
+283-byte stub — and the first working version duly called the very tokens that implement
+`uiMultiplier()` "not multiplier aware". EIP-1967, beacon and EIP-1167 proxies are now resolved to
+their implementation before any verdict, and anything still unresolved returns
+`PROXY_UNRESOLVED` with **no claim made at all**.
+
+**What a `NOT_AWARE` verdict establishes is the absence of a call, not the presence of a mistake.**
+A contract that only custodies or routes a token never needs the multiplier and is not wrong to
+lack it. Every statement says so in those words.
+
+**No contract is named on this site.** The wall publishes a count and a dollar figure; the named
+audit, with its bytecode evidence, is the paid `assay_check_contract` call. That split is
+deliberate: a party that may carry no risk at all should not be findable by name on a public page.
+
+### The preventive half
+
+Detecting the mistake is worth less than making it impossible. Both of these are free:
+
+- **`ERC8056Guard`** on Robinhood Chain 4663 — ownerless, storage-free, `view`-only. One external
+  call returns the corrected share count, or refuses with a reason. It never moves a token and
+  never blocks anything: ASSAY emits something *executable* without ever holding a key, so the
+  no-control-path posture survives intact.
+- **[`erc8056-guard`](packages/erc8056-guard)** on npm — the same ladder in TypeScript, plus the
+  pure bigint arithmetic exported on its own, because that one line is what integrations get wrong.
+
+`pnpm test:guard` forks 4663 with anvil, deploys the contract into the fork and checks it against
+live state — including warping three days forward to force the staleness branch, which is otherwise
+only reachable at a weekend.
+
 ### What is *not* true
 
 `balanceOf() × chainlinkFeedPrice` is **correct** for token value — the feed is already
@@ -85,16 +132,19 @@ The defect is **cross-surface mixing**: the on-chain feed returns a *token* pric
 
 ## Architecture
 
-There are **two paths**, and only one of them involves a model.
+There are **three paths**, and only one of them involves a model.
 
 ```
-UNSOLICITED (the wall — 195 assets, every 8 min)
+DETECTIVE, UNSOLICITED (the wall — 195 assets + their holders, every 8 min)
   Sweeper  ──▶  Verifier  ──▶  publish, UNADJUDICATED
- (no model)    (no model)
+ (no model)    (no model)          assets by name · integrators in aggregate only
 
-SOLICITED (a subject asks to be graded)
+DETECTIVE, SOLICITED (a subject asks to be graded)
   Sweeper  ──▶  Verifier  ──▶  + the subject's declared mandate  ──▶  Adjudicator  ──▶  ERC-8004
  (no model)    (no model)                                            (SERV/BRAID)      registry write
+
+PREVENTIVE (free, no model, no key, no control path)
+  ERC8056Guard on 4663  ·  erc8056-guard on npm  ──▶  the caller reads it and gets the right number
 ```
 
 **Why the sweep is unadjudicated, stated plainly.** Every gate in the adjudication rubric asks a
@@ -282,6 +332,15 @@ Local, over stdio:
 { "mcpServers": { "assay": { "command": "npx", "args": ["tsx", "src/mcp/stdio.ts"] } } }
 ```
 
+**The raw feed**, if you just want the data and not the protocol — public, CORS-enabled, cached 60s:
+
+```
+https://sonar.my.id/assay-mcp/findings.json
+```
+
+It carries the aggregate integrator figures and every asset finding, with named integrator findings
+withheld. It is what the wall itself reads.
+
 Hosted, over SSE — this is the transport OpenServ supports:
 
 ```
@@ -297,6 +356,7 @@ absolute path, so a bare `/messages` would land on whatever else lives at the or
 | `assay_true_position` | corrected position + oracle hygiene + explicit `refusalReason` |
 | `assay_findings` | published findings, with `snapshotAgeSeconds` so you know how old the answer is |
 | `assay_check_symbol` | fresh live sweep for one ticker; an unknown ticker is an **error**, not an empty result |
+| `assay_check_contract` | audit any address: is it ERC-8056 aware, what divergent tokens does it hold, and what is unaccounted for. An unresolved proxy returns **no verdict** |
 
 All three are served from one definition in `src/lib/surface.ts`, shared with the AgentKit action
 provider and the OpenServ agent — so a buyer can use one endpoint to check another.

@@ -12,7 +12,7 @@ nginx 1.24, node via `pnpm`. Checkout lives at `/home/ubuntu/assay`.
 |---|---|---|
 | `assay-agent.service` | OpenServ agent; answers paid x402 tasks over a WebSocket tunnel | none inbound |
 | `assay-mcp.service` | MCP server over SSE, mounted at `/assay-mcp/` on the `sonar.my.id` cert | `127.0.0.1:7379` |
-| `assay-sweep.timer` | re-sweeps Robinhood Chain every 30 min and republishes `data/findings.json` | — |
+| `assay-sweep.timer` | re-sweeps Robinhood Chain every 8 min and republishes the findings artifact | — |
 | `nginx` | TLS for `https://sonar.my.id/assay-mcp/` → `127.0.0.1:7379` | 80, 443 |
 
 ## Install

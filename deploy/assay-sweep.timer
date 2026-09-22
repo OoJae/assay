@@ -1,7 +1,7 @@
 # Install to /etc/systemd/system/assay-sweep.timer, then:
 #   sudo systemctl enable --now assay-sweep.timer
 [Unit]
-Description=Re-sweep Robinhood Chain every 30 minutes
+Description=Re-sweep Robinhood Chain every 8 minutes
 Documentation=https://github.com/OoJae/assay
 
 [Timer]
