@@ -183,7 +183,7 @@ cast call 0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931 "uiMultiplier()" \
 > blamed the model, the real problem was our own specification. That's in the repo with the
 > harness and the raw runs — including the numbers that don't flatter anybody.
 
-**End card:** `assay-steel.vercel.app` · `github.com/OoJae/assay` · `8453:95265`
+**End card:** `assay-steel.vercel.app` · `github.com/OoJae/assay` · `8453:95374`
 
 ---
 

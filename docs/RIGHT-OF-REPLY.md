@@ -30,7 +30,7 @@ instead is below, and it is a real mechanism rather than a promise.
 ## How to exercise it
 
 - **Open an issue:** <https://github.com/OoJae/assay/issues/new?template=right-of-reply.md>
-- **Or write to the address that owns the agent identity**, `0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5`
+- **Or write to the address that owns the agent identity** (`8453:95374`), `0x6328f2fE483922721D94b33eE99e9938Da3b7911`
   — a signed message from the subject contract's deployer or owner is accepted as attribution.
 
 State the finding id (shown on every finding page, e.g. `CRWD-share-count`). If you would rather
