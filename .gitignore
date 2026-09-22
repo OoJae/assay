@@ -25,3 +25,8 @@ test/zz-*.test.ts
 src/**/*.head.ts
 data/findings.tmp.*.json
 .env.tmp
+
+# Service logs written into the checkout on the production host.
+*.log
+*.log.[0-9]
+*.log.*.gz
