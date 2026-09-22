@@ -18,3 +18,8 @@ docs/scratch/*.png
 .openserv.json
 web/tsconfig.tsbuildinfo
 data/findings.scoped.json
+
+# Scratch reproductions written by review agents; working material, never a gate.
+test/zz-*.test.ts
+**/*.scratch.*
+src/**/*.head.ts

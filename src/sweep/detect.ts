@@ -300,8 +300,20 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
       // code hardcoded 1e18. Divide in bigint first so a large supply keeps full precision, then
       // convert once at the end.
       const unit = 10n ** BigInt(reading.decimals)
-      const rawShares = Number((reading.totalSupply * 10_000n) / unit) / 10_000
-      const trueShares = Number((reading.totalSupply * reading.multiplier * 10_000n) / (unit * ONE_E18)) / 10_000
+      /**
+       * totalSupply is CORROBORATING, not load-bearing.
+       *
+       * The finding is about uiMultiplier(): a caller reading balanceOf() as shares is wrong by the
+       * multiplier whatever the supply happens to be. So when the supply read failed, the finding
+       * still stands — it simply stops quoting a number it does not have, and stops citing bytes
+       * nobody returned. Previously it published `totalSupply() == 0` against the literal bytes
+       * `0x`, which the verifier then correctly refused to reproduce, discarding the whole finding.
+       */
+      const haveSupply = reading.totalSupply !== null && reading.rawTotalSupply !== null
+      const rawShares = haveSupply ? Number((reading.totalSupply! * 10_000n) / unit) / 10_000 : null
+      const trueShares = haveSupply
+        ? Number((reading.totalSupply! * reading.multiplier * 10_000n) / (unit * ONE_E18)) / 10_000
+        : null
       findings.push({
         id: `${sym}-share-count`,
         defectClass: 'SHARE_COUNT_MISREAD_RISK',
@@ -325,13 +337,30 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
           /** Understatement as a share of the TRUE value. Bounded by 100% by construction. */
           percent: Number(understatementPct.toFixed(4)),
           note:
-            `totalSupply raw ${rawShares.toFixed(4)} tokens vs ${trueShares.toFixed(4)} share-equivalents ` +
-            `(delta ${(trueShares - rawShares).toFixed(4)}). Presenting the raw balance as a share count ` +
+            (rawShares !== null && trueShares !== null
+              ? `totalSupply raw ${rawShares.toFixed(4)} tokens vs ${trueShares.toFixed(4)} share-equivalents ` +
+                `(delta ${(trueShares - rawShares).toFixed(4)}). `
+              : `totalSupply() could not be read at this block, so no supply figure is quoted — the finding rests ` +
+                `on uiMultiplier(), which is byte-verified below. `) +
+            `Presenting the raw balance as a share count ` +
             `understates by ${understatementPct.toFixed(4)}%; equivalently the true count is ${mult.toFixed(4)}x the raw.`,
         },
         evidence: [
           evidence(`uiMultiplier() == ${reading.multiplier}`, token, 'uiMultiplier()', reading.rawMultiplier, blockNumber, observedAt),
-          evidence(`totalSupply() == ${reading.totalSupply}`, token, 'totalSupply()', reading.rawTotalSupply, blockNumber, observedAt),
+          // Only cited when it was actually read. A citation is a promise that these exact bytes
+          // came back from this exact call at this exact block.
+          ...(haveSupply
+            ? [
+                evidence(
+                  `totalSupply() == ${reading.totalSupply}`,
+                  token,
+                  'totalSupply()',
+                  reading.rawTotalSupply!,
+                  blockNumber,
+                  observedAt,
+                ),
+              ]
+            : []),
         ],
         methodologyVersion: METHODOLOGY_VERSION,
         detectedAt: observedAt,
@@ -425,7 +454,11 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
                     `are stale, so this is NOT a market-wide closure and the staleness is unexpected for this feed ` +
                     `specifically. Robinhood's documentation requires callers to check updatedAt against the heartbeat.`),
             impact: {
-              note: `Price ${reading2.price.toFixed(4)} is ${(reading2.ageSeconds / 3600).toFixed(2)}h stale. Any valuation, liquidation or collateral check reading this feed without a staleness guard is using data from ${new Date(Number(reading2.updatedAt) * 1000).toISOString()}.`,
+              note:
+                (reading2.price === null
+                  ? `The feed's decimals() could not be read at this block, so no dollar figure is quoted here — the staleness itself comes from updatedAt and is byte-verified. `
+                  : `Price ${reading2.price.toFixed(4)} is `) +
+                `${(reading2.ageSeconds / 3600).toFixed(2)}h stale. Any valuation, liquidation or collateral check reading this feed without a staleness guard is using data from ${new Date(Number(reading2.updatedAt) * 1000).toISOString()}.`,
             },
             evidence: [
               evidence(
@@ -443,7 +476,9 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
         }
 
         // Cross-surface mixing: quantify what an off-chain share price would do.
-        if (divergenceBps > 1) {
+        // CROSS-SURFACE NEEDS A PRICE. Unlike staleness, this finding IS a statement about two
+        // numbers, so it is simply not made when one of them is unknown.
+        if (divergenceBps > 1 && reading2.price !== null && reading2.usable) {
           const under = await fetchRhUnderlyingPrice(sym)
           if (under && under.mid > 0) {
             const predicted = under.mid * mult

@@ -88,12 +88,23 @@ export interface OracleReading {
   answeredInRound: bigint
   answer: bigint
   updatedAt: bigint
-  decimals: number
-  price: number
+  /**
+   * null when decimals() could not be read.
+   *
+   * STALENESS DOES NOT DEPEND ON THIS. `updatedAt` came back; only the exponent needed to turn
+   * `answer` into a dollar figure is missing. An earlier fix made readFeed return null outright in
+   * this case to stop decimals() silently defaulting to 8 — correct instinct, wrong blast radius:
+   * detect.ts reads a null reading as "no feed here", so an unrelated failed read silently
+   * suppressed a TRUE staleness finding. Dropping a true finding because a different call failed
+   * is the exact behaviour the retention bug taught this project not to repeat.
+   */
+  decimals: number | null
+  /** null when decimals() could not be read — a wrong exponent is a 10^n price error. */
+  price: number | null
   ageSeconds: number
   heartbeat: number
   stale: boolean
-  /** False when the answer is non-positive or the round never completed. */
+  /** False when the answer is non-positive, the round never completed, or decimals is unknown. */
   usable: boolean
   raw: string
 }
@@ -111,11 +122,11 @@ export async function readFeed(
   const answer = tuple[1]
   const updatedAt = tuple[3]
   const answeredInRound = tuple[4]
-  const d = await rawCall(aggregatorV3Abi, proxy, 'decimals', blockNumber)
   // A missing decimals() read is NOT 8 by assumption — a wrong exponent is a 10^n price error.
-  // Returning null makes the caller treat this as an unread feed instead of a confident number.
-  if (!d) return null
-  const decimals = Number(d.decoded as number)
+  // But it is also not a reason to discard the round data we DID read: updatedAt is what staleness
+  // is measured against, and it arrived. So the price becomes null and the reading survives.
+  const d = await rawCall(aggregatorV3Abi, proxy, 'decimals', blockNumber)
+  const decimals = d ? Number(d.decoded as number) : null
   const ageSeconds = nowSeconds - Number(updatedAt)
   return {
     roundId,
@@ -123,12 +134,12 @@ export async function readFeed(
     answer,
     updatedAt,
     decimals,
-    price: Number(answer) / 10 ** decimals,
+    price: decimals === null ? null : Number(answer) / 10 ** decimals,
     ageSeconds,
     heartbeat,
     stale: ageSeconds > heartbeat,
     /** A non-positive answer is not a price, and an incomplete round carries an older one. */
-    usable: answer > 0n && answeredInRound >= roundId,
+    usable: decimals !== null && answer > 0n && answeredInRound >= roundId,
     raw: r.raw,
   }
 }
@@ -137,12 +148,13 @@ export interface TokenReading {
   multiplier: bigint
   multiplierFloat: number
   decimals: number
-  totalSupply: bigint
+  /** null when the read failed. NOT the same as a zero supply. */
+  totalSupply: bigint | null
   oraclePaused: boolean | null
   pendingMultiplier: bigint | null
   effectiveAt: bigint | null
   rawMultiplier: string
-  rawTotalSupply: string
+  rawTotalSupply: string | null
   /**
    * The RAW bytes each of these calls actually returned.
    *
@@ -176,12 +188,23 @@ export async function readStockToken(
     multiplier,
     multiplierFloat: Number(multiplier) / 1e18,
     decimals: dec ? Number(dec.decoded as number) : 18,
-    totalSupply: ts ? (ts.decoded as bigint) : 0n,
+    /**
+     * null when the read FAILED — distinct from a genuine zero supply.
+     *
+     * This was `ts ? ... : 0n` paired with `rawTotalSupply: ts?.raw ?? '0x'`, so a transient RPC
+     * failure produced the citation `totalSupply() == 0` carrying the literal bytes `0x`. Those
+     * bytes were never returned by anything: the verifier re-fetches, gets the real supply,
+     * mismatches, and drops the ENTIRE finding — including its valid uiMultiplier citation. So one
+     * flaky call discredited a true finding, and in the meantime the project's central claim,
+     * that every published byte was fetched from chain state, was false for that citation.
+     */
+    totalSupply: ts ? (ts.decoded as bigint) : null,
     oraclePaused: paused ? (paused.decoded as boolean) : null,
     pendingMultiplier: pend ? (pend.decoded as bigint) : null,
     effectiveAt: eff ? (eff.decoded as bigint) : null,
     rawMultiplier: m.raw,
-    rawTotalSupply: ts?.raw ?? '0x',
+    /** null when the read failed, so no caller can cite bytes that were never returned. */
+    rawTotalSupply: ts?.raw ?? null,
     rawPendingMultiplier: pend?.raw ?? null,
     rawEffectiveAt: eff?.raw ?? null,
     rawOraclePaused: paused?.raw ?? null,
