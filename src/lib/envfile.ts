@@ -27,6 +27,20 @@ export function hasEnvKey(name: string, path = ENV_PATH): boolean {
   return Object.prototype.hasOwnProperty.call(readEnv(path), name)
 }
 
+/**
+ * True when the key exists AND carries a value.
+ *
+ * The distinction matters because `.env.example` ships every variable as a bare `NAME=`
+ * placeholder, and the README tells you to `cp .env.example .env`. So on a fresh clone every key
+ * EXISTS with an empty value — which made `hasEnvKey` true and `appendEnvSecret` refuse, so
+ * `pnpm buyer` threw for anyone who followed the setup instructions exactly. An empty placeholder
+ * is a slot to fill, not a value to protect.
+ */
+export function hasEnvValue(name: string, path = ENV_PATH): boolean {
+  const v = readEnv(path)[name]
+  return typeof v === 'string' && v.trim() !== ''
+}
+
 /** Restrict to owner-only, and say so loudly if it was not. */
 export function secureEnv(path = ENV_PATH): void {
   if (!existsSync(path)) return
@@ -46,14 +60,22 @@ export function secureEnv(path = ENV_PATH): void {
  * error the parser reports — it is a silent last-wins that can strand a funded wallet.
  */
 export function appendEnvSecret(name: string, value: string, path = ENV_PATH): void {
-  if (hasEnvKey(name, path)) {
+  if (hasEnvValue(name, path)) {
     throw new Error(
-      `${name} already exists in ${path}. Refusing to append a second assignment: dotenv takes ` +
-        `the LAST one, which would silently orphan the existing value.`,
+      `${name} already has a value in ${path}. Refusing to overwrite or append: dotenv takes the ` +
+        `LAST assignment, so appending would silently orphan the existing key — and if that key is ` +
+        `funded, the orphan is where the money is.`,
     )
   }
+
   const prev = existsSync(path) ? readFileSync(path, 'utf8') : ''
-  const body = (prev.trimEnd() + (prev.trim() ? '\n' : '') + `${name}=${value}\n`).replace(/^\n+/, '')
+  // An EMPTY placeholder (from .env.example) is filled in place rather than appended to, so the
+  // file keeps one assignment per name and the surrounding comments stay attached to it.
+  const placeholder = new RegExp(`^(\\s*(?:export\\s+)?${name}\\s*=)\\s*(?:""|'')?\\s*$`, 'm')
+  const body = placeholder.test(prev)
+    ? prev.replace(placeholder, `$1${value}`)
+    : (prev.trimEnd() + (prev.trim() ? '\n' : '') + `${name}=${value}\n`).replace(/^\n+/, '')
+
   const tmp = `${path}.tmp`
   writeFileSync(tmp, body, { mode: 0o600 })
   renameSync(tmp, path)
