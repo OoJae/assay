@@ -56,7 +56,8 @@ export function summariseUsage(adjudications: Adjudication[]): UsageSummary {
     basis:
       'Token counts as reported in each SERV response, priced at gpt-5.6-luna list. A lower bound: ' +
       'Kronos compiles the reasoning prompt generator-side and that cost may not appear per ' +
-      'response. The console bill for the API key is authoritative.',
+      'response. The console bill for the API key is authoritative: on 2026-09-22 it billed ' +
+      '$0.97 for 122 calls this estimate put at $0.14, about 7x.',
   }
 }
 

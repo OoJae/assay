@@ -273,9 +273,14 @@ on the v2 hard set). The single-run A/B, re-run on current text, now returns `CO
 **both** arms; the original single run — the one reported as decisive and retracted — had BRAID-off
 at `MATERIAL_MISSTATEMENT`. It remains one run per arm, an anecdote by construction.
 
-**The current rows are the first with recorded cost.** 122 calls, 294,164 tokens in and 44,903 out
-as reported by SERV — **at least $0.14**. A lower bound: Kronos compiles the reasoning prompt on the
-generator side and that may not appear per response, so the console bill is authoritative.
+**The current rows are the first with recorded cost.** 122 calls. SERV's responses report 294,164
+tokens in and 44,903 out, which is $0.14 at list price. The console billed the key **$0.97** — about
+**$0.008 per adjudication**, and roughly 7× what the responses show. These calls are the key's only
+billable use, so the figure is attributable. The per-response counts therefore cover about 15% of
+the real cost. That is consistent with Kronos compiling the reasoning prompt on the generator side,
+but the response does not say, so we do not claim it. Cost from the bill, not from `usage`. The paid
+endpoints never call SERV — adjudication runs only for attestations — so this does not touch the
+$0.01 query's margin.
 
 **We could not measure a benefit from the feature layer on this task.** On the hard set at rubric
 v2 it was directionally worse, though at n≈23 per arm that is not significant and we do not claim
