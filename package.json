@@ -9,6 +9,8 @@
     "sweep": "tsx scripts/sweep.ts",
     "probe": "tsx scripts/probe-ixs.ts",
     "readme:stats": "tsx scripts/readme-stats.ts",
+    "deploy:guard": "tsx scripts/deploy-guard.ts",
+    "test:guard": "tsx scripts/test-guard.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:offline": "ASSAY_OFFLINE_ONLY=1 vitest run",

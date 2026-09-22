@@ -46,7 +46,7 @@ Robinhood Stock Tokens implement **ERC-8056 scaled UI amounts**. A corporate act
 standard ERC-20 habits walk straight into.
 
 <!-- ASSAY:STATS -->
-Measured live on mainnet (chain 4663) at block `69217928`, 2026-09-22. **These numbers are
+Measured live on mainnet (chain 4663) at block `69605769`, 2026-09-22. **These numbers are
 generated from [`data/findings.json`](data/findings.json) by `pnpm readme:stats`, not typed in** —
 they were hardcoded once and drifted away from the artifact they described.
 
@@ -55,7 +55,7 @@ they were hardcoded once and drifted away from the artifact they described.
 | Stock Tokens with `uiMultiplier() != 1.0` | **34 of 195** |
 | Assets with **no Chainlink feed at all** | **160 of 195** (a chain note, not a finding — an absence cannot be proven by an `eth_call`) |
 | 24/5 equity feeds past their heartbeat | **0 of the 35 feeds read were stale, with the market open** — a stale feed during market hours is an incident, not a schedule |
-| Findings published | **45**, with **90/90** citations re-fetched and byte-compared |
+| Findings published | **70**, with **115/115** citations re-fetched and byte-compared |
 | Findings withheld | **0** — rendered on the wall with the reason, because a verification claim is only worth something if the misses are visible |
 <!-- /ASSAY:STATS -->
 
