@@ -6,11 +6,15 @@ Documentation=https://github.com/OoJae/assay
 
 [Timer]
 OnBootSec=5min
-# 30 minutes is chosen against RPC retention, not against taste: citations must be re-minted
-# faster than the node prunes the blocks they cite.
-OnUnitActiveSec=30min
+# MEASURED, not chosen by feel. Binary-searching the public RPC for the oldest block still serving
+# state puts retention between 5,000 and 10,000 blocks at 0.101s per block -- so a citation stops
+# being re-fetchable 8 to 17 minutes after it is minted. The previous 30min interval meant the
+# published board spent most of its life carrying "reproduce this yourself" commands that had
+# already expired. A full 195-asset sweep takes ~2.5 minutes on this host, so 8 minutes keeps the
+# citations live at roughly a 30% duty cycle.
+OnUnitActiveSec=8min
 # Stagger, so 195 assets are not swept at the same second as every other timer on the box.
-RandomizedDelaySec=3min
+RandomizedDelaySec=45s
 Persistent=true
 
 [Install]

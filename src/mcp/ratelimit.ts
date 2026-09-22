@@ -97,16 +97,70 @@ export function trustedProxies(env: string | undefined = process.env.MCP_TRUSTED
   )
 }
 
-/** Normalise so ::ffff:1.2.3.4 and 1.2.3.4 are one identity, and collapse IPv6 to its /64. */
-export function normaliseIp(addr: string): string {
-  let a = addr.trim().toLowerCase()
-  if (a.startsWith('::ffff:')) a = a.slice(7)
-  if (a.includes(':')) {
-    // An IPv6 client trivially has a /64 to itself, so limiting per-address is no limit at all.
-    const parts = a.split(':')
-    return parts.slice(0, 4).join(':') + '::/64'
+/**
+ * Expand a compressed IPv6 address to its eight full groups.
+ *
+ * Required because the /64 collapse below is only meaningful on a canonical form. Returns null for
+ * anything that is not parseable as IPv6, so the caller can fall back rather than invent a bucket.
+ */
+function expandIpv6(a: string): string[] | null {
+  // Strip a zone index (fe80::1%eth0) and any brackets.
+  const bare = a.replace(/^\[|\]$/g, '').split('%')[0] ?? ''
+  if (!bare.includes(':')) return null
+
+  // A trailing dotted-quad (::ffff:1.2.3.4, 64:ff9b::1.2.3.4) becomes two hex groups.
+  let head = bare
+  const v4 = head.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/)
+  if (v4?.[1]) {
+    const o = v4[1].split('.').map(Number)
+    if (o.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return null
+    const hi = ((o[0]! << 8) | o[1]!).toString(16)
+    const lo = ((o[2]! << 8) | o[3]!).toString(16)
+    head = head.slice(0, -v4[1].length) + `${hi}:${lo}`
   }
-  return a
+
+  const halves = head.split('::')
+  if (halves.length > 2) return null
+  const left = (halves[0] ?? '').split(':').filter((x) => x !== '')
+  const right = halves.length === 2 ? (halves[1] ?? '').split(':').filter((x) => x !== '') : []
+  if (halves.length === 1 && left.length !== 8) return null
+
+  const fill = 8 - left.length - right.length
+  if (fill < 0) return null
+  const groups = [...left, ...Array(halves.length === 2 ? fill : 0).fill('0'), ...right]
+  if (groups.length !== 8) return null
+  if (!groups.every((g) => /^[0-9a-f]{1,4}$/.test(g))) return null
+  return groups.map((g) => g.replace(/^0+(?=.)/, ''))
+}
+
+/**
+ * Normalise so ::ffff:1.2.3.4 and 1.2.3.4 are one identity, and collapse IPv6 to its /64.
+ *
+ * THE /64 COLLAPSE MUST HAPPEN ON AN EXPANDED ADDRESS. This was a bare `split(':').slice(0, 4)`,
+ * which only works on fully-written forms. Measured against the real function: `2001:db8::1` and
+ * `2001:db8:0:0:0:0:0:2` are the SAME /64 and produced DIFFERENT buckets, as did `::1` and `::2`.
+ * So an IPv6 caller could mint a fresh rate-limit bucket per request just by varying how it
+ * compressed its own address — which is the exact bypass the collapse exists to close.
+ */
+export function normaliseIp(addr: string): string {
+  const a = addr.trim().toLowerCase()
+  if (!a.includes(':')) return a
+
+  const groups = expandIpv6(a)
+  // Unparseable: use the literal rather than guessing a prefix that might collide with real clients.
+  if (!groups) return a
+
+  // An IPv4-mapped address is that IPv4 address, not a /64 of its own.
+  const mapped = a.startsWith('::ffff:') ? a.slice(7) : null
+  if (mapped && !mapped.includes(':')) return mapped
+  if (groups.slice(0, 5).every((g) => g === '0') && groups[5] === 'ffff') {
+    const h = parseInt(groups[6]!, 16)
+    const l = parseInt(groups[7]!, 16)
+    return `${h >> 8}.${h & 255}.${l >> 8}.${l & 255}`
+  }
+
+  // An IPv6 client trivially has a /64 to itself, so limiting per-address is no limit at all.
+  return groups.slice(0, 4).join(':') + '::/64'
 }
 
 /**

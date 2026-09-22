@@ -58,6 +58,16 @@ export function snapshotAgeSeconds(snap: SweepSnapshot): number | null {
   return Number.isFinite(ms) ? Math.round(ms / 1000) : null
 }
 
+/**
+ * How long a citation stays re-fetchable on the public Robinhood Chain RPC.
+ *
+ * Measured by binary-searching for the oldest block still serving state: retention sits between
+ * 5,000 and 10,000 blocks, and block time is 0.101s. That is 505 to 1,010 seconds. The
+ * conservative end is used, because claiming a citation is checkable when it is not is the
+ * failure that matters here — the opposite error merely understates freshness.
+ */
+export const CITATION_LIFETIME_SECONDS = 505
+
 const RANK: Record<Severity, number> = { critical: 0, high: 1, medium: 2, low: 3, info: 4 }
 
 export interface FindingsQuery {
@@ -78,12 +88,21 @@ export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
     sweepBlock: snap.blockNumber,
     observedAt: snap.observedAt,
     /**
-     * How old this answer is. Published because citations reference blocks this RPC serves for
-     * roughly 5k-20k blocks at ~100ms each — so past about half an hour the cited bytes are no
-     * longer re-fetchable and the caller deserves to know that before relying on them.
+     * How old this answer is, and whether its citations can still be re-fetched.
+     *
+     * MEASURED, not guessed. Binary-searching the public RPC for the oldest block still serving
+     * state puts retention between 5,000 and 10,000 blocks, and block time at 0.101s — so cited
+     * bytes stop being reproducible about 8 to 17 minutes after the sweep that minted them.
+     *
+     * The previous threshold here was 3600s, an hour, which meant the payload reported
+     * `snapshotStale: false` for answers whose "reproduce this yourself" commands had been dead
+     * for the better part of an hour. That is the project's own guarantee quietly expiring while
+     * the payload says everything is fine.
      */
     snapshotAgeSeconds: ageSeconds,
-    snapshotStale: ageSeconds !== null && ageSeconds > 3600,
+    snapshotStale: ageSeconds !== null && ageSeconds > CITATION_LIFETIME_SECONDS,
+    citationsReproducible: ageSeconds !== null && ageSeconds <= CITATION_LIFETIME_SECONDS,
+    citationLifetimeSeconds: CITATION_LIFETIME_SECONDS,
     totalPublished: snap.findings.length,
     totalWithheld: snap.rejected?.length ?? 0,
     marketClosed: snap.marketClosed,

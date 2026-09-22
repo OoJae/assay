@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { RateLimiter, clientIp, LIMITS, EXPENSIVE_TOOLS, MAX_TRACKED_CLIENTS } from '../src/mcp/ratelimit.js'
+import {
+  RateLimiter,
+  clientIp,
+  normaliseIp,
+  LIMITS,
+  EXPENSIVE_TOOLS,
+  MAX_TRACKED_CLIENTS,
+} from '../src/mcp/ratelimit.js'
 
 describe('rate limiter', () => {
   it('allows up to the limit then blocks', () => {
@@ -137,5 +144,55 @@ describe('client IP behind a real proxy — the appended-header bypass', () => {
 
   it('falls back to the peer when a trusted proxy sends no header at all', () => {
     expect(clientIp({}, '127.0.0.1', trusted)).toBe('127.0.0.1')
+  })
+})
+
+describe('IPv6 bucketing — the /64 collapse must survive compressed notation', () => {
+  it('collapses the same /64 written two different ways', () => {
+    // The bug: a bare split(':').slice(0,4) only works on fully-written addresses. Measured
+    // against the old function, 2001:db8::1 and 2001:db8:0:0:0:0:0:2 are the SAME /64 and got
+    // DIFFERENT buckets — so an IPv6 caller could mint a fresh bucket per request just by varying
+    // how it compressed its own address, which is the exact bypass the collapse exists to close.
+    expect(normaliseIp('2001:db8::1')).toBe(normaliseIp('2001:db8:0:0:0:0:0:2'))
+    expect(normaliseIp('::1')).toBe(normaliseIp('::2'))
+    expect(normaliseIp('2001:db8:1:2:aaaa::1')).toBe(normaliseIp('2001:db8:1:2:bbbb::9'))
+  })
+
+  it('keeps genuinely different /64s apart', () => {
+    expect(normaliseIp('2001:db8:1:3::1')).not.toBe(normaliseIp('2001:db8:1:2::1'))
+  })
+
+  it('treats an IPv4-mapped address as that IPv4 address, not a /64', () => {
+    expect(normaliseIp('::ffff:1.2.3.4')).toBe('1.2.3.4')
+    expect(normaliseIp('::ffff:1.2.3.4')).toBe(normaliseIp('1.2.3.4'))
+    // A mapped address must not collide with an unrelated v4 client.
+    expect(normaliseIp('::ffff:1.2.3.4')).not.toBe(normaliseIp('1.2.3.5'))
+  })
+
+  it('ignores a zone index rather than bucketing on it', () => {
+    expect(normaliseIp('fe80::1%eth0')).toBe(normaliseIp('fe80::2'))
+  })
+
+  it('an IPv6 client cannot mint buckets by rewriting its own address', () => {
+    const limiter = new RateLimiter()
+    const spellings = [
+      '2001:db8:0:0:0:0:0:1',
+      '2001:db8::1',
+      '2001:db8:0:0::1',
+      '2001:DB8::1',
+      '[2001:db8::1]',
+      '2001:db8::1%en0',
+    ]
+    let allowed = 0
+    for (let i = 0; i < 60; i++) {
+      const ip = normaliseIp(spellings[i % spellings.length]!)
+      if (limiter.check(`conn:${ip}`, LIMITS.connection) === null) allowed++
+    }
+    expect(allowed).toBe(LIMITS.connection.max)
+  })
+
+  it('falls back to the literal for unparseable input instead of inventing a prefix', () => {
+    expect(normaliseIp('not:a:valid:::address:::')).toBe('not:a:valid:::address:::')
+    expect(normaliseIp('unknown')).toBe('unknown')
   })
 })
