@@ -114,9 +114,20 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
 
   const ip = clientIp(req.headers as Record<string, string | string[] | undefined>, req.socket.remoteAddress)
 
-  // Suffix matching, so one build works whether nginx strips a prefix or not.
+  /**
+   * EXACT matching against the two shapes this process can legitimately see.
+   *
+   * nginx strips the mount prefix (`proxy_pass http://127.0.0.1:7379/`), so a request to
+   * /assay-mcp/sse arrives here as /sse. But when MCP_PUBLIC_PATH is set and something forwards
+   * the prefix intact, /assay-mcp/sse arrives whole — so both are accepted and nothing else is.
+   *
+   * This was `route.endsWith(p)`, which matched /evil/sse and /anything/you/like/sse. Measured:
+   * GET /evil/sse returned 200 and opened a real session. Not a privilege hole — same handler,
+   * same limits — but on a shared origin, responding on paths this service does not own is the
+   * kind of sloppiness that turns into a cache-poisoning or routing bug later.
+   */
   const route = url.pathname.replace(/\/+$/, '') || '/'
-  const is = (p: string) => route === p || route.endsWith(p)
+  const is = (p: string) => route === p || (PUBLIC_PATH !== '' && route === PUBLIC_PATH + p)
 
   // HEAD as well as GET: `curl -I` is the first thing anyone runs against a new endpoint, and
   // falling through to 404 makes a healthy server look broken.
