@@ -14,7 +14,7 @@ Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP*.
 | **ERC-8004 identity** | agent **`8453:95265`** on the IdentityRegistry `0x8004A169…a432` — [tx](https://basescan.org/tx/0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a) · [8004scan](https://www.8004scan.io/agents/base/95265) · [agent card](https://assay-steel.vercel.app/agent-card.json) |
 | **On-chain attestation** | agent `95265` rated **CLEAN (100)** by validator `0x0C3A…14B5` — `getAgentValidations(95265)` returns one entry. The `responseHash` on-chain equals `keccak256` of the exact document served at [`/attestations/95265.json`](https://assay-steel.vercel.app/attestations/95265.json); `pnpm verify:attestation` checks that live, and it is in the test suite. **Self-issued and not machine-adjudicated** — subject and validator are the same key, and the tag is a documented self-assessment rather than an output of the SERV adjudicator. The document says both on its face and carries no third-party findings, because ASSAY's own rule is that unsolicited statements about a named party stay off-chain. |
 | **Paid endpoint** | `https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6` at $0.01/call |
-| **Public MCP (SSE)** | `https://assay-mcp.sonar.my.id/sse` — verified from the public internet with a real MCP client. OpenServ's MCP support is SSE-only, so this is the transport that matters. Rate limited per IP: 30 connections/min, 60 cheap reads/min, 5 sweep calls/min, 50 concurrent sessions. Unauthenticated by design — every tool is a public chain read and the host holds no keys, which is enforced at startup rather than described: `serve-remote.ts` refuses to boot if a signing key is present in its environment. |
+| **Public MCP (SSE)** | `https://sonar.my.id/assay-mcp/sse` — **TLS**, verified from the public internet with a real MCP client; the cleartext `:7379` it used to be published on is now closed. — verified from the public internet with a real MCP client. OpenServ's MCP support is SSE-only, so this is the transport that matters. Rate limited per IP: 30 connections/min, 60 cheap reads/min, 5 sweep calls/min, 50 concurrent sessions. Unauthenticated by design — every tool is a public chain read and the host holds no keys, which is enforced at startup rather than described: `serve-remote.ts` refuses to boot if a signing key is present in its environment. |
 
 The paid call returned real work, leading with the refusal it is designed to produce:
 
@@ -259,8 +259,12 @@ Local, over stdio:
 Hosted, over SSE — this is the transport OpenServ supports:
 
 ```
-https://assay-mcp.sonar.my.id/sse
+https://sonar.my.id/assay-mcp/sse
 ```
+
+Mounted under a path on an existing certificate rather than on its own subdomain, which needs no
+new DNS. `MCP_PUBLIC_PATH` makes the SSE transport advertise the prefixed POST path — it sends an
+absolute path, so a bare `/messages` would land on whatever else lives at the origin root.
 
 | tool | purpose |
 |---|---|

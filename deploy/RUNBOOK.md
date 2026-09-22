@@ -11,9 +11,9 @@ nginx 1.24, node via `pnpm`. Checkout lives at `/home/ubuntu/assay`.
 | unit | what it does | port |
 |---|---|---|
 | `assay-agent.service` | OpenServ agent; answers paid x402 tasks over a WebSocket tunnel | none inbound |
-| `assay-mcp.service` | MCP server over SSE | `127.0.0.1:7379` |
+| `assay-mcp.service` | MCP server over SSE, mounted at `/assay-mcp/` on the `sonar.my.id` cert | `127.0.0.1:7379` |
 | `assay-sweep.timer` | re-sweeps Robinhood Chain every 30 min and republishes `data/findings.json` | — |
-| `nginx` | TLS for `assay-mcp.sonar.my.id` → `127.0.0.1:7379` | 80, 443 |
+| `nginx` | TLS for `https://sonar.my.id/assay-mcp/` → `127.0.0.1:7379` | 80, 443 |
 
 ## Install
 
@@ -29,8 +29,12 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ## TLS
 
-The box already holds a Let's Encrypt cert for `sonar.my.id`. Extend it to the MCP subdomain —
-this needs the DNS A record to resolve first:
+**Currently live at `https://sonar.my.id/assay-mcp/`**, mounted as a `location` block on the
+existing `sonar.my.id` certificate. That needed no new DNS and no new cert, which is why it is what
+is deployed.
+
+To move it to its own subdomain — preferable, because a bare origin is one fewer thing for an MCP
+client to get wrong — add a DNS **A record** for `assay-mcp.sonar.my.id` → `170.106.175.243`, then:
 
 ```bash
 dig +short assay-mcp.sonar.my.id      # must return 170.106.175.243 before proceeding
@@ -54,8 +58,8 @@ behind nginx. `ufw` on the instance is a second layer, not the effective one.
 ```bash
 systemctl is-active assay-agent assay-mcp
 systemctl list-timers assay-sweep.timer
-curl -sI https://assay-mcp.sonar.my.id/sse | head -3
-curl -s https://assay-mcp.sonar.my.id/health
+curl -s https://sonar.my.id/assay-mcp/health
+curl -sI https://sonar.my.id/assay-mcp/health | head -3
 # the sweep is advancing -- blockNumber must move between runs
 jq -r '.blockNumber, .observedAt' /home/ubuntu/assay/data/findings.json
 ```

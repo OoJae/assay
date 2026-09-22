@@ -40,7 +40,7 @@
     },
     {
       "name": "MCP",
-      "endpoint": "https://assay-mcp.sonar.my.id/sse",
+      "endpoint": "https://sonar.my.id/assay-mcp/sse",
       "version": "2025-06-18",
       "transport": "sse",
       "tools": [

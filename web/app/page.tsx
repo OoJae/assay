@@ -3,7 +3,7 @@ import { loadSweep, SEV_RANK, symbolOf, snapshotAge, type Severity } from '@/lib
 
 export const dynamic = 'force-dynamic'
 
-const MCP_URL = 'https://assay-mcp.sonar.my.id/sse'
+const MCP_URL = 'https://sonar.my.id/assay-mcp/sse'
 const REPO = 'https://github.com/OoJae/assay'
 const SETTLED_TX = '0x270adb4cfb4daa2858be044cce510d41aa6a75f9f9c803036147d2ec5e7f50de'
 const IDENTITY_TX = '0x976b21b288bd6edf7a4da3fe820d5fe0577cd95b416960637d3314af719a4b5a'
