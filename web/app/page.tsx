@@ -1,22 +1,27 @@
 import Link from 'next/link'
-import { loadSweepLive, SEV_RANK, symbolOf, snapshotAge, type Severity } from '@/lib/findings'
+import { divergentTokens, loadSweepLive, snapshotAge, symbolOf, unreadAssets } from '@/lib/findings'
+import { PAID_ENDPOINTS } from '@/lib/endpoints'
+import { closureBasis, fmtAge, splitBySeverity } from '@/lib/present'
+import { OWNER, REPO, RIGHT_OF_REPLY_DOC, RIGHT_OF_REPLY_ISSUE } from '@/lib/site'
+import { GUARD_ADDRESS } from '@/lib/guard'
+import { CheckWallet } from './_components/check-wallet'
+import { FindingsTable } from './_components/findings-table'
+import { IntegratorPanel } from './_components/integrators'
+import { ServReasoning } from './_components/serv-reasoning'
+import { UseIt } from './_components/use-it'
 
 export const dynamic = 'force-dynamic'
 
-const MCP_URL = 'https://sonar.my.id/assay-mcp/sse'
-const REPO = 'https://github.com/OoJae/assay'
-const SETTLED_TX = '0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b'
 const IDENTITY_TX = '0x019ecbbcfe12f646d977c3a7d778d147d91cac9d6a348cc93a03be6d80e8356f'
-const GUARD = '0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648'
+/** Settled to 0x6328…7911, the current payTo. */
 const CONTRACT_AUDIT_TX = '0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2'
-const ATTEST_TX = '0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669'
-
-function fmtAge(iso: string) {
-  const s = (Date.now() - new Date(iso).getTime()) / 1000
-  if (s < 90) return `${Math.round(s)}s ago`
-  if (s < 5400) return `${Math.round(s / 60)}m ago`
-  return `${(s / 3600).toFixed(1)}h ago`
-}
+/**
+ * Both issued under identity 8453:95265, whose signing key was lost. They stay true and verifiable,
+ * but shown unlabelled beside 95374 they read as the current identity's, and a judge clicking
+ * through found a different agent id and wallet.
+ */
+const SETTLED_TX_95265 = '0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b'
+const ATTEST_TX_95265 = '0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669'
 
 const REASON_COPY: Record<string, string> = {
   mismatch: 'A citation contradicted chain state. This is the only reason that impugns the finding.',
@@ -28,329 +33,399 @@ const REASON_COPY: Record<string, string> = {
 
 export default async function Home() {
   const d = await loadSweepLive()
-  const findings = [...d.findings].sort(
-    (a, b) => SEV_RANK[a.severity] - SEV_RANK[b.severity] || a.subject.localeCompare(b.subject),
-  )
+  const { lead, minor } = splitBySeverity(d.findings)
   const totalCites = d.findings.reduce((n, f) => n + (f.verification?.checked ?? 0), 0)
   const okCites = d.findings.reduce((n, f) => n + (f.verification?.reproduced ?? 0), 0)
-  const bySev = findings.reduce<Record<string, number>>((m, f) => {
-    m[f.severity] = (m[f.severity] ?? 0) + 1
-    return m
-  }, {})
+  const critical = d.findings.filter((f) => f.severity === 'critical').length
   const rejected = d.rejected ?? []
+  const unread = unreadAssets(d)
   const { fresh } = snapshotAge(d.observedAt)
+  const cohortRead = d.cohort.read ?? d.cohort.size
+  const basis = closureBasis(d.cohort)
+  // The largest share-count gap on the board, quoted by its own title rather than re-derived.
+  const worst = d.findings
+    .filter((f) => f.defectClass === 'SHARE_COUNT_MISREAD_RISK')
+    .sort((a, b) => (b.impact.percent ?? 0) - (a.impact.percent ?? 0))[0]
+  const tp = PAID_ENDPOINTS.truePosition
+  const cc = PAID_ENDPOINTS.checkContract
 
   return (
-    <div className="wrap">
-      <nav className="navbar">
+    <>
+      <nav className="navbar" aria-label="Site">
         <span className="brand">ASSAY</span>
         <Link href="/pricing">Pricing</Link>
         <a href={REPO}>Source</a>
         <a href="/agent-card.json">Agent card</a>
         <span className="spacer" />
-        <a href={`https://basescan.org/tx/${SETTLED_TX}`}>x402 · $0.01 settled</a>
+        <a href="#check">Check a wallet</a>
+        <a className="btn primary" href={tp.paywall}>
+          Try it · $0.01
+        </a>
       </nav>
 
-      <header className="top">
-        <div className="tag">ASSAY · Robinhood Chain 4663 · ERC-8056 Stock Tokens</div>
-        <h1>Every cited byte was re-fetched and compared.</h1>
-        <p className="lede">
-          Robinhood Stock Tokens implement <strong>ERC-8056</strong>: a corporate action moves{' '}
-          <span className="mono">uiMultiplier()</span>, not balances. ASSAY sweeps the chain, reads
-          the multiplier, the Chainlink feed and its heartbeat directly from state, and publishes
-          only findings whose every citation reproduces byte-for-byte. It never moves capital and
-          it has no control path over anything it grades.
-        </p>
-      </header>
+      <main>
+        <header className="top">
+          <div className="tag">ASSAY · independent valuation-integrity audit · Stock Tokens on chain 4663</div>
+          <h1>balanceOf() is not a share count.</h1>
+          <p className="lede">
+            Stock Tokens on Robinhood Chain implement <strong>ERC-8056</strong>: a corporate action moves{' '}
+            <span className="mono">uiMultiplier()</span>, not balances, so the share count is{' '}
+            <span className="mono">balance × uiMultiplier() / 1e18</span>.{' '}
+            {worst ? (
+              <>
+                The largest gap on the board{fresh ? ' right now' : ` at block ${d.blockNumber}`}:{' '}
+                <Link href={`/f/${encodeURIComponent(worst.id)}`}>{worst.title}</Link>.{' '}
+              </>
+            ) : null}
+            ASSAY sweeps every Stock Token every 8 minutes, reads the multiplier, the Chainlink feed and its
+            heartbeat from chain state, and publishes only findings whose every citation re-fetches
+            byte-for-byte. It never moves capital and has no control path over anything it grades.
+          </p>
+          <div className="actions">
+            <a className="btn primary" href="#check">
+              Check a wallet · free
+            </a>
+            <a className="btn" href={tp.paywall}>
+              Audited position · ${tp.priceUsd.toFixed(2)}
+            </a>
+            <a className="btn" href={cc.paywall}>
+              Audit a contract · ${cc.priceUsd.toFixed(2)}
+            </a>
+            <a className="btn" href="#use-it">
+              Call it from code
+            </a>
+          </div>
+        </header>
 
-      <div className="grid">
-        <div className="stat">
-          <div className="n">{d.findings.length}</div>
-          <div className="k">published findings</div>
-        </div>
-        <div className="stat">
-          <div className="n" style={{ color: 'var(--ok)' }}>
-            {okCites}/{totalCites}
+        <div className="grid">
+          <div className="stat">
+            <div className="n">{d.findings.length}</div>
+            <div className="k">published findings</div>
           </div>
-          <div className="k">citations reproduced</div>
-        </div>
-        <div className="stat">
-          <div className="n" style={{ color: rejected.length ? 'var(--med)' : undefined }}>
-            {rejected.length}
+          <div className="stat">
+            <div className="n" style={{ color: 'var(--ok)' }}>
+              {okCites}/{totalCites}
+            </div>
+            <div className="k">citations reproduced</div>
           </div>
-          <div className="k">withheld</div>
-        </div>
-        <div className="stat">
-          <div className="n">{d.assetsScanned}</div>
-          <div className="k">assets swept</div>
-        </div>
-        <div className="stat">
-          <div className="n">
-            {d.cohort.stale}/{d.cohort.read ?? d.cohort.size}
+          <div className="stat">
+            <div className="n" style={{ color: rejected.length ? 'var(--med)' : undefined }}>
+              {rejected.length}
+            </div>
+            <div className="k">withheld by the verifier</div>
           </div>
-          <div className="k">
-            {/* Denominator is feeds READ, not the cohort size. Printing stale/size re-presents a
-                failed RPC read as a fresh feed — the exact defect the sweeper was fixed for. */}
-            24/5 feeds stale
-            {d.cohort.failed ? ` · ${d.cohort.failed} unread` : ''}
+          <div className="stat">
+            {/* assetsScanned counts assets ATTEMPTED. An asset the RPC refused is not assessed, and
+                counting it as swept is the unread-counted-as-clean error. */}
+            <div className="n" style={{ color: unread.length ? 'var(--med)' : undefined }}>
+              {unread.length ? `${Math.max(0, d.assetsScanned - unread.length)}/${d.assetsScanned}` : d.assetsScanned}
+            </div>
+            <div className="k">{unread.length ? `assets read · ${unread.length} not assessed` : 'assets read'}</div>
+          </div>
+          <div className="stat">
+            <div className="n">
+              {d.cohort.stale}
+              <span className="of"> of {cohortRead}</span>
+            </div>
+            <div className="k">
+              {/* Denominator is feeds READ, not the cohort size. Printing stale/size re-presents a
+                  failed RPC read as a fresh feed — the exact defect the sweeper was fixed for. */}
+              24/5 feeds stale
+              {d.cohort.failed ? ` · ${d.cohort.failed} unread` : ''}
+            </div>
+          </div>
+          <div className="stat">
+            <div className="n" style={{ color: 'var(--crit)' }}>{critical}</div>
+            <div className="k">critical</div>
           </div>
         </div>
-        <div className="stat">
-          <div className="n" style={{ color: 'var(--crit)' }}>{bySev.critical ?? 0}</div>
-          <div className="k">critical</div>
-        </div>
-      </div>
 
-      <div className="banner">
-        {fresh ? (
-          <>
-            Swept at block <span className="mono">{d.blockNumber}</span> ({fmtAge(d.observedAt)}).{' '}
-            {d.cohort.quorum === false ? (
-              <>
-                <strong>Market state undetermined.</strong> Only {d.cohort.read ?? 0} of{' '}
-                {d.cohort.size} 24/5 equity feeds could be read at this block, below the 80% quorum
-                this methodology requires before drawing any market-wide conclusion. Staleness found
-                here is reported without a cause, because we could not measure one.
-              </>
-            ) : d.marketClosed ? (
-              <>
-                <strong>US equity market is closed.</strong> {d.cohort.stale} of the{' '}
-                {d.cohort.read ?? d.cohort.size} 24/5 feeds that could be read are stale, which
-                corroborates a scheduled closure rather than an oracle incident — so those are
-                reported as expected, not as failures. The defect is that{' '}
-                <span className="mono">latestRoundData()</span> returns a price either way and gives
-                callers no on-chain way to tell the difference.
-              </>
-            ) : (
-              <>
-                <strong>Market open.</strong> Staleness now is not explained by a scheduled closure.
-              </>
-            )}
-          </>
-        ) : (
-          <>
-            <span className="badge">STALE SNAPSHOT</span>{' '}
-            Swept at block <span className="mono">{d.blockNumber}</span>, {fmtAge(d.observedAt)}.
-            Market conditions below describe <strong>that moment, not now</strong>.{' '}
-            {d.cohort.quorum === false ? (
-              <>
-                At that block the market state was <strong>undetermined</strong>: only{' '}
-                {d.cohort.read ?? 0} of {d.cohort.size} 24/5 feeds could be read, below the quorum
-                needed to draw a conclusion.
-              </>
-            ) : d.marketClosed ? (
-              <>
-                At that block the US equity market <strong>was closed</strong>: {d.cohort.stale} of
-                the {d.cohort.read ?? d.cohort.size} feeds read were stale, corroborating a
-                scheduled closure rather than an oracle incident.
-              </>
-            ) : (
-              <>
-                At that block the market <strong>was open</strong>, so staleness then was not
-                explained by a scheduled closure.
-              </>
-            )}{' '}
-            Stating a live market condition from an old snapshot is the exact error this tool exists
-            to catch, so the page declines to.
-          </>
-        )}
-      </div>
+        <div className="banner" role="status">
+          {d.source === 'committed' ? (
+            <>
+              <span className="badge">LIVE FEED UNREACHABLE</span> This page is showing the snapshot
+              committed with this deployment, not the current sweep.{' '}
+            </>
+          ) : null}
+          {fresh ? (
+            <>
+              Swept at block <span className="mono">{d.blockNumber}</span> ({fmtAge(d.observedAt)}).{' '}
+              {d.cohort.quorum === false ? (
+                <>
+                  <strong>Market state undetermined.</strong> Only {d.cohort.read ?? 0} of{' '}
+                  {d.cohort.size} 24/5 equity feeds could be read at this block, below the 80% quorum
+                  this methodology requires before drawing any market-wide conclusion. Staleness found
+                  here is reported without a cause, because we could not measure one.
+                </>
+              ) : d.marketClosed ? (
+                basis === 'cohort' ? (
+                  <>
+                    <strong>The 24/5 equity session is closed.</strong> {d.cohort.stale} of the{' '}
+                    {cohortRead} 24/5 feeds that could be read are stale, which corroborates a scheduled
+                    closure rather than an oracle incident — so those are reported as expected, not as
+                    failures. The defect is that <span className="mono">latestRoundData()</span> returns a
+                    price either way and gives callers no on-chain way to tell the difference.
+                  </>
+                ) : (
+                  <>
+                    <strong>The 24/5 equity session is closed</strong> by its published schedule (Friday
+                    20:00 to Sunday 20:00, New York time); {d.cohort.stale} of {cohortRead} feeds are past
+                    their heartbeat so far. <span className="mono">latestRoundData()</span> returns a price
+                    either way and gives callers no on-chain way to tell a closure from an incident.
+                  </>
+                )
+              ) : d.cohort.stale === 0 ? (
+                <>
+                  <strong>The 24/5 equity session is open</strong> and no 24/5 feed is past its heartbeat.
+                </>
+              ) : (
+                <>
+                  <strong>The 24/5 equity session is open</strong>, so the {d.cohort.stale} stale{' '}
+                  {d.cohort.stale === 1 ? 'feed is' : 'feeds are'} not explained by a scheduled closure.
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <span className="badge">STALE SNAPSHOT</span> Swept at block{' '}
+              <span className="mono">{d.blockNumber}</span>, {fmtAge(d.observedAt)}. Market conditions
+              below describe <strong>that moment, not now</strong>.{' '}
+              {d.cohort.quorum === false ? (
+                <>
+                  At that block the market state was <strong>undetermined</strong>: only{' '}
+                  {d.cohort.read ?? 0} of {d.cohort.size} 24/5 feeds could be read, below the quorum
+                  needed to draw a conclusion.
+                </>
+              ) : d.marketClosed ? (
+                <>
+                  At that block the 24/5 equity session <strong>was closed</strong>
+                  {basis === 'cohort'
+                    ? `: ${d.cohort.stale} of the ${cohortRead} feeds read were stale, corroborating a scheduled closure rather than an oracle incident.`
+                    : ` by its published schedule, with ${d.cohort.stale} of ${cohortRead} feeds past their heartbeat.`}
+                </>
+              ) : (
+                <>
+                  At that block the 24/5 equity session <strong>was open</strong>, so staleness then was not
+                  explained by a scheduled closure.
+                </>
+              )}{' '}
+              Stating a live market condition from an old snapshot is the exact error this tool exists
+              to catch, so the page declines to.
+            </>
+          )}
+        </div>
 
-      <div className="proofs">
-        <div className="proof">
-          <div className="lbl">Paid endpoint · x402</div>
-          <div className="val">
-            $0.01 · <a href={`https://basescan.org/tx/${SETTLED_TX}`}>settled on Base</a>
-          </div>
-        </div>
-        <div className="proof">
-          <div className="lbl">MCP (SSE)</div>
-          <div className="val">{MCP_URL}</div>
-        </div>
-        <div className="proof">
-          <div className="lbl">Guard on 4663 · free</div>
-          <div className="val">
-            <a href={`https://sourcify.dev/#/lookup/${GUARD}`}>ERC8056Guard</a> · verified
-          </div>
-        </div>
-        <div className="proof">
-          <div className="lbl">Contract audit · x402</div>
-          <div className="val">
-            $0.25 · <a href={`https://basescan.org/tx/${CONTRACT_AUDIT_TX}`}>settled on Base</a>
-          </div>
-        </div>
-        <div className="proof">
-          <div className="lbl">ERC-8004 identity</div>
-          <div className="val">
-            <a href={`https://basescan.org/tx/${IDENTITY_TX}`}>8453:95374</a>
-          </div>
-        </div>
-        <div className="proof">
-          <div className="lbl">Self-attestation</div>
-          <div className="val">
-            <a href={`https://basescan.org/tx/${ATTEST_TX}`}>ValidationRegistry</a>
-          </div>
-        </div>
-      </div>
-
-      {d.chainNotes.map((n) => (
-        <div className="banner" key={n.id} style={{ borderColor: 'var(--high)' }}>
-          <span className={`sev ${n.severity}`}>{n.severity}</span>{' '}
-          <strong>{n.title}</strong>
-          <div style={{ marginTop: 8 }}>{n.statement}</div>
-          <div className="meta" style={{ marginTop: 8 }}>
-            No on-chain citation is possible for an absence, so this is reported separately from
-            findings and never inherits the byte-verified guarantee.
-          </div>
-        </div>
-      ))}
-
-      {d.integrators && d.integrators.contracts > 0 ? (
-        <div className="banner" style={{ borderColor: 'var(--high)' }}>
-          <strong>
-            {d.integrators.notAware} of {d.integrators.contracts} contracts holding
-            divergent-multiplier Stock Tokens cannot call{' '}
-            <span className="mono">uiMultiplier()</span>
-          </strong>
-          <div style={{ marginTop: 8 }}>
-            Every finding above names the asset that was <em>read</em>. This names the other side.
-            Across {d.integrators.scanned} addresses seen moving these tokens,{' '}
-            {d.integrators.contracts} are contracts, and {d.integrators.notAware} of them hold{' '}
+        {unread.length ? (
+          <div className="banner" style={{ borderColor: 'var(--med)' }}>
             <strong>
-              $
-              {Math.round(d.integrators.usdHeldByNotAware).toLocaleString()}
+              {unread.length} {unread.length === 1 ? 'asset' : 'assets'} could not be read this sweep and{' '}
+              {unread.length === 1 ? 'is' : 'are'} not assessed:
             </strong>{' '}
-            with no <span className="mono">uiMultiplier()</span> selector anywhere in their deployed
-            bytecode — {d.integrators.sharesUnaccounted.toFixed(2)} share-equivalents unaccounted
-            for if those balances are read as share counts.
+            <span className="mono">{unread.join(' ')}</span>. No finding about{' '}
+            {unread.length === 1 ? 'it' : 'them'} is published, and absence from the table is not a clean
+            result.
           </div>
-          <div className="meta" style={{ marginTop: 10, lineHeight: 1.8 }}>
-            What this establishes is the <strong>absence of a call</strong>, not the presence of a
-            mistake: a contract that only custodies or routes a token never needs the multiplier and
-            is not wrong to lack it. Proxies are resolved to their implementation before any verdict
-            — EIP-1967, beacon and EIP-1167 — and{' '}
-            {d.integrators.proxyUnresolved > 0
-              ? `${d.integrators.proxyUnresolved} that could not be resolved are withheld with no claim made.`
-              : 'anything unresolvable is withheld with no claim made.'}{' '}
-            <strong>No contract is named on this page.</strong> The named audit, with its bytecode
-            evidence, is the paid{' '}
-            <span className="mono">assay_check_contract</span> call — see{' '}
-            <Link href="/pricing">pricing</Link>.
-          </div>
-        </div>
-      ) : null}
+        ) : null}
 
-      <div className="tscroll">
-        <table>
-          <thead>
-            <tr>
-              <th style={{ width: 84 }}>Severity</th>
-              <th style={{ width: 74 }}>Asset read</th>
-              <th>Finding</th>
-              <th style={{ width: 210 }}>Class</th>
-              <th style={{ width: 96 }}>Evidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            {findings.map((f) => (
-              <tr key={f.id}>
-                <td>
-                  <span className={`sev ${f.severity}`}>{f.severity}</span>
-                </td>
-                <td className="sym">{symbolOf(f.subject)}</td>
-                <td>
-                  <Link href={`/f/${encodeURIComponent(f.id)}`} style={{ textDecoration: 'none' }}>
-                    {f.title}
-                  </Link>
-                </td>
-                <td className="cls">{f.defectClass}</td>
-                <td className="verified">
-                  {f.verification?.reproduced ?? 0}/{f.verification?.checked ?? 0} ✓
-                </td>
-              </tr>
+        <section id="check" aria-labelledby="check-h">
+          <h2 className="h2" id="check-h">
+            Check a wallet
+          </h2>
+          <p className="sub">
+            Paste any address to see <span className="mono">balanceOf()</span> next to its share-equivalents
+            for every Stock Token whose multiplier is not 1, as the on-chain ERC8056Guard reports them,
+            refusals included.
+          </p>
+          <CheckWallet tokens={divergentTokens(d)} />
+        </section>
+
+        {d.integrators && d.integrators.contracts > 0 ? (
+          <section aria-labelledby="exposure">
+            <h2 className="h2" id="exposure">
+              Who holds the exposure
+            </h2>
+            <IntegratorPanel agg={d.integrators} namedWithheld={d.withheld?.namedIntegrators} />
+          </section>
+        ) : null}
+
+        <section aria-labelledby="findings-h">
+          <h2 className="h2" id="findings-h">
+            Findings — {d.findings.length}
+          </h2>
+          {d.findings.length === 0 ? (
+            <div className="card">
+              The sweep feed is temporarily unavailable and no snapshot could be loaded, so there are no
+              findings to show. Nothing here should be read as a clean result.
+            </div>
+          ) : (
+            <>
+              <FindingsTable findings={lead} caption="Critical, high and medium findings, most severe first" />
+              {minor.length ? (
+                <details className="fold">
+                  <summary>
+                    Show {minor.length} low-severity {minor.length === 1 ? 'finding' : 'findings'}
+                  </summary>
+                  <FindingsTable findings={minor} caption="Low-severity findings" />
+                </details>
+              ) : null}
+              <p className="sub" style={{ marginTop: 10 }}>
+                <strong>Asset read</strong> names the contract whose state was read. It is not an accusation
+                against that contract — a Stock Token that moves <span className="mono">uiMultiplier()</span>{' '}
+                is doing exactly what ERC-8056 specifies. The exposure lands on an integrator that reads{' '}
+                <span className="mono">balanceOf()</span> as a share count.
+              </p>
+            </>
+          )}
+        </section>
+
+        <UseIt missingFeeds={d.stats?.missingFeeds} assetsScanned={d.assetsScanned} />
+
+        <ServReasoning />
+
+        {d.chainNotes.length ? (
+          <section aria-labelledby="notes-h">
+            <h2 className="h2" id="notes-h">
+              Chain notes
+            </h2>
+            {d.chainNotes.map((n) => (
+              <div className="banner" key={n.id} style={{ borderColor: 'var(--high)' }}>
+                <span className={`sev ${n.severity}`}>{n.severity}</span> <strong>{n.title}</strong>
+                <div style={{ marginTop: 8 }}>{n.statement}</div>
+                <div className="meta" style={{ marginTop: 8 }}>
+                  No on-chain citation is possible for an absence, so this is reported separately from
+                  findings and never inherits the byte-verified guarantee.
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </section>
+        ) : null}
 
-      <p className="sub" style={{ marginTop: 10 }}>
-        <strong>Asset read</strong> names the contract whose state was read. It is not an accusation
-        against that contract — a Stock Token that moves <span className="mono">uiMultiplier()</span>{' '}
-        is doing exactly what ERC-8056 specifies. The exposure lands on an integrator that reads{' '}
-        <span className="mono">balanceOf()</span> as a share count.
-      </p>
-
-      {findings.length === 0 && (
-        <div className="card">
-          No sweep data yet. Run <span className="mono">pnpm sweep</span> in the project root.
-        </div>
-      )}
-
-      <h2 className="h2">Withheld this sweep — {rejected.length}</h2>
-      <p className="sub">
-        Findings the detector produced and the verifier refused to publish. They are shown because a
-        verification claim is only worth anything if the misses are visible too, and because{' '}
-        <em>could not check</em> and <em>is false</em> are different statements that most tools
-        collapse into silence. Only <span className="mono">mismatch</span> impugns a finding; the
-        rest record the limits of what this RPC could confirm.
-      </p>
-
-      {rejected.length === 0 ? (
-        <div className="card">
-          <strong>Nothing was withheld at block {d.blockNumber}.</strong>
-          <div className="sub" style={{ marginTop: 8 }}>
-            All {totalCites} citations across {d.findings.length} findings re-fetched and matched
-            byte-for-byte. Earlier sweeps withheld up to 11 at a time — the cause was the RPC pruning
-            state faster than a 12-minute sweep could finish, which is why verification now runs
-            inline at each asset&apos;s own block rather than as a later pass.
+        <section aria-labelledby="proofs-h">
+          <h2 className="h2" id="proofs-h">
+            On-chain proofs
+          </h2>
+          <div className="proofs">
+            <div className="proof">
+              <div className="lbl">ERC-8004 identity</div>
+              <div className="val">
+                <a href={`https://basescan.org/tx/${IDENTITY_TX}`}>8453:95374</a>
+              </div>
+            </div>
+            <div className="proof">
+              <div className="lbl">Contract audit · x402</div>
+              <div className="val">
+                $0.25 · <a href={`https://basescan.org/tx/${CONTRACT_AUDIT_TX}`}>settled on Base</a> to{' '}
+                {OWNER.slice(0, 6)}…{OWNER.slice(-4)}
+              </div>
+            </div>
+            <div className="proof">
+              <div className="lbl">Guard on 4663 · free</div>
+              <div className="val">
+                <a href={`https://sourcify.dev/#/lookup/${GUARD_ADDRESS}`}>ERC8056Guard</a> · verified
+              </div>
+            </div>
+            <div className="proof">
+              <div className="lbl">Position check · x402 · under frozen 95265</div>
+              <div className="val">
+                $0.01 · <a href={`https://basescan.org/tx/${SETTLED_TX_95265}`}>settled on Base</a> to the
+                95265 wallet, whose key is lost
+              </div>
+            </div>
+            <div className="proof">
+              <div className="lbl">Self-attestation · under frozen 8453:95265</div>
+              <div className="val">
+                <a href={`https://basescan.org/tx/${ATTEST_TX_95265}`}>ValidationRegistry</a> ·{' '}
+                <a href={`${REPO}#on-chain-proofs`}>why 95265</a>
+              </div>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="tscroll">
-          <table>
-            <thead>
-              <tr>
-                <th style={{ width: 150 }}>Reason</th>
-                <th style={{ width: 74 }}>Asset read</th>
-                <th>Finding</th>
-                <th>Why it was withheld</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rejected.map((r, i) => (
-                <tr className="withheld" key={`${r.finding.id}-${i}`}>
-                  <td>
-                    <span className={`rsn ${r.reason}`}>{r.reason.replace(/_/g, ' ')}</span>
-                  </td>
-                  <td className="sym">{symbolOf(r.finding.subject)}</td>
-                  <td>{r.finding.title ?? r.finding.id}</td>
-                  <td className="sub" style={{ margin: 0 }}>
-                    {r.detail}
-                    <div className="meta" style={{ marginTop: 6 }}>
-                      {REASON_COPY[r.reason] ?? ''}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+        </section>
 
-      <footer>
-        ASSAY publishes facts and raw return bytes in neutral engineering language. It does not
-        assert intent and never uses the word fraud. Unsolicited findings are never written
-        on-chain; only a verdict a subject requested is. Any named party may have their reply
-        published alongside a finding — open an issue at{' '}
-        <a href={`${REPO}/issues`}>{REPO.replace('https://', '')}</a> or write to the address in{' '}
-        <a href={`${REPO}/blob/main/README.md`}>the README</a>, and it is attached unedited.
-        Methodology is versioned so any subject can reproduce their own grade. A subject&apos;s own
-        declared mandate text is sent to OpenServ&apos;s inference API when a solicited verdict is
-        adjudicated, under this account&apos;s data-collection setting. Pre-publication notice is
-        deliberately not claimed: the sweep publishes on a timer, and for most findings the subject
-        is a contract rather than a person to notify. ASSAY rates itself first, and its own
-        self-attestation says on its face that it carries no independent assurance.
-      </footer>
-    </div>
+        <section aria-labelledby="withheld-h">
+          <h2 className="h2" id="withheld-h">
+            Withheld by the verifier — {rejected.length}
+          </h2>
+          <p className="sub">
+            Findings the detector produced and the verifier refused to publish. They are shown because a
+            verification claim is only worth anything if the misses are visible too, and because{' '}
+            <em>could not check</em> and <em>is false</em> are different statements that most tools
+            collapse into silence. Only <span className="mono">mismatch</span> impugns a finding; the
+            rest record the limits of what this RPC could confirm.
+          </p>
+          {/* A second kind of withholding, by policy rather than verification, and counted apart so the
+              heading's number cannot read as "nothing was withheld" next to the integrator panel's. */}
+          {(d.withheld?.namedIntegrators ?? 0) > 0 ? (
+            <p className="sub">
+              Separately, {d.withheld!.namedIntegrators} verified findings that would name a holder contract are
+              withheld from this site by policy: they are counted in the integrator panel above, and the $0.25
+              contract audit answers for an address you supply.
+            </p>
+          ) : null}
+
+          {rejected.length === 0 ? (
+            <div className="card">
+              <strong>The verifier withheld nothing at block {d.blockNumber}.</strong>
+              <div className="sub" style={{ marginTop: 8 }}>
+                All {totalCites} citations across {d.findings.length} findings re-fetched and matched
+                byte-for-byte. Earlier sweeps withheld up to 11 at a time — the cause was the RPC pruning
+                state faster than a 12-minute sweep could finish, which is why verification now runs
+                inline at each asset&apos;s own block rather than as a later pass.
+              </div>
+            </div>
+          ) : (
+            <div className="tscroll">
+              <table>
+                <caption className="sr-only">Findings the verifier withheld, with the reason</caption>
+                <thead>
+                  <tr>
+                    <th scope="col" style={{ width: 150 }}>
+                      Reason
+                    </th>
+                    <th scope="col" style={{ width: 74 }}>
+                      Asset read
+                    </th>
+                    <th scope="col">Finding</th>
+                    <th scope="col">Why it was withheld</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rejected.map((r, i) => (
+                    <tr className="withheld" key={`${r.finding.id}-${i}`}>
+                      <td>
+                        <span className={`rsn ${r.reason}`}>{r.reason.replace(/_/g, ' ')}</span>
+                      </td>
+                      <td className="sym">{symbolOf(r.finding.subject)}</td>
+                      <td>{r.finding.title ?? r.finding.id}</td>
+                      <td className="sub" style={{ margin: 0 }}>
+                        {r.detail}
+                        <div className="meta" style={{ marginTop: 6 }}>
+                          {REASON_COPY[r.reason] ?? ''}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        <footer>
+          ASSAY publishes facts and raw return bytes in neutral engineering language. It does not
+          assert intent and never uses the word fraud. Unsolicited findings are never written
+          on-chain; only a verdict a subject requested is. Any named party may have their reply
+          published alongside a finding, unedited: see <a href={RIGHT_OF_REPLY_DOC}>docs/RIGHT-OF-REPLY.md</a>,{' '}
+          or <a href={RIGHT_OF_REPLY_ISSUE}>open a right-of-reply issue</a>. Identity 8453:95374 is owned by{' '}
+          <span className="mono">{OWNER}</span>. Methodology is
+          versioned, so a subject can inspect the exact rules its grade was produced under. A
+          subject&apos;s own declared mandate text is sent to OpenServ&apos;s inference API when a
+          solicited verdict is adjudicated, and training-data collection is on for this account, so OpenServ
+          may retain that text for up to five years.
+          Pre-publication notice is deliberately not claimed: the sweep publishes on a timer, and for most
+          findings the subject is a contract rather than a person to notify. ASSAY rates itself first, and
+          its own self-attestation says on its face that it carries no independent assurance.
+        </footer>
+      </main>
+    </>
   )
 }

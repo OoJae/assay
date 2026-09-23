@@ -66,7 +66,7 @@ footer { margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--line);
   gap: 10px; margin: 16px 0; }
 .proof { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
 .proof .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-.proof .val { font-family: var(--mono); font-size: 12.5px; margin-top: 5px; word-break: break-all; }
+.proof .val { font-family: var(--mono); font-size: 12.5px; margin-top: 5px; overflow-wrap: anywhere; }
 .proof a { color: var(--low); text-decoration: none; }
 
 /* --- Withheld findings: the mechanism is only credible if the misses are visible --- */
@@ -85,6 +85,39 @@ footer { margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--line);
 .sub { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; line-height: 1.6; max-width: 80ch; }
 .tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
+/* --- Calls to action, the wallet check and the "Use it" section --- */
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+.btn { display: inline-block; font-size: 13px; padding: 8px 14px; border-radius: 8px; text-decoration: none;
+  border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; font-family: inherit; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--ok); border-color: var(--ok); color: #06140f; font-weight: 600; }
+.btn:disabled { opacity: 0.6; cursor: progress; }
+.navbar a.btn.primary { color: #06140f; padding: 5px 11px; }
+.offers { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin: 14px 0; }
+.offer { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.offer p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 10px 0 0; }
+.offer p strong { color: var(--fg); }
+.offer .actions { margin-top: 14px; }
+.offer .meta { margin-top: 10px; word-break: break-all; }
+.h3 { font-size: 13px; margin: 22px 0 2px; }
+.list { padding-left: 18px; }
+.list li { margin: 6px 0; }
+.check-row { display: flex; gap: 8px; margin-top: 8px; }
+.check input { flex: 1 1 auto; min-width: 0; background: #0a0c0f; color: var(--fg); border: 1px solid var(--line);
+  border-radius: 8px; padding: 9px 11px; font-size: 13px; }
+.check input:focus { outline: 2px solid var(--low); outline-offset: 1px; }
+.linkish { background: none; border: 0; padding: 0; color: var(--low); cursor: pointer; font: inherit; }
+.quote { margin: 10px 0; padding: 10px 14px; border-left: 2px solid var(--ok); color: var(--fg);
+  font-size: 13.5px; line-height: 1.65; }
+details.fold { margin-top: 10px; }
+details.fold > summary, details > summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
+.stat .n .of { font-size: 14px; color: var(--muted); font-weight: 400; }
+.rsn.free { background: rgba(78,201,165,.13); color: var(--ok); }
+h2.tag { margin: 0; font-weight: 400; }
+footer.disclaimer { margin-top: 28px; font-size: 11.5px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
 /* --- P-4: the table carried 464px of fixed widths and the page scrolled sideways on a phone --- */
 @media (max-width: 760px) {
   .wrap { padding: 20px 16px 64px; }
@@ -92,12 +125,16 @@ footer { margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--line);
   .lede { font-size: 14px; }
   table { font-size: 12.5px; }
   th, td { padding: 9px 7px; }
-  /* Class and evidence are supporting detail; severity, asset and the finding carry the page. */
-  th:nth-child(4), td:nth-child(4) { display: none; }
+  /* Class and evidence are supporting detail; severity, asset and the finding carry the page.
+     Scoped to the findings table: unscoped, this hid the pricing table's "What it is" column and
+     the withheld table's "Why it was withheld" on every phone. */
+  .findings th:nth-child(4), .findings td:nth-child(4) { display: none; }
   .stat .n { font-size: 22px; }
   .grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 9px; }
   pre { font-size: 10.5px; }
+  .offers { grid-template-columns: 1fr; }
 }
 @media (max-width: 460px) {
-  th:nth-child(5), td:nth-child(5) { display: none; }
+  .findings th:nth-child(5), .findings td:nth-child(5) { display: none; }
+  .check-row { flex-direction: column; }
 }

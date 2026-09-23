@@ -1,13 +1,27 @@
 {
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "ASSAY Valuation Integrity",
-  "description": "Independent valuation-integrity audit for agents on Robinhood Chain (EIP-155 chain 4663). Detects ERC-8056 corporate-action multiplier defects, stale Chainlink feeds and cross-surface price mixing, and audits the CONTRACTS holding Stock Tokens for whether they can call uiMultiplier() at all \u2014 resolving proxies before any verdict. Every published citation is re-fetched from chain state and byte-compared before publication. Also publishes a free, ownerless on-chain guard that returns the corrected share count or refuses. ASSAY never moves capital and has no control path over anything it grades.",
+  "description": "Independent valuation-integrity audit for agents that value or hold Stock Tokens on Robinhood Chain (EIP-155 chain 4663). Detects ERC-8056 corporate-action multiplier defects, stale Chainlink feeds and cross-surface price mixing, and audits the CONTRACTS holding Stock Tokens for whether they can call uiMultiplier() at all \u2014 resolving proxies before any verdict. Every published citation is re-fetched from chain state and byte-compared before publication. Also publishes a free, ownerless on-chain guard that returns the corrected share count or refuses. ASSAY never moves capital and has no control path over anything it grades. Paid over x402 in USDC on Base: true position $0.01, named contract audit $0.25. Independent; not affiliated with Robinhood or Chainlink. Informational only, not financial advice.",
+  "image": "https://assay-steel.vercel.app/icon.svg",
   "services": [
     {
       "name": "http",
+      "triggerName": "true-position",
+      "description": "assay_true_position \u2014 $0.01. Corrected ERC-8056 position for a holder of a Robinhood Chain Stock Token, plus oracle hygiene, or an explicit refusal.",
       "endpoint": "https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6",
       "method": "POST",
+      "capability": "assay_true_position",
+      "priceUsd": 0.01,
+      "paywall": "https://platform.openserv.ai/workspace/paywall/006ecd4add4a459d8ae92362869a42a6",
+      "x402": {
+        "scheme": "exact",
+        "network": "base",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+        "maxAmountRequired": "10000"
+      },
       "schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "required": [
           "buyerAddress",
@@ -37,14 +51,33 @@
           }
         }
       },
-      "description": "assay_true_position \u2014 $0.01. Corrected ERC-8056 position plus oracle hygiene, or an explicit refusal."
+      "exampleBody": {
+        "buyerAddress": "0xYourBuyerAddress",
+        "payload": {
+          "symbol": "NVDA",
+          "holder": "0xHolderAddress"
+        }
+      },
+      "note": "POST this body unpaid to receive the HTTP 402 x402 payment requirements, then retry with the X-PAYMENT header. A body without buyerAddress and payload is held for about 90 seconds instead of answering 402."
     },
     {
       "name": "http",
-      "description": "assay_check_contract \u2014 $0.25. Named integrator audit: is this contract multiplier-aware, and what is it exposed on.",
+      "triggerName": "check-contract",
+      "description": "assay_check_contract \u2014 $0.25. Named integrator audit: is this contract multiplier-aware, and what Stock Tokens is it exposed on.",
       "endpoint": "https://api.openserv.ai/webhooks/x402/trigger/a1bb2a3946d1411eb945200d43ebc740",
       "method": "POST",
+      "capability": "assay_check_contract",
+      "priceUsd": 0.25,
+      "paywall": "https://platform.openserv.ai/workspace/paywall/a1bb2a3946d1411eb945200d43ebc740",
+      "x402": {
+        "scheme": "exact",
+        "network": "base",
+        "asset": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        "payTo": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+        "maxAmountRequired": "250000"
+      },
       "schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "required": [
           "buyerAddress",
@@ -68,13 +101,21 @@
             }
           }
         }
-      }
+      },
+      "exampleBody": {
+        "buyerAddress": "0xYourBuyerAddress",
+        "payload": {
+          "address": "0xContractToAudit"
+        }
+      },
+      "note": "POST this body unpaid to receive the HTTP 402 x402 payment requirements, then retry with the X-PAYMENT header. A body without buyerAddress and payload is held for about 90 seconds instead of answering 402."
     },
     {
       "name": "MCP",
       "endpoint": "https://sonar.my.id/assay-mcp/sse",
       "version": "2025-06-18",
       "transport": "sse",
+      "description": "Free verdicts only. assay_check_contract returns the verdict, codeHash, block and whether it is conclusive, with no holdings, balances, share or USD figures; assay_true_position returns the confidence or refusal verdict and its reasons without the corrected figures; assay_check_symbol names no integrator contract. The full answers are the two paid http endpoints above.",
       "tools": [
         "assay_true_position",
         "assay_findings",
@@ -104,7 +145,17 @@
       "endpoint": "https://github.com/OoJae/assay/tree/main/packages/erc8056-guard"
     }
   ],
+  "x402Support": true,
   "active": true,
+  "registrations": [
+    {
+      "agentId": 95374,
+      "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    }
+  ],
+  "supportedTrust": [
+    "reputation"
+  ],
   "x402support": true,
   "x402": {
     "network": "base",
@@ -128,6 +179,17 @@
     "duplicateAgentIds": [
       "8453:95266"
     ],
-    "note": "95374 is canonical. 95265 is FROZEN: its signing key was lost when a local .env was overwritten with a copy of .env.example, so it can never be updated again. Everything already published under it \u2014 this card, the self-attestation it holds, and the x402 payments made to its wallet \u2014 remains true and verifiable. 95266 was an accidental duplicate of 95265. All three resolve to this same card, so a reader of any of them lands on the correct identity rather than concluding one is an impostor."
-  }
+    "note": "95374 is canonical. 95265 is FROZEN: its signing key was lost when a local .env was overwritten with a copy of .env.example, so it can never be updated again. Everything already published under it \u2014 this card, the self-attestation it holds, and the x402 payments made to its wallet \u2014 remains true and verifiable. 95266 was an accidental duplicate of 95265. All three resolve to this same card, so a reader of any of them lands on the correct identity rather than concluding one is an impostor.",
+    "selfAttestation": {
+      "agentId": "8453:95265",
+      "note": "The existing self-attestation was issued under FROZEN identity 95265, by its validator key 0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5, before 95374 existed. It is self-issued (subject and validator are the same key) and is a disclosure, not third-party assurance. Canonical 95374 carried no validation of its own when this card was written.",
+      "validationRegistry": "eip155:8453:0x8004Cc8439f36fd5F9F049D9fF86523Df6dAAB58",
+      "requestHash": "0x18cdff93e8da064a74bc7c32b0895e3ecf55f060f507ca60b341bb16deb18078",
+      "responseURI": "https://assay-steel.vercel.app/attestations/95265.json",
+      "responseTx": "https://basescan.org/tx/0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669",
+      "tag": "CLEAN",
+      "score": 100
+    }
+  },
+  "disclaimer": "ASSAY is an independent project. It is not affiliated with, endorsed by, or officially connected with Robinhood Markets, Inc., its affiliates, or Chainlink Labs. \"Robinhood Chain\" and \"Chainlink\" are trademarks of their respective owners and are used only to identify the network and data sources. ASSAY's output is an automated, informational reading of public blockchain state, provided as is and without warranty. It is not investment, financial, legal or tax advice, it is not a security audit, and a finding is not a statement that any named party acted wrongly. Verify independently before acting."
 }

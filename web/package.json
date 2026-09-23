@@ -9,14 +9,14 @@
     "prebuild": "node scripts/prebuild.mjs"
   },
   "dependencies": {
-    "next": "^15.1.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "viem": "^2.56.8"
+    "next": "15.5.25",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "viem": "2.56.8"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
-    "@types/react": "^19.0.2",
-    "typescript": "^5.7.2"
+    "@types/node": "22.20.4",
+    "@types/react": "19.3.0",
+    "typescript": "5.9.3"
   }
 }
