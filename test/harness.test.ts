@@ -23,7 +23,7 @@ const COMMITTED = [
 
 describe('artifactPath', () => {
   it('never returns a committed path', () => {
-    for (const name of ['braid-ab', 'braid-trials', 'injection-trials', 'hard-trials']) {
+    for (const name of ['braid-ab', 'braid-trials', 'injection-trials', 'hard-trials', 'heldout-trials', 'heldout-trials-dev']) {
       expect(COMMITTED).not.toContain(artifactPath(name, 'assay-rh-v0.3.0', 'run1'))
     }
   })
@@ -44,7 +44,7 @@ describe('artifactPath', () => {
 describe('no harness writes to a fixed committed path', () => {
   it('each harness writeFileSync target is computed, not a committed literal', () => {
     // Static check on the source: a literal committed path inside writeFileSync is the regression.
-    for (const f of readdirSync('scripts').filter((x) => /^(braid-ab|braid-trials|hard-trials|injection-trials)\.ts$/.test(x))) {
+    for (const f of readdirSync('scripts').filter((x) => /^(braid-ab|braid-trials|hard-trials|heldout-trials|injection-trials)\.ts$/.test(x))) {
       const src = readFileSync(`scripts/${f}`, 'utf8')
       for (const c of COMMITTED) {
         expect(src.includes(`writeFileSync('${c}'`), `${f} writes ${c}`).toBe(false)

@@ -98,17 +98,27 @@ export function isGitTracked(path: string): boolean {
  * `pnpm hard` saw a mismatch, "started fresh", and overwrote it on the first checkpoint. Now a run
  * gets its own file, resume is explicit, a committed path is refused, and a mismatched resume is an
  * error rather than a silent restart.
+ *
+ * `name` is the artifact family a NEW run is written under. It defaults to `hard-trials`; the
+ * held-out harness passes its own, so both share one set of resume rules.
  */
-export function planRun(opts: {
+export interface ResumableArtifact {
+  methodologyVersion: string
+  detectionMethodologyVersion?: string
+  trialsPerCase: number
+}
+
+export function planRun<A extends ResumableArtifact = HardTrialsArtifact>(opts: {
   resume?: string
   n: number
   detectionVersion: string
   runId: string
+  name?: string
   isTracked: (path: string) => boolean
-  readPrevious: (path: string) => HardTrialsArtifact | null
-}): { ok: true; out: string; previous: HardTrialsArtifact | null } | { ok: false; reason: string } {
+  readPrevious: (path: string) => A | null
+}): { ok: true; out: string; previous: A | null } | { ok: false; reason: string } {
   if (!opts.resume) {
-    const out = artifactPath('hard-trials', opts.detectionVersion, opts.runId)
+    const out = artifactPath(opts.name ?? 'hard-trials', opts.detectionVersion, opts.runId)
     if (opts.isTracked(out)) return { ok: false, reason: `${out} is committed` }
     return { ok: true, out, previous: null }
   }

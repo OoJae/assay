@@ -1,0 +1,111 @@
+{
+  "source": "https://sonar.my.id/assay-mcp/findings.json",
+  "capturedFromBoard": {
+    "observedAt": "2026-09-23T20:11:17.000Z",
+    "blockNumber": "70789445"
+  },
+  "note": "VerifiedFinding objects copied verbatim from the public board. Verified at their sweep block; replayed unchanged on every draw and arm, so the adjudicator's input is byte-identical across the run. The STALE fixture is added on Sat 2026-09-26 under the rule in PROTOCOL.md.",
+  "fixtures": {
+    "SHARE": {
+      "id": "CRWD-share-count",
+      "defectClass": "SHARE_COUNT_MISREAD_RISK",
+      "severity": "critical",
+      "subject": "CRWD (0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931)",
+      "affectedParty": "Any integrator that presents CRWD balanceOf() as a share count. The contract itself is behaving as ERC-8056 specifies and is not at fault.",
+      "title": "CRWD: reading balanceOf() as shares understates by 75.0000% (multiplier 4.000000000x)",
+      "statement": "CRWD reports uiMultiplier() = 4000000000000000000 (4.000000000), which is CORRECT AND SPEC-COMPLIANT behaviour under ERC-8056 \u2014 this finding is not a defect in the token contract. It records the exposure carried by a caller that reads balanceOf() as shares. Under ERC-8056 a corporate action moves the multiplier rather than balances, so balanceOf() returns tokens and share-equivalents = balance * uiMultiplier() / 1e18. A surface presenting the raw balance as a share count understates it by 75.0000% (the true count is 4.0000x the raw balance). Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.",
+      "impact": {
+        "basisPoints": 7500,
+        "percent": 75,
+        "measures": "how far a raw balanceOf() read as shares understates the true share count, as a share of the true count",
+        "note": "totalSupply raw 14.1875 tokens vs 56.7500 share-equivalents (delta 42.5625). Presenting the raw balance as a share count understates by 75.0000%; equivalently the true count is 4.0000x the raw."
+      },
+      "evidence": [
+        {
+          "claim": "uiMultiplier() == 4000000000000000000",
+          "chainId": 4663,
+          "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
+          "call": "uiMultiplier()",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000003782dace9d900000",
+          "blockNumber": "70789574",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
+          "observedAt": "2026-09-23T20:11:30.000Z"
+        },
+        {
+          "claim": "totalSupply() == 14187500000000000000",
+          "chainId": 4663,
+          "contract": "0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
+          "call": "totalSupply()",
+          "rawReturn": "0x000000000000000000000000000000000000000000000000c4e42014d6dac000",
+          "blockNumber": "70789574",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931",
+          "observedAt": "2026-09-23T20:11:30.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.4.0",
+      "detectedAt": "2026-09-23T20:11:30.000Z",
+      "verification": {
+        "checked": 2,
+        "reproduced": 2,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-23T20:11:31.721Z"
+      }
+    },
+    "CROSS": {
+      "id": "SGOV-cross-surface",
+      "defectClass": "CROSS_SURFACE_PRICE_MIX",
+      "severity": "medium",
+      "subject": "SGOV (0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5)",
+      "affectedParty": "Any caller that values SGOV with an off-chain SHARE price, or computes a premium/discount between the on-chain token price and an off-chain share price.",
+      "title": "SGOV: off-chain share price and on-chain token price differ by 0.510%",
+      "statement": "The Chainlink feed returns a multiplier-adjusted TOKEN price (101.1277), while Robinhood's REST /prices endpoint returns the RAW UNDERLYING share price (mid 100.6150). These are different quantities related by uiMultiplier(): underlying x 1.005101770 = 101.1283, leaving a residual of -0.001% against the observed feed price. That residual is small relative to the 0.510% multiplier effect, consistent with bid/ask spread and the timing gap between the REST quote and the feed's updatedAt. The finding stands on the multiplier relationship itself, which is byte-verified: valuing balanceOf() with an off-chain share price, or computing a premium/discount between an on-chain token price and an off-chain share price, produces a phantom error of 0.510%.",
+      "impact": {
+        "basisPoints": 51.02,
+        "percent": 0.5102,
+        "measures": "how far the on-chain token price differs from the off-chain share price, as a share of the share price",
+        "note": "feed 101.1277 vs underlying-mid 100.6150 x multiplier 1.005101770 = 101.1283"
+      },
+      "evidence": [
+        {
+          "claim": "uiMultiplier() == 1005101770003214918",
+          "chainId": 4663,
+          "contract": "0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
+          "call": "uiMultiplier()",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000000df2d6bc0c287246",
+          "blockNumber": "70789920",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5",
+          "observedAt": "2026-09-23T20:12:04.000Z"
+        },
+        {
+          "claim": "latestRoundData().answer == 10112765518",
+          "chainId": 4663,
+          "contract": "0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
+          "call": "latestRoundData()",
+          "rawReturn": "0x0000000000000000000000000000000000000000000000010000000000000041000000000000000000000000000000000000000000000000000000025ac48e4e000000000000000000000000000000000000000000000000000000006ab316a1000000000000000000000000000000000000000000000000000000006ab316ad0000000000000000000000000000000000000000000000010000000000000041",
+          "blockNumber": "70789920",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0xa0DF4ee0fFf975306345875E3548Fcc519577A11",
+          "observedAt": "2026-09-23T20:12:04.000Z"
+        }
+      ],
+      "offChainSources": [
+        {
+          "url": "https://api.robinhood.com/rhj/prices/SGOV",
+          "describes": "underlying share bid/ask used for the mid 100.6150 (not multiplier-adjusted)",
+          "fetchedAt": "2026-09-23T20:12:02.550906674Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.4.0",
+      "detectedAt": "2026-09-23T20:12:04.000Z",
+      "verification": {
+        "checked": 2,
+        "reproduced": 2,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-23T20:12:10.255Z"
+      }
+    }
+  }
+}
