@@ -1,7 +1,8 @@
 # Demo video — shot list
 
-**Target: 2:00.** Judges are not obliged to watch past 2:00, so the strongest beat goes first and
-nothing is explained that the screen already shows.
+**Target: 2:00.** Judges are not obliged to watch past 2:00, and X takes 2:20 at most without
+Premium, so the strongest beat goes first and nothing is explained that the screen already shows.
+The seven beats below add up to exactly 2:00 and do not overlap.
 
 Record at 1920×1080. Terminal at ~16pt, dark. Browser with no bookmark bar, no extensions.
 
@@ -9,200 +10,173 @@ Record at 1920×1080. Terminal at ~16pt, dark. Browser with no bookmark bar, no 
 
 ```bash
 cd ~/Desktop/Openserv/assay
-pnpm sweep                       # warm data/findings.json; takes ~10 min, do NOT film this
+npx tsx scripts/test-guard.ts     # once, off camera: warms anvil and the fork (~20s), needs Foundry
 open https://assay-steel.vercel.app
-open https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b
+open https://basescan.org/tx/0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2
 ```
 
-Have four tabs ready in this order: wall · a finding page · Basescan · 8004scan.
+Every script this video runs is started with `npx tsx`, not pnpm, because pnpm checks the install
+before every script, and on the recording laptop that check has failed before
+(`ERR_PNPM_IGNORED_BUILDS`); an install error on camera costs more than the longer command.
+
+Have three tabs ready in this order: the wall · a terminal · Basescan. Pick a CRWD holder for the
+0:35 beat beforehand: any **EOA** from the holders tab of CRWD's Blockscout page
+(`0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931`), never a contract, because a contract holding a
+Stock Token is exactly what ASSAY does not name.
 
 ---
 
-## 0:00–0:12 — The claim, on screen, in one sentence
+## 0:00–0:15 — Try it, in the first ten seconds
 
-**Show:** the wall at <https://assay-steel.vercel.app>, scrolled to the stat row.
+**Show:** the wall at <https://assay-steel.vercel.app>. Click **Check a wallet · free** in the
+header, then **Try the burn address 0x…dEaD** under the box.
 
 **Say:**
-> Robinhood put four hundred and fifty tokenized stocks on its own chain. Under ERC-8056, a
-> corporate action moves a multiplier — not your balance. ASSAY sweeps all of them and publishes
-> only what it can re-fetch and byte-compare.
+> Robinhood Chain has a hundred and ninety-five Stock Tokens. Under ERC-8056 a corporate action
+> moves a multiplier, not your balance, so `balanceOf()` is not a share count. Paste any address:
+> for every Stock Token whose multiplier isn't one, a free contract on the chain puts the real share
+> count next to the raw balance.
 
-**On screen:** the stat row reads `45 published · 90/90 citations reproduced · 195 assets swept ·
-0 withheld`. Let it sit for a beat. Do not narrate the numbers; they are legible.
+**On screen:** the table fills: `balanceOf() · tokens` next to `Share-equivalents`, one row per
+token the address holds. Point at a row where the two columns differ. Do not read the numbers;
+they move with the address.
 
 ---
 
-## 0:12–0:40 — The finding, live, not from a slide
+## 0:15–0:35 — The finding, and the bytes behind it
+
+**Show:** scroll up to the stat row, then click the CRWD finding: the header links the largest gap
+on the board, and CRWD, the only 4.0x Stock Token, is it.
+
+**Say:**
+> Everything here is re-fetched from chain state before it's published. CRWD's multiplier is
+> four, so anything printing the raw balance as a share count is seventy-five percent short. And
+> notice the name: misread *risk*. CRWD's contract does exactly what the spec says; the exposure is
+> on whoever reads it wrong.
+
+**Run**, pasted from the finding page's evidence block (the page prints the exact command,
+including `--block`):
+
+```bash
+cast call 0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931 "uiMultiplier()" \
+  --block <n> --rpc-url https://rpc.mainnet.chain.robinhood.com
+```
+
+**On screen:** `0x…3782dace9d900000`, which is 4e18. Point at it, then at the same raw bytes on
+the page. If the block has aged out (8–17 minutes), the page already says *unchecked here, not
+disproven*; point at that instead, it is the same point made more honestly.
+
+---
+
+## 0:35–0:55 — It refuses. That is the product.
 
 **Run:**
 
 ```bash
-pnpm sweep --symbols=CRWD
-```
-
-Takes ~25s. Talk over it.
-
-**Say:**
-> This is live mainnet, right now. CRWD's multiplier is four. So a holder with thirteen tokens
-> holds fifty-two share-equivalents — anything printing the raw balance as a share count is
-> understating it by seventy-five percent.
-
-**On screen:** the output line
-
-```
-[CRITICAL] SHARE_COUNT_MISREAD_RISK  CRWD: reading balanceOf() as shares understates by 75.0000%
-```
-
-**Then say — this is the line that separates the project from a scanner:**
-> And notice what it's called. Misread *risk*. CRWD's contract is doing exactly what the spec
-> says. The exposure is on whoever reads it wrong. We name the asset we read and the party who
-> carries the risk in separate fields, because falsely accusing someone who did it right is the
-> worst thing an auditor can do.
-
----
-
-## 0:40–1:05 — It refuses. That is the product.
-
-**Run:**
-
-```bash
-npx tsx scripts/true-position.ts CRWD 0x8366a39CC670B4001A1121B8F6A443A643e40951
+npx tsx scripts/true-position.ts CRWD <holder>
 ```
 
 **On screen:** highlight these fields with the cursor, in order:
 
 ```
-shareEquivalents  50.79
-tokenUnits        12.70
-checks            { pauseChecked: true, feedRead: false, priceSane: false, roundComplete: false }
-confidence        refuse
-refusalReason     No Chainlink feed is published for CRWD on Robinhood Chain...
+confidence      "refuse"
+checks          { pauseChecked: true, feedRead: false, priceSane: false, roundComplete: false, ... }
+refusalReason   "No Chainlink feed is published for CRWD on Robinhood Chain; ... understates the
+                 position by 75.000% of its true value ..."
 ```
 
 **Say:**
-> This is the call people pay a cent for. And here it refuses. CRWD has no Chainlink feed, so
-> there is no honest on-chain price — and using an off-chain *share* price would introduce exactly
-> that four-hundred-percent error. The `checks` block says which safety checks actually completed.
-> `false` means unknown, not fine. An earlier version of this returned high confidence on a read
-> that never happened, which is the single most dangerous thing a paid valuation call can do.
+> This is the call people pay a cent for, and here it refuses. CRWD has no Chainlink feed, so
+> there's no honest on-chain price, and an off-chain share price times the raw balance would come
+> out seventy-five percent low. `false` in `checks` means unknown, not fine. An earlier version
+> returned high confidence on a read that never happened.
 
 ---
 
-## 1:05–1:22 — The other side of the trade
+## 0:55–1:12 — The other side of the trade
 
-**Show:** the wall, scrolled to the orange integrator panel.
+**Show:** the wall, scrolled to **Who holds the exposure**.
 
-**Say:**
-> Here's the part I'd defend hardest. Every finding above names the asset that was *read* — and all
-> hundred and ninety-five of them are behaving exactly as the spec says. Nobody's at fault.
->
-> So we audited the other side. Of the addresses moving these tokens, about eighty percent are
-> contracts. We fetch their bytecode and look for the `uiMultiplier` selector. Right now, of the
-> contracts holding a divergent-multiplier token, **not one of them references it.**
+**Say** only what the panel says; it is written for exactly this:
+> Every finding above names the asset that was *read*, and all hundred and ninety-five behave as
+> the spec says. So ASSAY reads the bytecode of the contracts holding them and looks for the
+> `uiMultiplier` selector. Pools and custody get a line of their own: they never need a share
+> count. And there's no address on the page. The absence of a call isn't the presence of a
+> mistake, so contracts are counted, never named. The twenty-five-cent audit answers for an
+> address you already have.
 
-**On screen:** point at the count and the dollar figure.
-
-**Then — say this, it matters:**
-> And notice there's no address on the page. What we've proven is the *absence of a call*, not the
-> presence of a mistake — a contract that just custodies a token never needs the multiplier. So the
-> wall gets a count; the name costs twenty-five cents. We also resolve proxies before we judge
-> anything, because the Stock Tokens are themselves beacon proxies, and the first version of this
-> cheerfully accused the very tokens that implement the function.
+**On screen:** point at the count, then at the separate pools-and-custody line.
 
 ---
 
-## 1:22–1:40 — The mistake becomes impossible
+## 1:12–1:28 — The mistake becomes impossible
 
-**Run:**
+**Run** (warm from the pre-roll; cut the fork's startup in the edit):
 
 ```bash
-pnpm test:guard
+npx tsx scripts/test-guard.ts
 ```
 
-Talk over the fork spinning up.
-
 **Say:**
-> Detecting this is worth less than preventing it. So there's a free contract on Robinhood Chain
-> that does the correction for you — ownerless, no storage, view-only. One call, the right number.
->
-> This forks the real chain, deploys it, and checks it against live state. Watch the last two lines:
-> we jump three days forward, the Chainlink feed goes stale, and the guard **refuses**.
+> Detecting this is worth less than preventing it. There's a free contract on Robinhood Chain:
+> ownerless, no storage, view-only. This forks the real chain, deploys it, and jumps three days
+> ahead so the feed goes stale.
 
 **On screen:** let these land.
 
 ```
-ok  CRWD shares == balance x 4.0 — 50.79103618352241
-ok  after +3 days the feed is REFUSED — stale, non-positive, incomplete round, or unreadable
-ok  positionValue refuses rather than pricing off a stale feed
+  ok   CRWD shares == balance x 4.0 — …
+  ok   after +3 days the feed is REFUSED — …
+  ok   positionValue refuses rather than pricing off a stale feed — …
 ```
 
-**Say:**
-> That's the whole product in one line. It returns nothing instead of returning something wrong.
-> And ASSAY never holds a key or blocks anything — it just publishes something executable and you
-> choose to read it.
+> It returns nothing instead of returning something wrong.
 
 ---
 
-## 1:40–1:50 — It settles, and you can check it
+## 1:28–1:46 — Where SERV Reasoning runs
+
+**Show:** the wall, scrolled to **Where SERV Reasoning runs**.
+
+**Say:**
+> SERV Reasoning does the one job here that needs judgement. When a subject asks for an on-chain
+> verdict about itself, it decides whether a verified finding is material against the subject's
+> own declared mandate: four ordered gates, and it never computes a number. Here's one recorded
+> verdict, on a test mandate. We measured it, and published what we found: the rubric was the
+> variable that mattered, not the BRAID header, and the perfect score is on the cases we tuned it
+> on.
+
+**On screen:** the recorded adjudication card, then the paragraph under it.
+
+---
+
+## 1:46–2:00 — It settles
 
 **Show:** the Basescan tab.
 
 **Say:**
-> A second agent paid for this over x402 — a cent, EIP-3009, zero ETH from the buyer. Between two
-> wallets I control, so it's plumbing, not demand, and the pricing page says exactly that.
+> And it settles. A buyer script paid a quarter for a contract audit over x402: an EIP-3009
+> signature, zero ETH from the buyer. Both wallets are mine, so that's plumbing, not demand.
 
-## 1:50–2:00 — Reproduce it yourself
-
-**Show:** a finding page, scrolled to the evidence block.
-
-**Say:**
-> Every citation is the raw return bytes, the contract, and the block. Here is the command that
-> reproduces it.
-
-**Run**, pasted from the page:
-
-```bash
-cast call 0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931 "uiMultiplier()" \
-  --rpc-url https://rpc.mainnet.chain.robinhood.com
-```
-
-**On screen:** `4000000000000000000`. Point at it, then at the same bytes on the page.
-
-> Same bytes. And when a citation *doesn't* reproduce, it goes in the withheld table with the
-> reason — because a verification claim is worth nothing if you only ever see the hits.
-
----
-
-## 1:42–1:50 — Close on the measurement, not the pitch
-
-**Show:** the README's SERV section, scrolled to the finding.
-
-**Say:**
-> One last thing. We A/B tested our sponsor's own reasoning layer instead of assuming it helped,
-> and we could not measure a benefit on this task. What we could measure is that every time we
-> blamed the model, the real problem was our own specification. That's in the repo with the
-> harness and the raw runs — including the numbers that don't flatter anybody.
-
-**End card:** `assay-steel.vercel.app` · `github.com/OoJae/assay` · `8453:95374`
+**End card:** `assay-steel.vercel.app` · `github.com/OoJae/assay` · `8453:95374` · *Independent;
+not affiliated with Robinhood or Chainlink.*
 
 ---
 
 ## Notes
 
-- **Do not** film the full 195-asset sweep. It takes minutes. `--symbols=CRWD` is the honest
-  short version and the output says exactly what scope it ran.
-- If the market is **open** when filming, the wall's banner says so and the stale-feed beat is
-  unavailable. Do not reach for it — the weekend staleness story is a past-tense observation and
-  the README frames it that way.
-- If a cited block has aged past RPC retention, the `cast` call errors. That is a **feature** and
-  a good thing to show if it happens: unchecked is not disproven, and the finding page says so.
-  Citations die **8–17 minutes** after the sweep that minted them (measured), and the host re-sweeps
-  every 8 minutes — so just reload the page, do not re-run a sweep locally.
-  ⚠️ `pnpm sweep --symbols=CRWD` will **not** refresh the wall: scoped runs write to
-  `data/findings.scoped.json` and deliberately leave the published board alone.
+- **Do not run a sweep for this video**, locally or scoped. The wall reads the host's board, which
+  re-sweeps every 8 minutes; a local run takes minutes and changes nothing on the wall.
+- If a cited block has aged past RPC retention, the `cast` call errors. That is a **feature** and a
+  good thing to show: unchecked is not disproven, and the finding page says so. Citations die
+  **8–17 minutes** after the sweep that minted them (measured), so reload the page for a fresh one.
+- If the market is **closed** when filming (Friday 20:00 to Sunday 20:00 New York time), the wall's
+  banner says so and feeds going past their heartbeat is expected. Do not narrate it as an
+  incident; that is the error this tool exists to catch.
 - Keep every claim on screen matched by something on screen. The one thing this project cannot
-  afford in a demo is a number nobody can check.
-- **`pnpm test:guard` needs `anvil`** (Foundry) and takes ~20s to fork. Run it once before
-  recording so the fork is warm and the dependency is not discovered on camera.
-- If asked "isn't this just a scanner" — the answer is the guard. A scanner tells you; this makes
+  afford in a demo is a number nobody can check, so no number is read aloud that the screen does
+  not show at that moment, and no balance is read aloud at all.
+- **`test-guard.ts` needs `anvil`** (Foundry). Run it once before recording so the dependency is
+  not discovered on camera.
+- If asked "isn't this just a scanner": the answer is the guard. A scanner tells you; this makes
   the mistake unavailable to anyone who calls it, and gives the number away for free.
