@@ -30,7 +30,7 @@ Everything here is for **Oluwademilade to post** from their own account.
        are false, so its first run on GitHub must be green before anything is posted.
 3. [ ] Every number marked **[refresh]** below re-read from the live wall
        (<https://assay-steel.vercel.app>) minutes before posting. They are written here from the
-       committed board, block 69605769 (2026-09-22 11:06 UTC), and the live board moves every 8
+       committed board, block 70789445 (2026-09-23 20:11 UTC), and the live board moves every 8
        minutes.
 4. [ ] Test counts re-run: `ASSAY_OFFLINE_ONLY=1 npx vitest run`, then `npx vitest run`. Written
        below as 453 offline in 22 files and 472 in all 25 files, from runs on 2026-09-23.
@@ -156,7 +156,7 @@ The problem: Robinhood Chain has 195 Stock Tokens (Robinhood's /rhj/assets regis
 **5/**
 
 ```text
-ASSAY sweeps all 195 every 8 minutes. On the board at block 69605769: 34 have a multiplier other than 1.0, 160 have no Chainlink feed, and 45 findings are published with 90/90 citations re-fetched byte-for-byte. [refresh]
+ASSAY sweeps all 195 every 8 minutes. On the board at block 70789445: 36 have a multiplier other than 1.0, 160 have no Chainlink feed, and 47 findings are published with 94/94 citations re-fetched byte-for-byte. [refresh]
 ```
 
 **6/**
@@ -252,7 +252,7 @@ One I caused while fixing another. nginx appends to X-Forwarded-For and my rate 
 **19/**
 
 ```text
-All 195 tokens do what the spec says. The exposure is on whoever reads them, so ASSAY reads the bytecode of the contracts holding them. On the board at block 69605769, not one resolved contract holding a divergent-multiplier token referenced uiMultiplier(). [refresh]
+All 195 tokens do what the spec says. The exposure is on whoever reads them, so ASSAY reads the bytecode of the contracts holding them. At block 70789445, none of the 47 holder contracts referenced uiMultiplier(); 15 are pools or custody, which never need it. [refresh]
 ```
 
 **20/**

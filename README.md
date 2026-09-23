@@ -75,17 +75,18 @@ Robinhood Stock Tokens implement **ERC-8056 scaled UI amounts**. A corporate act
 standard ERC-20 habits walk straight into.
 
 <!-- ASSAY:STATS -->
-Measured live on mainnet (chain 4663) at block `69605769`, 2026-09-22. **These numbers are
+Measured live on mainnet (chain 4663) at block `70789445`, 2026-09-23. **These numbers are
 generated from [`data/findings.json`](data/findings.json) by `pnpm readme:stats`, not typed in** —
 they were hardcoded once and drifted away from the artifact they described.
 
 | | count |
 |---|---|
-| Stock Tokens with `uiMultiplier() != 1.0` | **34 of 195** |
+| Stock Tokens with `uiMultiplier() != 1.0` | **36 of 195** |
 | Assets with **no Chainlink feed at all** | **160 of 195** (a chain note, not a finding — an absence cannot be proven by an `eth_call`) |
 | 24/5 equity feeds past their heartbeat | **0 of the 35 feeds read were stale, with the market open** — a stale feed during market hours is an incident, not a schedule |
-| Holder contracts with no `uiMultiplier()` reference | **25 of 66** (contract, token) pairs with code, out of 96 (counterparty, token) pairs examined, on a board from before distinct counting: AMM pools and custody that never need the multiplier are inside that count, so no dollar figure is drawn from it; none is named here or on the wall, so their 25 findings are not in the count below |
-| Findings published | **45**, with **90/90** citations re-fetched and byte-compared |
+| Holder contracts that hold divergent-multiplier tokens and do not reference `uiMultiplier()` | **12** distinct contracts holding **at least $289,021**, found among 66 recent counterparties (47 with code: 0 reference it, 15 are pools or custody, 5 are too small to hold valuation logic, 0 are proxies that could not be resolved, 15 held none at the block) — an aggregate only: none is named here or on the wall, so their 3 findings are not in the count below |
+| Pools and custody holding them (never need a share count) | **15** contracts (9 AMM pools, 1 pool manager, 1 custody or executor wallet, 4 distributors) holding **at least $2,215,103**, reported apart from the row above and never named |
+| Findings published | **47**, with **94/94** citations re-fetched and byte-compared |
 | Findings rejected by the verifier | **0** — rendered on the wall with the reason, because a verification claim is only worth something if the misses are visible |
 <!-- /ASSAY:STATS -->
 
@@ -119,12 +120,12 @@ on-chain and countable:
 | Measured on chain 4663 | |
 |---|---|
 | Priced Stock Tokens | **$124,769,444**: `totalSupply()` × Chainlink price, summed over the 35 feed-covered Stock Tokens, every read at block 70133497 (2026-09-23 01:50 UTC). A one-off measurement; no script regenerates it |
-| Contracts holding divergent-multiplier tokens that reference `uiMultiplier()` | **0** of those whose code could be resolved, on the committed board (block 69605769) |
+| Contracts holding divergent-multiplier tokens that reference `uiMultiplier()` | **0** of those whose code could be resolved, on the committed board (block 70789445) |
 
 So ASSAY audits the readers too. For each contract seen transferring a Stock Token whose on-chain
-multiplier is more than 0.2% from 1.0 — 9 of the 34 divergent assets on the committed board;
-scanning all 34 would not fit the 8-minute cadence, and a board written by the current sweep lists
-the ones left out (`integrators.assetsBelowCutoff`); the committed board predates that field — it
+multiplier is more than 0.2% from 1.0 — 9 of the 36 divergent assets on the committed board;
+scanning all 36 would not fit the 8-minute cadence, and the board lists the 27 left out
+(`integrators.assetsBelowCutoff`) — it
 fetches `eth_getCode` and checks for the `uiMultiplier()` selector: a byte-verifiable absence,
 re-runnable by the verifier like any other citation. Counts are of **distinct contracts**, at most
 40 classified per asset per sweep. (Boards before that change counted (contract, token) pairs; the
