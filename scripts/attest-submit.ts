@@ -103,6 +103,7 @@ const reuse = requestReuse(existing, account.address, agentId)
 if (reuse === 'collision') {
   refuse(`requestHash ${requestHash} already belongs to validator ${existing!.validator}, agent ${existing!.agentId}.`, 'Run attest:build again for a fresh request.')
 }
+let requestTx: `0x${string}` | null = null
 if (reuse === 'new') {
   console.log('submitting validationRequest…')
   const t = await wallet.writeContract({
@@ -110,6 +111,7 @@ if (reuse === 'new') {
     functionName: 'validationRequest', args: [account.address, agentId, requestURI, requestHash],
   })
   console.log(`  ${(await pub.waitForTransactionReceipt({ hash: t })).status} https://basescan.org/tx/${t}`)
+  requestTx = t
 } else {
   console.log('validationRequest already on-chain for this validator and agent — reusing it')
 }
@@ -125,16 +127,34 @@ const tx = await wallet.writeContract({
 const rc = await pub.waitForTransactionReceipt({ hash: tx })
 console.log(`  ${rc.status} https://basescan.org/tx/${tx}`)
 
-const check = (await pub.readContract({
-  address: VALIDATION_REGISTRY, abi: validationRegistryAbi,
-  functionName: 'getValidationStatus', args: [requestHash],
-})) as readonly [`0x${string}`, bigint, number, `0x${string}`, string, bigint]
+/**
+ * Read back at the receipt's own block, and retry. The first submission under 95374 read the status
+ * from the load-balanced public RPC a moment after its receipt, reached a node that had not seen the
+ * block yet, and printed an all-zero responseHash and "NO" for a response that was on-chain and
+ * correct. Pinned to rc.blockNumber, a lagging node errors or is retried instead of answering zeros.
+ */
+type Status = readonly [`0x${string}`, bigint, number, `0x${string}`, string, bigint]
+async function readBack(): Promise<Status> {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const s = (await pub.readContract({
+        address: VALIDATION_REGISTRY, abi: validationRegistryAbi,
+        functionName: 'getValidationStatus', args: [requestHash], blockNumber: rc.blockNumber,
+      })) as Status
+      if (s[3] === responseHash || attempt >= 5) return s
+    } catch (e) {
+      if (attempt >= 5) throw e
+    }
+    await new Promise((r) => setTimeout(r, 2_000))
+  }
+}
+const check = await readBack()
 console.log(`\non-chain responseHash ${check[3]}`)
 console.log(`matches published     ${check[3] === responseHash ? 'YES' : 'NO'}`)
 
 // Keyed by requestHash: data/attestation-self.json is the record of the 95265 attestation and stays.
 const record = `data/attestation-self-${requestHash}.json`
 writeFileSync(record, JSON.stringify(
-  { agentId: st.agentId, tag: pending.tag, score: pending.score, requestHash, requestURI, responseURI, responseHash, responseTx: tx },
+  { agentId: st.agentId, tag: pending.tag, score: pending.score, requestHash, requestURI, responseURI, responseHash, requestTx, responseTx: tx },
   null, 2))
 console.log(`recorded in ${record}`)

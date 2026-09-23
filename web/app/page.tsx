@@ -16,12 +16,14 @@ const IDENTITY_TX = '0x019ecbbcfe12f646d977c3a7d778d147d91cac9d6a348cc93a03be6d8
 /** Settled to 0x6328…7911, the current payTo. */
 const CONTRACT_AUDIT_TX = '0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2'
 /**
- * Both issued under identity 8453:95265, whose signing key was lost. They stay true and verifiable,
- * but shown unlabelled beside 95374 they read as the current identity's, and a judge clicking
- * through found a different agent id and wallet.
+ * Settled to the 95265 wallet, whose signing key was lost. It stays true and verifiable, but shown
+ * unlabelled beside 95374 it read as the current identity's, and a judge clicking through found a
+ * different agent id and wallet.
  */
 const SETTLED_TX_95265 = '0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b'
-const ATTEST_TX_95265 = '0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669'
+/** The self-attestation re-issued under 95374; the one under 95265 stays on-chain as history. */
+const ATTEST_TX_95374 = '0x885d978810fbfccace75db1116897791483624c6ac68573fce96ef7a4dcaf1ee'
+const ATTEST_DOC_95374 = '/attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.json'
 
 const REASON_COPY: Record<string, string> = {
   mismatch: 'A citation contradicted chain state. This is the only reason that impugns the finding.',
@@ -332,10 +334,10 @@ export default async function Home() {
               </div>
             </div>
             <div className="proof">
-              <div className="lbl">Self-attestation · under frozen 8453:95265</div>
+              <div className="lbl">Self-attestation · 8453:95374 · self-issued</div>
               <div className="val">
-                <a href={`https://basescan.org/tx/${ATTEST_TX_95265}`}>ValidationRegistry</a> ·{' '}
-                <a href={`${REPO}#on-chain-proofs`}>why 95265</a>
+                <a href={`https://basescan.org/tx/${ATTEST_TX_95374}`}>ValidationRegistry</a> ·{' '}
+                <a href={ATTEST_DOC_95374}>document</a> · <a href={`${REPO}#on-chain-proofs`}>earlier one under 95265</a>
               </div>
             </div>
           </div>

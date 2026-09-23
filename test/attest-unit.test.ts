@@ -653,9 +653,12 @@ describe('the ERC-8004 registration file (web/public/agent-card.json)', () => {
     }
   })
 
-  it('says the self-attestation belongs to frozen 95265, and disclaims affiliation', () => {
-    expect(card.erc8004.selfAttestation.agentId).toBe('8453:95265')
-    expect(card.erc8004.selfAttestation.note).toMatch(/FROZEN identity 95265/)
+  it('names the 95374 self-attestation, keeps frozen 95265 as history, and disclaims affiliation', () => {
+    expect(card.erc8004.selfAttestation.agentId).toBe('8453:95374')
+    expect(card.erc8004.selfAttestation.note).toMatch(/Self-issued/)
+    expect(card.erc8004.selfAttestation.responseURI).toContain(`/attestations/95374/${card.erc8004.selfAttestation.requestHash}.json`)
+    expect(card.erc8004.selfAttestationHistory[0].agentId).toBe('8453:95265')
+    expect(card.erc8004.selfAttestationHistory[0].note).toMatch(/FROZEN identity 95265/)
     expect(card.disclaimer).toMatch(/not affiliated with, endorsed by, or officially connected with Robinhood Markets, Inc\./)
     expect(card.description).toMatch(/not affiliated with Robinhood/)
   })

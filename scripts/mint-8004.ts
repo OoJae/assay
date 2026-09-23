@@ -11,10 +11,12 @@ import { mergeIdentityState, type Erc8004State } from '../src/attest/registry.js
 /**
  * Mint ASSAY's ERC-8004 identity DIRECTLY against the IdentityRegistry.
  *
- * Why not client.erc8004.registerOnChain()? The provisioned workflow carries a PLACEHOLDER
- * erc8004AgentId of 999999918. registerOnChain decides new-mint vs re-deploy from that field, so
- * it takes the re-deploy path and reverts calling tokenURI(999999918) on a token that does not
- * exist. Minting directly sidesteps the stale platform state entirely.
+ * Why not client.erc8004.registerOnChain()? When 95265 was minted the provisioned workflow carried
+ * a PLACEHOLDER erc8004AgentId of 999999918. registerOnChain decides new-mint vs re-deploy from
+ * that field, so it took the re-deploy path and reverted calling tokenURI(999999918) on a token
+ * that does not exist. (By 2026-09-23 the platform reported another project's id, 8453:95396, for
+ * nearly every listing.) Minting directly sidesteps the platform state entirely, and
+ * registerOnChain must never be pointed at 95374: it would replace the self-hosted card.
  *
  * The agent card is self-hosted rather than pinned to IPFS through the platform: one less
  * dependency, and the URI resolves to a domain we control and can update.

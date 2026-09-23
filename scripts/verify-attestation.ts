@@ -15,9 +15,11 @@ import { hashBytes, publicBase, responseEventAt, validationStatus } from '../src
  * location it chose rather than the one on-chain; and it hashed Response.text(), which strips a
  * UTF-8 BOM, so it could pass bytes a raw-byte verifier would reject.
  *
- *   pnpm verify:attestation [requestHash]    defaults to the self-attestation under frozen 95265
+ *   pnpm verify:attestation [requestHash]    defaults to the self-attestation under 95374
  */
-const REQUEST_HASH = '0x18cdff93e8da064a74bc7c32b0895e3ecf55f060f507ca60b341bb16deb18078' as const
+const REQUEST_HASH = '0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb' as const
+/** The earlier self-attestation, under frozen 95265. Still on-chain, still verifiable. */
+export const REQUEST_HASH_95265 = '0x18cdff93e8da064a74bc7c32b0895e3ecf55f060f507ca60b341bb16deb18078' as const
 
 export async function verifyAttestation(requestHash: `0x${string}` = REQUEST_HASH) {
   const pub = publicBase()

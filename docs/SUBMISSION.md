@@ -79,7 +79,7 @@ Links used throughout:
 - settled payment, $0.25 contract audit, to the current payTo `0x6328…7911`: <https://basescan.org/tx/0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2>
 - settled payment, $0.01, to the frozen 95265 wallet: <https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b>
 - ERC8056Guard on 4663: <https://robinhoodchain.blockscout.com/address/0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648> (Sourcify exact match)
-- self-attestation, under frozen identity 95265: <https://basescan.org/tx/0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669>
+- self-attestation under 8453:95374 (self-issued, owner = validator): <https://basescan.org/tx/0x885d978810fbfccace75db1116897791483624c6ac68573fce96ef7a4dcaf1ee>
 - identity 8453:95374, mint tx: <https://basescan.org/tx/0x019ecbbcfe12f646d977c3a7d778d147d91cac9d6a348cc93a03be6d80e8356f>
   and the card it points at, <https://assay-steel.vercel.app/agent-card.json>. Not 8004scan: it
   has never parsed the card and shows a nameless "Agent #95374".

@@ -184,15 +184,29 @@
     ],
     "note": "95374 is canonical. 95265 is FROZEN: its signing key was lost when a local .env was overwritten with a copy of .env.example, so it can never be updated again. Everything already published under it \u2014 this card, the self-attestation it holds, and the x402 payments made to its wallet \u2014 remains true and verifiable. 95266 was an accidental duplicate of 95265. All three resolve to this same card, so a reader of any of them lands on the correct identity rather than concluding one is an impostor.",
     "selfAttestation": {
-      "agentId": "8453:95265",
-      "note": "The existing self-attestation was issued under FROZEN identity 95265, by its validator key 0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5, before 95374 existed. It is self-issued (subject and validator are the same key) and is a disclosure, not third-party assurance. Canonical 95374 carried no validation of its own when this card was written.",
+      "agentId": "8453:95374",
+      "note": "Issued by 0x6328f2fE483922721D94b33eE99e9938Da3b7911, the owner of 95374, about 95374 itself. Self-issued (subject and validator are the same key), so it is a disclosure, not third-party assurance. The earlier self-attestation under frozen 95265 is kept below as history.",
       "validationRegistry": "eip155:8453:0x8004Cc8439f36fd5F9F049D9fF86523Df6dAAB58",
-      "requestHash": "0x18cdff93e8da064a74bc7c32b0895e3ecf55f060f507ca60b341bb16deb18078",
-      "responseURI": "https://assay-steel.vercel.app/attestations/95265.json",
-      "responseTx": "https://basescan.org/tx/0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669",
+      "requestHash": "0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb",
+      "requestURI": "https://assay-steel.vercel.app/attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.request.json",
+      "responseURI": "https://assay-steel.vercel.app/attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.json",
+      "requestTx": "https://basescan.org/tx/0x885769e81d7fb3218cf0e0659e57f1bac48469aabf950222023b14ecb47e7235",
+      "responseTx": "https://basescan.org/tx/0x885d978810fbfccace75db1116897791483624c6ac68573fce96ef7a4dcaf1ee",
       "tag": "CLEAN",
       "score": 100
-    }
+    },
+    "selfAttestationHistory": [
+      {
+        "agentId": "8453:95265",
+        "note": "Issued under FROZEN identity 95265, by its validator key 0x0C3A19bEa92480A978f2A358E8E1e87b9DAD14B5, before 95374 existed. Self-issued (subject and validator are the same key), so a disclosure, not third-party assurance. Superseded by the 95374 self-attestation above; kept because it is still on-chain and still verifies.",
+        "validationRegistry": "eip155:8453:0x8004Cc8439f36fd5F9F049D9fF86523Df6dAAB58",
+        "requestHash": "0x18cdff93e8da064a74bc7c32b0895e3ecf55f060f507ca60b341bb16deb18078",
+        "responseURI": "https://assay-steel.vercel.app/attestations/95265.json",
+        "responseTx": "https://basescan.org/tx/0xc3809107f422400f8a8324a4c1f5937fbeca3e3c181fbce6bf32da5a9441f669",
+        "tag": "CLEAN",
+        "score": 100
+      }
+    ]
   },
   "disclaimer": "ASSAY is an independent project. It is not affiliated with, endorsed by, or officially connected with Robinhood Markets, Inc., its affiliates, or Chainlink Labs. \"Robinhood Chain\" and \"Chainlink\" are trademarks of their respective owners and are used only to identify the network and data sources. ASSAY's output is an automated, informational reading of public blockchain state, provided as is and without warranty. It is not investment, financial, legal or tax advice, it is not a security audit, and a finding is not a statement that any named party acted wrongly. Verify independently before acting."
 }

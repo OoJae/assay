@@ -1,0 +1,111 @@
+# External monitor for the live service, with no account beyond the GitHub one the repo already has.
+#
+# The board froze for four hours on 2026-09-23 (a publish guard latched) and nothing noticed: the
+# refusal exited "successfully" and the wall said STALE SNAPSHOT to whoever happened to look. This
+# probes the public surfaces from outside every 15 minutes. One incident opens one issue that
+# mentions the owner (GitHub emails it) and fails the run; a change in the problems adds a comment;
+# recovery closes the issue. It does not page on every tick.
+#
+# Caveats, from GitHub's own documentation: scheduled runs can start late under load, and in a public
+# repository they are disabled after 60 days without repository activity. A monitor that has been
+# disabled fails silently, so the RUNBOOK lists re-enabling it.
+name: Monitor
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FEED: https://sonar.my.id/assay-mcp/findings.json
+      SWEEP: https://sonar.my.id/assay-mcp/health/sweep
+      WALL: https://assay-steel.vercel.app/
+      # The sweep publishes every 8 minutes; the MCP server calls a board stale past 1200 s too.
+      MAX_AGE_SECONDS: '1200'
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Probe the public surfaces
+        run: |
+          problems=problems.txt; : > "$problems"
+          fetch() { curl -s --retry 2 --max-time 30 -o body.out -w '%{http_code}' "$1" || echo 000; }
+
+          code=$(fetch "$FEED")
+          if [ "$code" != 200 ]; then
+            echo "findings.json returned HTTP $code" >> "$problems"
+          else
+            observed=$(jq -r '.observedAt // empty' body.out)
+            count=$(jq -r '(.findings // []) | length' body.out)
+            if [ -z "$observed" ]; then
+              echo "findings.json carries no observedAt" >> "$problems"
+            else
+              age=$(( $(date -u +%s) - $(date -u -d "$observed" +%s) ))
+              if [ "$age" -gt "$MAX_AGE_SECONDS" ]; then
+                echo "the published board is $(( age / 60 )) minutes old; the sweep publishes every 8" >> "$problems"
+              fi
+            fi
+            [ "${count:-0}" -gt 0 ] || echo "findings.json has no findings" >> "$problems"
+          fi
+
+          # A single refused run is normal operation (the guard holds a board for up to 45 minutes),
+          # and a refused board ages past the check above anyway, so a 503 is reported, not alerted on.
+          code=$(fetch "$SWEEP")
+          case "$code" in
+            200) ;;
+            503) echo "health/sweep 503: $(jq -c '.sweep.problems // .problems // empty' body.out 2>/dev/null)" >> "$GITHUB_STEP_SUMMARY" ;;
+            *) echo "health/sweep returned HTTP $code" >> "$problems" ;;
+          esac
+
+          code=$(fetch "$WALL")
+          if [ "$code" != 200 ]; then
+            echo "the wall returned HTTP $code" >> "$problems"
+          elif grep -q 'LIVE FEED UNREACHABLE' body.out; then
+            echo "the wall cannot reach the live feed and is showing its committed fallback" >> "$problems"
+          fi
+
+          if [ -s "$problems" ]; then
+            { echo '### Problems'; sed 's/^/- /' "$problems"; } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'All public surfaces healthy.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Open, update or close the incident issue
+        if: always()
+        run: |
+          label=sweep-monitor
+          gh label create "$label" --color B60205 --description 'Opened by the monitor workflow' 2>/dev/null || true
+          open=$(gh issue list --label "$label" --state open --json number --jq '.[0].number // empty')
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [ -s problems.txt ]; then
+            # Fingerprint the kind of problem, not its numbers, so a board that keeps ageing is one
+            # incident rather than a comment every 15 minutes.
+            fp=$(sed 's/[0-9]\+/N/g' problems.txt | sha256sum | cut -c1-12)
+            list=$(sed 's/^/- /' problems.txt)
+            if [ -z "$open" ]; then
+              gh issue create --label "$label" --title 'Live service unhealthy' --body "$(printf '@%s the monitor found:\n\n%s\n\nRun: %s\n\nRunbook: deploy/RUNBOOK.md, "Checks".\n\n<!-- fp:%s -->' "${{ github.repository_owner }}" "$list" "$run_url" "$fp")"
+            else
+              last=$(gh issue view "$open" --json body,comments --jq '[.body] + [.comments[].body] | last')
+              if ! grep -q "fp:$fp" <<<"$last"; then
+                gh issue comment "$open" --body "$(printf 'The problems changed:\n\n%s\n\nRun: %s\n\n<!-- fp:%s -->' "$list" "$run_url" "$fp")"
+              fi
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Recovered: every public surface passed. Run: $run_url"
+          fi
+
+      - name: Fail the run while unhealthy
+        run: |
+          if [ -s problems.txt ]; then cat problems.txt; exit 1; fi

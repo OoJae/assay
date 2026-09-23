@@ -1,0 +1,11 @@
+{
+  "agentId": "95374",
+  "tag": "CLEAN",
+  "score": 100,
+  "requestHash": "0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb",
+  "requestURI": "https://assay-steel.vercel.app/attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.request.json",
+  "responseURI": "https://assay-steel.vercel.app/attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.json",
+  "responseHash": "0x3614b0950c8135543804bc0138b5e48ee6deade0dbd900371220502dc9c528c3",
+  "requestTx": "0x885769e81d7fb3218cf0e0659e57f1bac48469aabf950222023b14ecb47e7235",
+  "responseTx": "0x885d978810fbfccace75db1116897791483624c6ac68573fce96ef7a4dcaf1ee"
+}

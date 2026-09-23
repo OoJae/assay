@@ -152,9 +152,16 @@ host runs code from before this endpoint and Streamable HTTP existed (it ran `9c
 
 `/health` stays 200 while the MCP process serves, so a stale board does not make the MCP look down.
 `/health/sweep` answers **503** when the board is more than 20 minutes old or the last sweep refused
-to publish, which is what an external monitor should watch. None is configured yet: point a free
-HTTP monitor with email alerts (UptimeRobot, Healthchecks.io) at
-`https://sonar.my.id/assay-mcp/health/sweep`.
+to publish.
+
+**The external monitor** is `.github/workflows/monitor.yml`, so it needs no account beyond GitHub.
+Every 15 minutes it checks that `/findings.json` is at most 20 minutes old and non-empty, that
+`/health/sweep` answers (a 503 is noted in the run summary, not alerted on, since one refusal is
+normal and a sustained one ages the board past the first check), and that the wall renders without
+`LIVE FEED UNREACHABLE`. An incident opens one `sweep-monitor` issue mentioning the owner and fails
+the run; a change in the problems adds a comment; recovery closes the issue. Run it by hand with
+`gh workflow run monitor`. GitHub disables scheduled workflows in a public repo after 60 days without
+activity, and a disabled monitor fails silently: re-enable it from the Actions tab.
 
 **Why a sweep refuses.** `scripts/sweep.ts` compares each new board with the one it would replace
 (`src/sweep/guard.ts`) and exits 2 without publishing when more than 10% of assets could not be
