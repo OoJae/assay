@@ -1,0 +1,60 @@
+{
+  "schema": "assay-self-attestation-v2",
+  "subject": {
+    "agentId": "95374",
+    "name": "ASSAY Valuation Integrity",
+    "agentURI": "https://assay-steel.vercel.app/agent-card.json"
+  },
+  "validator": {
+    "address": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+    "agentId": "95374"
+  },
+  "selfIssued": true,
+  "independence": "NONE. The subject and the validator are the same key, so this carries no independent assurance whatsoever. It is published to exercise the solicited-attestation mechanism against a subject that consented — ASSAY — and to demonstrate the rule that ASSAY grades itself before it grades anyone else. Treat it as a disclosure, not as a rating.",
+  "basis": "documented-self-assessment",
+  "tag": "CLEAN",
+  "score": 100,
+  "methodologyVersion": "assay-rh-v0.4.0",
+  "assessment": [
+    {
+      "question": "Does ASSAY itself ever present a raw ERC-20 balance as a share count — the defect it grades?",
+      "finding": "No. truePosition() returns rawBalance, tokenUnits and shareEquivalents as three separate fields, computes shareEquivalents as tokenUnits * uiMultiplier/1e18, and never labels a raw balance as shares on any surface.",
+      "source": "src/lib/position.ts"
+    },
+    {
+      "question": "Does ASSAY ever mix an off-chain share price with an on-chain token quantity?",
+      "finding": "No. positionValueUsd is tokenUnits * the Chainlink TOKEN price, which is already multiplier-adjusted. The off-chain REST quote is used only to quantify the cross-surface gap and is disclosed under offChainSources, outside the byte-verified guarantee.",
+      "source": "src/lib/position.ts, src/sweep/detect.ts"
+    },
+    {
+      "question": "Does ASSAY refuse when a check it relies on did not complete?",
+      "finding": "Yes. A failed feed read, a failed decimals() read, a failed oraclePaused() read, a non-positive answer and an incomplete round each set refusalReason and drop confidence below high. A previous version returned confidence \"high\" with refusalReason null on a failed read; that is fixed and covered by an offline test matrix.",
+      "source": "src/lib/position.ts, test/position.test.ts"
+    },
+    {
+      "question": "Is every citation ASSAY publishes actually re-fetched and byte-compared?",
+      "finding": "Yes, and verification is fused into the sweep at each asset's own block because this RPC prunes state within minutes. The corpus below records the counts for this run. Citations that do not reproduce are withheld with a reason, never softened.",
+      "source": "src/verify/index.ts, scripts/verify-attestation.ts"
+    },
+    {
+      "question": "Does ASSAY assert a cause it has not established?",
+      "finding": "Not any longer, in the two places it did. Cohort market-closure conclusions now require an 80% read quorum and report ORACLE_STALE_INDETERMINATE otherwise, and the cross-surface residual is reported as an observation unless it is small relative to the effect.",
+      "source": "src/sweep/detect.ts"
+    }
+  ],
+  "corpus": {
+    "sweptAtBlock": "70783470",
+    "assetsScanned": 3,
+    "findingsPublished": 5,
+    "citationsChecked": 10,
+    "citationsReproduced": 10,
+    "findingsWithheld": 0
+  },
+  "limitations": [
+    "SELF-ISSUED. The subject and the validator are the same key. This is a disclosure, not assurance.",
+    "The tag is a documented self-assessment, not an output of the SERV adjudicator.",
+    "The corpus covers a three-symbol run, not the full 195-asset sweep published on the wall.",
+    "Citations are re-fetchable only while this RPC still serves the cited block — roughly 5k to 20k blocks at ~100ms each. Past that they are unchecked here, which is not the same as false."
+  ],
+  "issuedAt": "2026-09-23T20:01:16.000Z"
+}

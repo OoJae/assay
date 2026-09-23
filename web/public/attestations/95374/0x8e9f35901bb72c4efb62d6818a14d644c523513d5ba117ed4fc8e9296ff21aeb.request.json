@@ -1,0 +1,9 @@
+{
+  "schema": "assay-validation-request-v1",
+  "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432",
+  "agentId": "95374",
+  "validator": "0x6328f2fE483922721D94b33eE99e9938Da3b7911",
+  "kind": "self-attestation",
+  "rules": "https://github.com/OoJae/assay#publication-ethics",
+  "issuedAt": "2026-09-23T20:01:16.000Z"
+}

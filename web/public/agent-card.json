@@ -2,7 +2,7 @@
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "name": "ASSAY Valuation Integrity",
   "description": "Independent valuation-integrity audit for agents that value or hold Stock Tokens on Robinhood Chain (EIP-155 chain 4663). Detects ERC-8056 corporate-action multiplier defects, stale Chainlink feeds and cross-surface price mixing, and audits the CONTRACTS holding Stock Tokens for whether they can call uiMultiplier() at all \u2014 resolving proxies before any verdict. Every published citation is re-fetched from chain state and byte-compared before publication. Also publishes a free, ownerless on-chain guard that returns the corrected share count or refuses. ASSAY never moves capital and has no control path over anything it grades. Paid over x402 in USDC on Base: true position $0.01, named contract audit $0.25. Independent; not affiliated with Robinhood or Chainlink. Informational only, not financial advice.",
-  "image": "https://assay-steel.vercel.app/icon.svg",
+  "image": "https://assay-steel.vercel.app/og",
   "services": [
     {
       "name": "http",
@@ -154,6 +154,9 @@
     }
   ],
   "supportedTrust": [
+    "reputation"
+  ],
+  "supportedTrusts": [
     "reputation"
   ],
   "x402support": true,
