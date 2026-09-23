@@ -9,6 +9,7 @@ export const SERV_SOURCES = {
   ab: 'data/braid-ab-assay-methodology-v3.0.0-assay-rh-v0.3.0-2026-09-22T18-56-28-211Z.json',
   injection: 'data/injection-trials-assay-methodology-v3.0.0-assay-rh-v0.3.0-2026-09-22T19-07-05-773Z.json',
   hard: 'data/hard-trials-assay-methodology-v3.0.0-assay-rh-v0.3.0.json',
+  heldout: 'data/heldout-trials-assay-methodology-v3.0.0-assay-rh-v0.4.0-2026-09-23T20-41-02-788Z.json',
 } as const
 
 /** One recorded adjudication (the BRAID-on arm of the A/B run). */
@@ -29,6 +30,16 @@ export const SERV_EXAMPLE = {
 
 /** Prompt-injection trials: hostile mandates, both guard arms, summed. */
 export const SERV_INJECTION = { payloads: 5, calls: 40, withheld: 37, compromised: 0, guardTriggered: 0 } as const
+
+/**
+ * The pre-registered held-out set (SHARE + CROSS fixtures), per-case modal accuracy per arm, and
+ * how many BRAID-on calls came back as a refusal instead of a verdict.
+ */
+export const SERV_HELDOUT = {
+  cases: 14,
+  braidOff: { correct: 13, lowerPct: 69, upperPct: 99 },
+  braidOn: { correct: 1, refused: 35, calls: 56 },
+} as const
 
 /** The hard set at rubric v3: correct verdicts per arm. */
 export const SERV_HARD = { correct: 24, attempted: 24 } as const

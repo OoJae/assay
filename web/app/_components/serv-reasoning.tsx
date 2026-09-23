@@ -1,4 +1,4 @@
-import { SERV_EXAMPLE, SERV_HARD, SERV_INJECTION, SERV_SOURCES } from '@/lib/serv-example'
+import { SERV_EXAMPLE, SERV_HARD, SERV_HELDOUT, SERV_INJECTION, SERV_SOURCES } from '@/lib/serv-example'
 import { REPO } from '@/lib/site'
 
 /**
@@ -71,7 +71,11 @@ export function ServReasoning() {
         no trigger in any of the {SERV_INJECTION.calls}; the refusals were the adjudicator&apos;s own (
         <a href={`${REPO}/blob/main/${SERV_SOURCES.injection}`}>artifact</a>). The current rubric scored{' '}
         {SERV_HARD.correct}/{SERV_HARD.attempted} per arm on the hard set, but its gate 4 was tightened
-        against that same set, so that is a tuning-set result, not a held-out one.{' '}
+        against that same set, so that is a tuning-set result. On {SERV_HELDOUT.cases} held-out mandates,
+        written blind and pre-registered, BRAID off got {SERV_HELDOUT.braidOff.correct} right (95%
+        interval {SERV_HELDOUT.braidOff.lowerPct}–{SERV_HELDOUT.braidOff.upperPct}%); BRAID on refused{' '}
+        {SERV_HELDOUT.braidOn.refused} of its {SERV_HELDOUT.braidOn.calls} calls (
+        <a href={`${REPO}/blob/main/${SERV_SOURCES.heldout}`}>artifact</a>).{' '}
         <a href={`${REPO}#what-we-measured-about-serv-and-what-we-found`}>What we measured, in full</a>.
       </p>
     </section>

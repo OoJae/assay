@@ -349,8 +349,8 @@ classification task, which is a thing you can act on.
    most damaging error this tool can make. Adding 4a/4b/4c took both arms to 100% **on the same six
    mandates those clauses were written to fix**. That is a tuning-set result: it shows the rubric
    now handles the cases it was edited for, not how it does on a mandate nobody has seen. A
-   held-out set, written and labelled before any run, is the measurement that would say that, and
-   it has not been run.
+   held-out set, written and labelled before any run, is the measurement that would say that. It
+   has now run: see [the held-out result](#the-held-out-result) below.
 
 ### What this is a finding *about*
 
@@ -390,6 +390,7 @@ compiled program, and variance between compiles was never sampled.
 | **v3** | **v0.3.0** | **hard set** | **6 × 4** | **24/24 = 100% [86–100%]** | **24/24 = 100% [86–100%]** |
 | **v3** | **v0.3.0** | **easy fixture** | **1 × 16** | **15/16 = 94% [72–99%]** · 0 unsafe | **16/16 = 100% [81–100%]** · 0 unsafe |
 | **v3** | **v0.3.0** | **prompt injection** | **5 × 4** | **0/20 compromised [0–16%]** · 17/20 recognised | **0/20 compromised [0–16%]** · 20/20 recognised |
+| **v3** | **v0.4.0** | **held-out, pre-registered (SHARE + CROSS)** | **14 × 4** | 1/14 cases [1–31%] · **35 of 56 calls refused** | **13/14 cases = 93% [69–99%]** · 49/56 draws |
 
 Three corrections to earlier versions of this table. The v1 BRAID-off arm completed 6 runs, not 8.
 The v2 hard-set row used to read "2 independent samples, 17/23 = 74% vs 20/23 = 87%": the second
@@ -397,6 +398,34 @@ sample was overwritten before it was committed, so only the first is shown, and
 `data/hard-trials-v2-run2.json`, despite its name, is an incomplete **v3** run (6/6 vs 6/6). And the
 hard set has eight cases: the two about stale feeds need a live market closure and have never run,
 so every hard-set row is six cases, and the rubric's 7-days-versus-86,400-seconds clause is untested.
+
+### The held-out result
+
+Twenty mandates were written from the rubric's **definitions alone**, never its worked examples, the
+tuning cases or the injection payloads, and labelled by two further agents who could not see the
+writer's labels. All three agreed on every case, and the set was committed before the first call
+([`src/adjudicate/heldout/`](src/adjudicate/heldout/): the guide, the protocol, the frozen fixtures;
+pre-registration `b5ca947`). The rubric is pinned by hash in the harness, and an offline test fails
+if it changes, so it cannot be tuned against this set without CI saying so.
+
+On the 14 cases whose fixtures exist (the six stale-feed cases wait for a weekend board, under a
+capture rule fixed in advance), **BRAID off got 13 of 14 cases right** [69–99%], 49 of 56 draws,
+with no errors ([`heldout-trials-assay-methodology-v3.0.0-assa…`](data/heldout-trials-assay-methodology-v3.0.0-assay-rh-v0.4.0-2026-09-23T20-41-02-788Z.json)). Its one missed case is the kind this tool most
+needs to catch: a card labelled "Shares held" computed as `balance × uiMultiplier / 1e18` and shown
+unscaled, which inflates the count by 10¹⁸. The model called it `BENIGN` in all four draws, so a
+units error inside a stated formula can still get past gate 4c. No scored case was over-accused; one
+draw of 56 returned `MATERIAL_MISSTATEMENT` on the mandate that presents a pre-decided rating, and
+none was talked into `BENIGN`.
+
+**BRAID on mostly did not answer.** 35 of its 56 calls came back as a refusal, `"I can't share
+that."`, with no usage recorded, so only 1 of 14 cases had a modal verdict; over the 21 calls that
+did answer, 15 were right. That is new. Every one of the 122 calls in the v0.3.0 rows returned a
+verdict and usage, and a control re-run today of the easy fixture BRAID answered 16 times on
+2026-09-22 refused 1 of 2 ([`braid-trials-assay-methodology-v3.0.0-assay-…`](data/braid-trials-assay-methodology-v3.0.0-assay-rh-v0.4.0-2026-09-23T21-03-06-310Z.json)). So the BRAID-on figure
+measures a change in SERV's BRAID layer between those two days, not these mandates, and it is
+reported rather than retried away. The adjudicator used to turn an unparseable reply into a
+synthetic `WITHHELD`; it now records a refusal as an error, kept in every denominator, which is the
+only reason this is visible at all.
 
 Median latency with BRAID on was **18.9s vs 7.2s** off on the current easy fixture (21.6s vs 4.2s
 on the v2 easy fixture). The single-run A/B, re-run on current text, now returns `CONTROL_WEAKNESS`
@@ -455,6 +484,8 @@ pnpm trials --n=16  # N trials per arm  -> data/braid-trials-<rubric>-<finding-t
 pnpm inject --n=4   # prompt injection  -> data/injection-trials-<rubric>-<finding-text>-<run>.json
 pnpm hard --n=4     # hard case set     -> data/hard-trials-<rubric>-<finding-text>-<run>.json
 pnpm hard --n=4 --resume=<path>         # continue that run; never a committed file
+pnpm heldout --fixtures=SHARE,CROSS     # the pre-registered held-out set -> data/heldout-trials-<rubric>-<finding-text>-<run>.json
+npx tsx scripts/heldout-capture-stale.ts # Sat 26 Sep after 20:00 UTC: the STALE fixture, by the pre-registered rule
 ```
 
 The harness is reusable and MIT-licensed. Point it at a different rubric or model and it will tell
@@ -484,8 +515,8 @@ pnpm sweep --symbols=CRWD,NVDA,SPY       # scoped: writes data/findings.scoped.j
                                          # published board; --publish replaces it, and the guard
                                          # refuses a narrower board unless --force
 pnpm readme:stats             # regenerate this README's numbers from the artifact (--print: stdout only)
-pnpm test                     # all 472 tests in 25 files (19 of them, in 3 files, hit live chain state)
-pnpm test:offline             # 453 tests in 22 files, no network at all — what CI runs on every push
+pnpm test                     # all 511 tests in 27 files (20 of them, in 3 files, hit live chain state)
+pnpm test:offline             # 491 tests in 24 files, no network at all — what CI runs on every push
 pnpm typecheck
 
 npx tsx scripts/true-position.ts CRWD <holder>   # any address holding CRWD

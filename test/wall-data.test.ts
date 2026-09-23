@@ -26,7 +26,7 @@ import { PAID_ENDPOINTS as SRC_ENDPOINTS, PAY_TO as SRC_PAY_TO } from '../src/li
 import { NAMED_INTEGRATOR_CLASS as SRC_NAMED_CLASS } from '../src/lib/redact.js'
 import { feedForSymbol, type ChainlinkFeed } from '../src/lib/sources.js'
 import { pricedSymbols, tickerOfFeed } from '../web/lib/feeds.js'
-import { SERV_EXAMPLE, SERV_HARD, SERV_INJECTION, SERV_SOURCES } from '../web/lib/serv-example.js'
+import { SERV_EXAMPLE, SERV_HARD, SERV_HELDOUT, SERV_INJECTION, SERV_SOURCES } from '../web/lib/serv-example.js'
 import { WalletCheckError, checkWallet, fmtUnits, parseHolder, toView, type GuardReader } from '../web/lib/wallet-check.js'
 
 /**
@@ -466,6 +466,21 @@ describe('the wall’s copies of values owned by src/', () => {
     for (const arm of ['braidOn', 'braidOff']) {
       expect({ correct: hard.summary[arm].correct, attempted: hard.summary[arm].attempted }).toEqual(SERV_HARD)
     }
+
+    const ho = JSON.parse(readFileSync(SERV_SOURCES.heldout, 'utf8'))
+    const pct = (x: number) => Math.round(x * 100)
+    expect(ho.kind).toBe('heldout-trials')
+    expect(ho.summary.braidOff.headline.cases).toBe(SERV_HELDOUT.cases)
+    expect({
+      correct: ho.summary.braidOff.headline.correct,
+      lowerPct: pct(ho.summary.braidOff.headline.wilson95.lower),
+      upperPct: pct(ho.summary.braidOff.headline.wilson95.upper),
+    }).toEqual(SERV_HELDOUT.braidOff)
+    expect({
+      correct: ho.summary.braidOn.headline.correct,
+      refused: ho.summary.braidOn.perDraw.errored,
+      calls: ho.summary.braidOn.perDraw.attempted,
+    }).toEqual(SERV_HELDOUT.braidOn)
   })
 })
 

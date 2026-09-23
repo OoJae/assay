@@ -33,7 +33,7 @@ Everything here is for **Oluwademilade to post** from their own account.
        committed board, block 70789445 (2026-09-23 20:11 UTC), and the live board moves every 8
        minutes.
 4. [ ] Test counts re-run: `ASSAY_OFFLINE_ONLY=1 npx vitest run`, then `npx vitest run`. Written
-       below as 453 offline in 22 files and 472 in all 25 files, from runs on 2026-09-23.
+       below as 491 offline in 24 files and 511 in all 27 files, from runs on 2026-09-23.
 5. [ ] `npx tsx scripts/test-guard.ts` passes (needs `anvil`).
 6. [ ] `npx tsx scripts/verify-attestation.ts` returns VERIFIES.
 7. [ ] The wall, `/pricing`, a finding page and a missing page all load; the free wallet check
@@ -212,15 +212,13 @@ Every time I blamed the model, the problem was my rubric. v1 allowed three defen
 **13/**
 
 ```text
-The caveat I owe you: gate 4 was rewritten against those same six cases. So 24/24 is a tuning-set result, not an estimate for mandates nobody has seen. It held when the finding text was rewritten. A held-out set is the next measurement.
+The caveat I owe you: gate 4 was rewritten against those same six cases. So 24/24 is a tuning-set result, not an estimate for mandates nobody has seen. So I wrote 20 new mandates blind, pre-registered them, and froze the rubric: 13/14 with BRAID off.
 ```
 
 **14/**
 
 ```text
-BRAID on vs off: no difference I could measure on this task. 15/16 vs 16/16 on the easy fixture, 0 of 20 compromised by injection in each arm, all within noise.
-
-A null result about my sponsor's feature, in the README with the harness and every surviving run.
+BRAID on vs off: no measurable difference on 2026-09-22. A day later BRAID on refused 35 of 56 held-out calls ("I can't share that.") and 1 of 2 on a fixture it had answered 16 times. It's in the README, not retried away.
 ```
 
 **15/**
@@ -276,7 +274,7 @@ Detection is worth less than prevention. A free, ownerless, view-only contract o
 **23/**
 
 ```text
-Two paid calls settle over x402 on Base: $0.01 for an audited position, $0.25 for a contract audit. The public MCP gives the verdicts free. ERC-8004 identity 8453:95374. 472 tests, 453 with no network, which CI runs on every push. [refresh]
+Two paid calls settle over x402 on Base: $0.01 for an audited position, $0.25 for a contract audit. The public MCP gives the verdicts free. ERC-8004 identity 8453:95374. 511 tests, 491 with no network, which CI runs on every push. [refresh]
 ```
 
 **24/**
