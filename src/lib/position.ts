@@ -1,7 +1,13 @@
 import { rhClient } from './chains.js'
 import { stockTokenAbi, aggregatorV3Abi } from './abis.js'
-import { fetchChainlinkFeeds, fetchRhAssets, feedForSymbol, type ChainlinkFeed } from './sources.js'
-import { isTransient } from '../sweep/oracle.js'
+import {
+  fetchChainlinkFeeds,
+  fetchRhAssets,
+  feedForSymbol,
+  pastHeartbeat,
+  type ChainlinkFeed,
+} from './sources.js'
+import { isTransient, describeRpcError } from '../sweep/oracle.js'
 
 /**
  * assay_true_position — the corrected number, sold next to the bug.
@@ -21,14 +27,21 @@ export interface TruePosition {
   symbol: string
   token: `0x${string}`
   holder: `0x${string}`
-  /** Raw ERC-20 balance, 18dp. NOT a share count. */
+  /** Raw ERC-20 balance in the token's base units (see tokenDecimals). NOT a share count. */
   rawBalance: string
+  /**
+   * decimals() as the token reports it at blockNumber.
+   *
+   * This used to be 1e18 in source. Every Stock Token is 18dp today, which is exactly the kind of
+   * scaling assumption that stops holding quietly; detect.ts already stopped making it.
+   */
+  tokenDecimals: number
   /** ERC-8056 shares-per-token, 1e18 fixed point. */
   uiMultiplier: string
   multiplier: number
-  /** balance * uiMultiplier / 1e18 — the share-equivalent count. */
+  /** tokenUnits * uiMultiplier / 1e18 — the share-equivalent count. */
   shareEquivalents: number
-  /** Token units (rawBalance / 1e18) — what most UIs wrongly print as "shares". */
+  /** Token units (rawBalance / 10^tokenDecimals) — what most UIs wrongly print as "shares". */
   tokenUnits: number
   /** Chainlink TOKEN price (already multiplier-adjusted). null when no feed exists. */
   tokenPriceUsd: number | null
@@ -54,11 +67,40 @@ export interface TruePosition {
     /** False when uiMultiplier() is zero or non-finite — the field this product is named after. */
     multiplierSane: boolean
   }
+  /**
+   * ERC-8056's scheduled multiplier change: newUIMultiplier() takes over from uiMultiplier() at
+   * effectiveAt(). The tokens implement it, and nothing read it here, so a 'high' answer could be
+   * sold minutes before the multiplier stepped. Of the 35 dividend transitions on record, none
+   * paused the oracle, so oraclePaused() is not the warning; this is.
+   */
+  pending: {
+    /** False when newUIMultiplier()/effectiveAt() could not be read: UNKNOWN, not "nothing pending". */
+    checked: boolean
+    /** newUIMultiplier(), 1e18 fixed point, only when it differs from uiMultiplier(). */
+    newUIMultiplier: string | null
+    newMultiplier: number | null
+    effectiveAt: string | null
+    secondsUntilEffective: number | null
+  }
+  /**
+   * Non-null when the figures are right at blockNumber but must not be carried past a known time.
+   * It does not change `confidence`: the reading is correct when it is taken, and the window
+   * between a change being scheduled and taking effect has been about ten minutes.
+   */
+  warning: string | null
+  /** Every read above was taken at this block, so the answer can be reproduced at it. */
   blockNumber: string
   observedAt: string
   /** Non-null when the caller should NOT act on this reading. */
   refusalReason: string | null
   confidence: 'high' | 'degraded' | 'refuse'
+}
+
+/** Where every read after head() is taken, and when the whole call must be finished. */
+export interface ReadAt {
+  blockNumber: bigint
+  /** Epoch ms. One deadline for the call, shared by every read — see CALL_DEADLINE_MS. */
+  deadline: number
 }
 
 /**
@@ -67,70 +109,89 @@ export interface TruePosition {
  * it, which is the whole point of this file.
  */
 export interface PositionReader {
-  head(): Promise<{ blockNumber: bigint; timestamp: bigint }>
-  balanceOf(token: `0x${string}`, holder: `0x${string}`): Promise<bigint>
-  uiMultiplier(token: `0x${string}`): Promise<bigint>
-  oraclePaused(token: `0x${string}`): Promise<boolean>
+  head(deadline: number): Promise<{ blockNumber: bigint; timestamp: bigint }>
+  balanceOf(token: `0x${string}`, holder: `0x${string}`, at: ReadAt): Promise<bigint>
+  uiMultiplier(token: `0x${string}`, at: ReadAt): Promise<bigint>
+  tokenDecimals(token: `0x${string}`, at: ReadAt): Promise<number>
+  pendingMultiplier(
+    token: `0x${string}`,
+    at: ReadAt,
+  ): Promise<{ newUIMultiplier: bigint; effectiveAt: bigint }>
+  oraclePaused(token: `0x${string}`, at: ReadAt): Promise<boolean>
   latestRoundData(
     feed: `0x${string}`,
+    at: ReadAt,
   ): Promise<readonly [bigint, bigint, bigint, bigint, bigint]>
-  feedDecimals(feed: `0x${string}`): Promise<number>
+  feedDecimals(feed: `0x${string}`, at: ReadAt): Promise<number>
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 /**
- * Bounded retry on transient faults only, matching the discipline in sweep/oracle.ts. A revert
- * is a real answer and must not be retried into a timeout; a socket reset is worth one more go.
- */
-/**
- * The whole read, bounded.
+ * The whole call, bounded by ONE deadline.
  *
- * viem already retries internally (4 attempts, 10s timeout each), so wrapping it in another 3
- * attempts with backoff multiplied the worst case rather than capping it: a single unresponsive
- * RPC could hold a PAID call for well over two minutes with no deadline anywhere in the chain.
- * The buyer's x402 trigger times out at 60s, so past that they have paid and will get nothing.
+ * viem already retries internally, so wrapping it in another 3 attempts with backoff multiplied
+ * the worst case rather than capping it: a single unresponsive RPC could hold a PAID call for well
+ * over two minutes. The buyer's x402 authorization is good for 60s, so past that they have paid
+ * and will get nothing.
  *
- * This puts one deadline over the whole thing. A bounded failure the caller can see beats an
- * unbounded wait it cannot.
+ * The comment here used to say "one deadline over the whole thing" while each read computed its
+ * own 12s, so six sequential stages could run 72s. Now the deadline is set once, when the call
+ * starts, and every read — directory fetch included — races the same instant. 40s leaves the
+ * OpenServ runtime and the tunnel their share of the 60.
  */
-const CALL_DEADLINE_MS = 12_000
+export const CALL_DEADLINE_MS = 40_000
 
-async function withRetry<T>(fn: () => Promise<T>, attempts = 3): Promise<T> {
-  const deadline = Date.now() + CALL_DEADLINE_MS
+/** Thrown when the deadline passes. Says "timed out", so isTransient classifies it as one. */
+export class DeadlineExceededError extends Error {
+  constructor(ms?: number) {
+    super(`timed out: the ${ms ? `${ms}ms ` : ''}deadline for this call passed before its reads returned`)
+    this.name = 'DeadlineExceededError'
+  }
+}
+
+function beforeDeadline<T>(work: Promise<T>, deadline: number, budgetMs?: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const expired = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new DeadlineExceededError(budgetMs)), Math.max(0, deadline - Date.now()))
+    timer.unref?.()
+  })
+  return Promise.race([work, expired]).finally(() => clearTimeout(timer))
+}
+
+/**
+ * Bounded retry on transient faults only, matching the discipline in sweep/oracle.ts. A revert
+ * is a real answer and must not be retried into a timeout; a Cloudflare 403 or a timeout is worth
+ * another go while the deadline allows it.
+ */
+export async function withRetry<T>(fn: () => Promise<T>, deadline: number, attempts = 3): Promise<T> {
   let last: unknown
   for (let i = 0; i < attempts; i++) {
-    if (Date.now() >= deadline) {
-      throw last ?? new Error(`read exceeded the ${CALL_DEADLINE_MS}ms deadline`)
-    }
+    if (Date.now() >= deadline) break
     try {
-      return await Promise.race([
-        fn(),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error(`read timed out after ${CALL_DEADLINE_MS}ms`)),
-            Math.max(1, deadline - Date.now()),
-          ).unref(),
-        ),
-      ])
+      return await beforeDeadline(fn(), deadline)
     } catch (err) {
       last = err
-      const msg = (err as Error)?.message ?? String(err)
-      if (!isTransient(msg)) throw err
-      if (i < attempts - 1 && Date.now() + 150 * 2 ** i < deadline) await sleep(150 * 2 ** i)
+      if (!isTransient(err)) throw err
+      const backoff = 150 * 2 ** i
+      if (i < attempts - 1 && Date.now() + backoff < deadline) await sleep(backoff)
       else break
     }
   }
-  throw last
+  throw last ?? new DeadlineExceededError()
 }
 
 export const liveReader: PositionReader = {
-  async head() {
-    const blockNumber = await withRetry(() => rhClient.getBlockNumber())
-    const block = await withRetry(() => rhClient.getBlock({ blockNumber }))
-    return { blockNumber, timestamp: block.timestamp }
+  async head(deadline) {
+    // One call for number and timestamp together; getBlockNumber then getBlock was two round
+    // trips out of the deadline, for a pair of values a single block header already carries.
+    const block = await withRetry(() => rhClient.getBlock(), deadline)
+    return { blockNumber: block.number, timestamp: block.timestamp }
   },
-  balanceOf: (token, holder) =>
+  // Every read below passes `blockNumber`. They used to run at 'latest', so on a 0.1s-block chain
+  // the balance, the multiplier and the feed came from different blocks than the one the answer
+  // reported, and at a corporate-action boundary the returned multiplier could postdate it.
+  balanceOf: (token, holder, at) =>
     withRetry(
       () =>
         rhClient.readContract({
@@ -138,43 +199,89 @@ export const liveReader: PositionReader = {
           abi: stockTokenAbi,
           functionName: 'balanceOf',
           args: [holder],
+          blockNumber: at.blockNumber,
         }) as Promise<bigint>,
+      at.deadline,
     ),
-  uiMultiplier: (token) =>
+  uiMultiplier: (token, at) =>
     withRetry(
       () =>
         rhClient.readContract({
           address: token,
           abi: stockTokenAbi,
           functionName: 'uiMultiplier',
+          blockNumber: at.blockNumber,
         }) as Promise<bigint>,
+      at.deadline,
     ),
-  oraclePaused: (token) =>
+  tokenDecimals: (token, at) =>
+    withRetry(
+      () =>
+        rhClient.readContract({
+          address: token,
+          abi: stockTokenAbi,
+          functionName: 'decimals',
+          blockNumber: at.blockNumber,
+        }) as Promise<number>,
+      at.deadline,
+    ),
+  async pendingMultiplier(token, at) {
+    const [newUIMultiplier, effectiveAt] = await Promise.all([
+      withRetry(
+        () =>
+          rhClient.readContract({
+            address: token,
+            abi: stockTokenAbi,
+            functionName: 'newUIMultiplier',
+            blockNumber: at.blockNumber,
+          }) as Promise<bigint>,
+        at.deadline,
+      ),
+      withRetry(
+        () =>
+          rhClient.readContract({
+            address: token,
+            abi: stockTokenAbi,
+            functionName: 'effectiveAt',
+            blockNumber: at.blockNumber,
+          }) as Promise<bigint>,
+        at.deadline,
+      ),
+    ])
+    return { newUIMultiplier, effectiveAt }
+  },
+  oraclePaused: (token, at) =>
     withRetry(
       () =>
         rhClient.readContract({
           address: token,
           abi: stockTokenAbi,
           functionName: 'oraclePaused',
+          blockNumber: at.blockNumber,
         }) as Promise<boolean>,
+      at.deadline,
     ),
-  latestRoundData: (feed) =>
+  latestRoundData: (feed, at) =>
     withRetry(
       () =>
         rhClient.readContract({
           address: feed,
           abi: aggregatorV3Abi,
           functionName: 'latestRoundData',
+          blockNumber: at.blockNumber,
         }) as Promise<readonly [bigint, bigint, bigint, bigint, bigint]>,
+      at.deadline,
     ),
-  feedDecimals: (feed) =>
+  feedDecimals: (feed, at) =>
     withRetry(
       () =>
         rhClient.readContract({
           address: feed,
           abi: aggregatorV3Abi,
           functionName: 'decimals',
+          blockNumber: at.blockNumber,
         }) as Promise<number>,
+      at.deadline,
     ),
 }
 
@@ -216,6 +323,8 @@ export interface TruePositionDeps {
   reader?: PositionReader
   assets?: Awaited<ReturnType<typeof fetchRhAssets>>
   feeds?: ChainlinkFeed[]
+  /** Overrides CALL_DEADLINE_MS, for tests. */
+  deadlineMs?: number
 }
 
 export async function truePosition(
@@ -224,10 +333,16 @@ export async function truePosition(
   deps: TruePositionDeps = {},
 ): Promise<TruePosition> {
   const reader = deps.reader ?? liveReader
-  const [assets, feeds] = await Promise.all([
-    deps.assets ? Promise.resolve(deps.assets) : fetchRhAssets(),
-    deps.feeds ? Promise.resolve(deps.feeds) : fetchChainlinkFeeds(),
-  ])
+  const budgetMs = deps.deadlineMs ?? CALL_DEADLINE_MS
+  const deadline = Date.now() + budgetMs
+  const bounded = <T>(work: Promise<T>) => beforeDeadline(work, deadline, budgetMs)
+
+  const [assets, feeds] = await bounded(
+    Promise.all([
+      deps.assets ? Promise.resolve(deps.assets) : fetchRhAssets(),
+      deps.feeds ? Promise.resolve(deps.feeds) : fetchChainlinkFeeds(),
+    ]),
+  )
 
   const asset = assets.find((a) => a.tokenSymbol.toUpperCase() === symbol.toUpperCase())
   if (!asset) {
@@ -245,31 +360,41 @@ export async function truePosition(
   const dep = asset.deployments.find((d) => d.chainId === 4663) ?? asset.deployments[0]
   if (!dep) throw new Error(`no chain-4663 deployment for ${symbol}`)
   const token = dep.contractAddress
+  const feed = feedForSymbol(feeds, symbol)
 
-  const { blockNumber, timestamp } = await reader.head()
+  const { blockNumber, timestamp } = await bounded(reader.head(deadline))
   const now = Number(timestamp)
   const observedAt = new Date(now * 1000).toISOString()
+  const at: ReadAt = { blockNumber, deadline }
 
-  // balanceOf and uiMultiplier are load-bearing for EVERY field. If either fails there is no
-  // position to report at all, so this throws rather than returning a hollow object.
-  const [balance, mult] = await Promise.all([
-    reader.balanceOf(token, holder),
-    reader.uiMultiplier(token),
+  // Every read is pinned to the same block, so they have no ordering to respect: one parallel
+  // batch instead of five sequential stages, which is what lets the whole call fit its deadline.
+  // allSettled, because a failed read is recorded below, never dropped.
+  const [balanceR, multR, decimalsR, pausedR, pendingR, roundR, feedDecR] = await Promise.allSettled([
+    bounded(reader.balanceOf(token, holder, at)),
+    bounded(reader.uiMultiplier(token, at)),
+    bounded(reader.tokenDecimals(token, at)),
+    bounded(reader.oraclePaused(token, at)),
+    bounded(reader.pendingMultiplier(token, at)),
+    feed ? bounded(reader.latestRoundData(feed.proxyAddress, at)) : Promise.resolve(null),
+    feed ? bounded(reader.feedDecimals(feed.proxyAddress, at)) : Promise.resolve(null),
   ])
 
+  // balanceOf, uiMultiplier and decimals are load-bearing for EVERY field. If any failed there is
+  // no position to report at all, so this throws rather than returning a hollow object.
+  if (balanceR.status === 'rejected') throw balanceR.reason
+  if (multR.status === 'rejected') throw multR.reason
+  if (decimalsR.status === 'rejected') throw decimalsR.reason
+  const balance = balanceR.value
+  const mult = multR.value
+  const tokenDecimals = Number(decimalsR.value)
+
   // oraclePaused is a SAFETY check. Failing to read it is not the same as reading `false`.
-  let paused: boolean | null = null
-  let pauseChecked = false
-  try {
-    paused = await reader.oraclePaused(token)
-    pauseChecked = true
-  } catch {
-    paused = null
-    pauseChecked = false
-  }
+  const paused: boolean | null = pausedR.status === 'fulfilled' ? pausedR.value : null
+  const pauseChecked = pausedR.status === 'fulfilled'
 
   const multiplier = Number(mult) / 1e18
-  const tokenUnits = Number(balance) / 1e18
+  const tokenUnits = Number(balance) / 10 ** tokenDecimals
   const shareEquivalents = tokenUnits * multiplier
 
   /**
@@ -282,7 +407,6 @@ export async function truePosition(
    */
   const multiplierSane = mult > 0n && Number.isFinite(multiplier) && multiplier > 0
 
-  const feed = feedForSymbol(feeds, symbol)
   let tokenPriceUsd: number | null = null
   let feedAgeSeconds: number | null = null
   let feedStale: boolean | null = null
@@ -292,17 +416,19 @@ export async function truePosition(
   let feedError: string | null = null
 
   if (feed) {
-    try {
-      const [roundId, answer, , updatedAt, answeredInRound] = await reader.latestRoundData(
-        feed.proxyAddress,
-      )
+    const round = roundR.status === 'fulfilled' ? roundR.value : null
+    const feedDec = feedDecR.status === 'fulfilled' ? feedDecR.value : null
+    if (round && feedDec !== null) {
+      const [roundId, answer, , updatedAt, answeredInRound] = round
       // decimals() used to fall back to 8 silently. A wrong exponent is a 10^n valuation error,
       // so a failed read must refuse, not guess.
-      const dec = Number(await reader.feedDecimals(feed.proxyAddress))
+      const dec = Number(feedDec)
       feedRead = true
 
       feedAgeSeconds = now - Number(updatedAt)
-      feedStale = feedAgeSeconds > feed.heartbeat
+      // The same delivery grace the sweep applies: a heartbeat is when the node sends the update,
+      // not when it lands, so a strict comparison degraded on-schedule feeds for ~26s a day.
+      feedStale = pastHeartbeat(feedAgeSeconds, feed.heartbeat)
 
       // A non-positive answer is not a price. Publishing it would sell a $0 valuation whose
       // bytes reproduce perfectly, so the byte verifier would certify it.
@@ -314,13 +440,49 @@ export async function truePosition(
       if (priceSane && roundComplete) {
         tokenPriceUsd = Number(answer) / 10 ** dec
       }
-    } catch (err) {
-      feedError = (err as Error)?.message ?? String(err)
-      feedRead = false
-      tokenPriceUsd = null
-      feedAgeSeconds = null
-      feedStale = null
+    } else {
+      const failed = roundR.status === 'rejected' ? roundR : feedDecR.status === 'rejected' ? feedDecR : null
+      feedError = failed ? describeRpcError(failed.reason) : null
     }
+  }
+
+  let pending: TruePosition['pending'] = {
+    checked: pendingR.status === 'fulfilled',
+    newUIMultiplier: null,
+    newMultiplier: null,
+    effectiveAt: null,
+    secondsUntilEffective: null,
+  }
+  let warning: string | null = null
+  if (pendingR.status === 'fulfilled') {
+    const { newUIMultiplier, effectiveAt } = pendingR.value
+    // Gate on newUIMultiplier() differing, as detect.ts does: effectiveAt() keeps its last value
+    // after a change lands, so on its own it does not mean anything is pending.
+    if (newUIMultiplier !== mult) {
+      const newMultiplier = Number(newUIMultiplier) / 1e18
+      const when = effectiveAt > 0n ? new Date(Number(effectiveAt) * 1000).toISOString() : null
+      const secs = effectiveAt > 0n ? Number(effectiveAt) - now : null
+      pending = {
+        checked: true,
+        newUIMultiplier: newUIMultiplier.toString(),
+        newMultiplier,
+        effectiveAt: when,
+        secondsUntilEffective: secs,
+      }
+      warning =
+        `${asset.tokenSymbol} has a multiplier change scheduled: uiMultiplier() moves ` +
+        `${multiplier.toFixed(9)} -> ${newMultiplier.toFixed(9)}` +
+        (when ? ` at ${when}` : '') +
+        (secs !== null && secs > 0 ? ` (in about ${Math.ceil(secs / 60)} min)` : '') +
+        `. These figures are correct at block ${blockNumber}; from that time the same balance is a ` +
+        `different number of share-equivalents, so do not cache shareEquivalents or ` +
+        `underlyingSharePriceUsd past it.`
+    }
+  } else {
+    warning =
+      `newUIMultiplier()/effectiveAt() could not be read for ${asset.tokenSymbol}, so a scheduled ` +
+      `multiplier change cannot be ruled out. These figures are correct at block ${blockNumber}; do ` +
+      `not cache the share-equivalents.`
   }
 
   // Refusal policy — the caller is moving money, so say plainly when not to.
@@ -345,7 +507,15 @@ export async function truePosition(
       `corporate action the oracle is paused and the price must not be used.`
     confidence = 'refuse'
   } else if (!feed) {
-    refusalReason = `No Chainlink feed is published for ${asset.tokenSymbol} on Robinhood Chain; no on-chain price is available. Using an off-chain SHARE price here would introduce a ${((multiplier - 1) * 100).toFixed(3)}% error, because the multiplier is ${multiplier.toFixed(9)}.`
+    // The understatement framing detect.ts publishes: |1 - 1/m| of the TRUE value, which cannot
+    // exceed 100%. This quoted |m - 1| as "a 300.000% error" for CRWD, the figure the wall retired as
+    // an overclaim, and the free MCP verdict passes this sentence through verbatim.
+    const misreadPct = (1 - 1 / multiplier) * 100
+    refusalReason =
+      `No Chainlink feed is published for ${asset.tokenSymbol} on Robinhood Chain; no on-chain price is available. ` +
+      `The multiplier is ${multiplier.toFixed(9)}, so valuing the raw balance at an off-chain SHARE price ` +
+      `${misreadPct >= 0 ? 'understates' : 'overstates'} the position by ${Math.abs(misreadPct).toFixed(3)}% ` +
+      `of its true value (the true value is ${multiplier.toFixed(9)}x that).`
     confidence = 'refuse'
   } else if (!feedRead) {
     refusalReason =
@@ -373,6 +543,7 @@ export async function truePosition(
     token,
     holder,
     rawBalance: balance.toString(),
+    tokenDecimals,
     uiMultiplier: mult.toString(),
     multiplier,
     shareEquivalents,
@@ -387,6 +558,8 @@ export async function truePosition(
     feedStale,
     oraclePaused: paused,
     checks: { pauseChecked, feedRead, priceSane, roundComplete, multiplierSane },
+    pending,
+    warning,
     blockNumber: blockNumber.toString(),
     observedAt,
     refusalReason,

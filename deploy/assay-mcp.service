@@ -16,10 +16,6 @@ Environment=MCP_HOST=127.0.0.1
 # Without this, the X-Forwarded-For header nginx sets is attacker-controlled and the per-IP rate
 # limiter can be bypassed by anyone who sends one. With it, XFF is honoured from this peer only.
 Environment=MCP_TRUSTED_PROXIES=127.0.0.1,::1
-# Mounted under a path on the existing sonar.my.id certificate rather than its own subdomain, so
-# the SSE transport must advertise the prefixed POST path -- it sends an ABSOLUTE path, and a bare
-# /messages would land on whatever else lives at the origin root. Remove this when the endpoint
-# moves to assay-mcp.sonar.my.id (see RUNBOOK).
 # Live artifact OUTSIDE the git working tree.
 #
 # The sweep rewrites this every 8 minutes. If it were the tracked data/findings.json, `git pull`
@@ -28,21 +24,45 @@ Environment=MCP_TRUSTED_PROXIES=127.0.0.1,::1
 # exits "Please commit your changes or stash them before you merge"). Writing outside the tree
 # keeps deploys a plain `git pull` and leaves the committed copy as the wall's fallback.
 Environment=ASSAY_FINDINGS_PATH=/home/ubuntu/assay-data/findings.json
+# Mounted under a path on the existing sonar.my.id certificate rather than its own subdomain, so
+# the SSE transport must advertise the prefixed POST path -- it sends an ABSOLUTE path, and a bare
+# /messages would land on whatever else lives at the origin root. Remove this when the endpoint
+# moves to assay-mcp.sonar.my.id (see RUNBOOK).
 Environment=MCP_PUBLIC_PATH=/assay-mcp
-ExecStart=/usr/bin/env pnpm mcp:sse
+# tsx directly, not `pnpm mcp:sse`. pnpm 12 rewrites node_modules/.pnpm-workspace-state-v1.json
+# every time it runs a script (its mtime on the host is this unit's last start, to the second), and
+# that one write was the only reason this unit needed write access to the tree. Without pnpm the
+# process writes nothing but tsx's cache, which PrivateTmp gives it.
+ExecStart=/home/ubuntu/assay/node_modules/.bin/tsx src/mcp/sse.ts
 Restart=always
 RestartSec=10
 StandardOutput=append:/home/ubuntu/assay/mcp.log
 StandardError=append:/home/ubuntu/assay/mcp.log
 
+# The only unauthenticated, internet-facing ASSAY process, so it gets the least.
+#
+# It could write the agent's source and node_modules and the live findings.json the wall
+# publishes, and read the agent's OpenServ credentials in .env (same user). It needs none of that:
+# it reads its code and the findings file, answers on loopback, and loads no .env (nothing on its
+# import path uses dotenv). So there is no ReadWritePaths at all, and the credential files are
+# masked. The '-' prefix skips a path that does not exist rather than failing the start.
+# systemd opens mcp.log as root before the sandbox applies, so logging needs no write access.
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=read-only
-ReadWritePaths=/home/ubuntu/assay /home/ubuntu/assay-data
+InaccessiblePaths=-/home/ubuntu/assay/.env -/home/ubuntu/assay/.openserv.json -/home/ubuntu/.assay
 ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
 ProtectControlGroups=true
 RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+# Measured on the host: 128MB peak and 39 tasks, both with pnpm in the tree. A leak or a flood now
+# ends in a restart of this unit rather than in the paid agent and the sweep starving beside it.
+MemoryMax=512M
+TasksMax=128
 
 [Install]
 WantedBy=multi-user.target

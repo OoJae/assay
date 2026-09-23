@@ -1,0 +1,55 @@
+name: CI
+
+# The offline suite is the gate: no RPC, no HTTP, no chain and no secrets, so it runs the same on
+# a fork. The live suite (byte verification, retention, attestation) needs a real chain and is not
+# run here; see vitest.config.ts.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # One per major the engines range in package.json admits: its 22.12 floor, 24 (what the
+        # production VPS runs) and 26.
+        node: ['22.12', '24', '26']
+    steps:
+      - uses: actions/checkout@v7
+
+      # Pinned, because the committed pnpm-workspace.yaml once held placeholders that only a
+      # current pnpm rejects: pnpm 11 and 12 fail `pnpm install` on them, older pnpm warned and
+      # carried on. The version a judge gets from Homebrew is the one to hold the gate.
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.1.2
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - name: Typecheck erc8056-guard
+        run: pnpm exec tsc -p packages/erc8056-guard/tsconfig.json --noEmit
+
+      - name: Typecheck the wall
+        run: pnpm --filter assay-web exec tsc --noEmit
+
+      # A scratch HOME, then proof the suite never wrote to ~/.assay: on a real machine that
+      # directory holds the production env backup, and a test once overwrote it.
+      - name: Offline suite
+        run: mkdir -p "$HOME" && pnpm test:offline
+        env:
+          HOME: ${{ runner.temp }}/home
+
+      - name: The suite left ~/.assay alone
+        run: test ! -e "${{ runner.temp }}/home/.assay"

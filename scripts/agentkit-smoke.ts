@@ -1,4 +1,5 @@
-import { assayActionProviders, assayTruePosition } from '../src/agentkit/assay-provider.js'
+import { AgentKit } from '@coinbase/agentkit'
+import { assayActionProviders } from '../src/agentkit/assay-provider.js'
 
 /**
  * @coinbase/agentkit@0.10.4 fires sendAnalyticsEvent() on every action invocation as a FLOATING
@@ -31,13 +32,20 @@ const stubWallet = {
   getAddress: () => '0x0000000000000000000000000000000000000000',
 } as never
 
-const actions = assayTruePosition.getActions(stubWallet)
-console.log('actions from assayTruePosition:', actions.map((a) => a.name).join(', '))
+/**
+ * Counted through AgentKit itself, the way a host sees them. The previous providers each carried
+ * every action, so this printed 3 providers and 9 actions, three per name, without anyone noticing.
+ */
+const kit = await AgentKit.from({ walletProvider: stubWallet, actionProviders: providers })
+const actions = kit.getActions()
+const names = actions.map((a) => a.name)
+console.log(`actions: ${actions.length} (${names.join(', ')})`)
+if (new Set(names).size !== names.length) throw new Error('duplicate action names')
 
-const tp = actions[0]
-if (!tp) throw new Error('no action registered')
+const tp = actions.find((a) => a.name.endsWith('_assay_true_position'))
+if (!tp) throw new Error('no true_position action registered')
 
-console.log('\n--- invoking for CRWD (the 4x token) ---')
+console.log('\n--- invoking for NVDA, held by the burn address ---')
 
 /**
  * KNOWN LIMITATION in @coinbase/agentkit@0.10.4.
@@ -52,13 +60,13 @@ console.log('\n--- invoking for CRWD (the 4x token) ---')
  */
 let out: string
 try {
-  out = await tp.invoke({ symbol: 'CRWD', holder: '0x8366a39CC670B4001A1121B8F6A443A643e40951' })
+  out = await tp.invoke({ symbol: 'NVDA', holder: '0x000000000000000000000000000000000000dEaD' })
 } catch (e) {
   const msg = (e as Error).message
   if (!/HTTP error/.test(msg)) throw e
   console.log('  (AgentKit telemetry threw — falling back to the action logic directly)')
   const { truePosition } = await import('../src/lib/position.js')
-  out = JSON.stringify(await truePosition('CRWD', '0x8366a39CC670B4001A1121B8F6A443A643e40951'))
+  out = JSON.stringify(await truePosition('NVDA', '0x000000000000000000000000000000000000dEaD'))
 }
 const p = JSON.parse(out)
 console.log(`  tokenUnits        ${p.tokenUnits}`)

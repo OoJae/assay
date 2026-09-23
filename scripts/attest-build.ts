@@ -1,9 +1,12 @@
 import 'dotenv/config'
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { sweep } from '../src/sweep/detect.js'
 import { METHODOLOGY_VERSION } from '../src/sweep/detect.js'
 import {
+  attestationPaths,
   buildEvidenceDocument,
+  buildRequestDocument,
   hashDocument,
   scoreFor,
   type AttestationTag,
@@ -18,7 +21,12 @@ import {
  * later --dry run silently overwrote the published artifact, leaving the on-chain hash pointing at
  * bytes that no longer existed anywhere, including in git history.
  *
- * Deploy the file this writes, THEN run attest:submit. Nothing here touches the chain.
+ * Deploy the files this writes, THEN run attest:submit. Nothing here touches the chain.
+ *
+ * It writes TWO documents, both keyed by the requestHash: the request (what is asked, for which
+ * agentId, when) and the response. requestHash is keccak256 of the request document's bytes, so a
+ * new build is a new request. The old fixed requestHash was already taken by frozen 95265's
+ * request, which is why canonical 95374 could never be attested.
  */
 const state = JSON.parse(readFileSync('data/erc8004.json', 'utf8')) as {
   agentId: string
@@ -124,16 +132,52 @@ const doc = buildEvidenceDocument({
 const serialised = JSON.stringify(doc, null, 2)
 const responseHash = hashDocument(serialised)
 
-mkdirSync('web/public/attestations', { recursive: true })
-const filename = `web/public/attestations/${state.agentId}.json`
-writeFileSync(filename, serialised)
+const request = JSON.stringify(
+  buildRequestDocument({ agentId: state.agentId, validator: state.owner, kind: 'self-attestation', issuedAt }),
+  null,
+  2,
+)
+const requestHash = hashDocument(request)
+const paths = attestationPaths(state.agentId, requestHash)
+
+/**
+ * NEVER OVERWRITES. The old per-agentId filename meant re-running this after a submission replaced
+ * the bytes the on-chain hash committed to — web/public/attestations/95265.json is one such file,
+ * and nothing here writes to it any more.
+ */
+for (const p of [paths.document, paths.requestDocument]) {
+  if (existsSync(p)) {
+    console.error(`${p} already exists — refusing to overwrite a document a signature may commit to.`)
+    process.exit(1)
+  }
+}
+mkdirSync(dirname(paths.document), { recursive: true })
+writeFileSync(paths.requestDocument, request)
+writeFileSync(paths.document, serialised)
 
 writeFileSync(
   'data/attestation-pending.json',
-  JSON.stringify({ agentId: state.agentId, tag, score: scoreFor(tag), responseHash, filename, issuedAt }, null, 2),
+  JSON.stringify(
+    {
+      agentId: state.agentId,
+      tag,
+      score: scoreFor(tag),
+      requestHash,
+      requestFile: paths.requestDocument,
+      requestURI: paths.requestURI,
+      responseHash,
+      filename: paths.document,
+      responseURI: paths.responseURI,
+      issuedAt,
+    },
+    null,
+    2,
+  ),
 )
 
-console.log(`\nwrote        ${filename}`)
+console.log(`\nwrote        ${paths.requestDocument}`)
+console.log(`             ${paths.document}`)
+console.log(`requestHash  ${requestHash}`)
 console.log(`responseHash ${responseHash}`)
 console.log(`tag / score  ${tag} / ${scoreFor(tag)}`)
 console.log(`corpus       ${corpus.citationsReproduced}/${corpus.citationsChecked} citations at block ${corpus.sweptAtBlock}`)

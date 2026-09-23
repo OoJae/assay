@@ -18,24 +18,30 @@ import { validatorRequests } from '../src/attest/index.js'
 const fromKey = process.env.WALLET_PRIVATE_KEY
   ? privateKeyToAccount(process.env.WALLET_PRIVATE_KEY as `0x${string}`).address
   : undefined
-const validator = (process.argv[2] ?? fromKey) as `0x${string}` | undefined
+const validator = (process.argv.slice(2).find((a) => !a.startsWith('--')) ?? fromKey) as `0x${string}` | undefined
 if (!validator) {
   console.error('no validator address: pass one, or set WALLET_PRIVATE_KEY (pnpm wallets)')
   process.exit(1)
 }
 
-const all = await validatorRequests(validator)
+/**
+ * Bounded. Anyone who mints an agent can name this address as validator, so the inbound list can
+ * be grown for free; only the newest --limit requests are read, in one multicall.
+ */
+const limit = Number(process.argv.find((a) => a.startsWith('--limit='))?.split('=')[1] ?? 50)
+const { total, statuses: all } = await validatorRequests(validator, { limit })
 const pending = all.filter((r) => !r.answered)
 
 console.log(`validator ${validator}`)
-console.log(`requests: ${all.length}   pending: ${pending.length}\n`)
+console.log(`requests: ${total}   shown: ${all.length} newest   pending among them: ${pending.length}\n`)
 
 for (const r of all) {
   console.log(`${r.answered ? '[ANSWERED]' : '[ PENDING ]'} agent ${r.agentId}  ${r.requestHash}`)
   if (r.answered) console.log(`            tag=${r.tag} score=${r.response} responseHash=${r.responseHash}`)
 }
+if (total > all.length) console.log(`\n${total - all.length} older request(s) not read. Pass --limit=N to read more.`)
 
-if (!all.length) {
+if (!total) {
   console.log('nothing inbound. ASSAY never initiates a verdict about a named party;')
   console.log('a subject calls validationRequest() naming this address as validator first.')
 }

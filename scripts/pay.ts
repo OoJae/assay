@@ -68,7 +68,7 @@ const before = Date.now()
 const res = await client.payments.payWorkflow({
   triggerUrl,
   privateKey: buyerKey,
-  input: { symbol: 'CRWD', holder: '0x8366a39CC670B4001A1121B8F6A443A643e40951' },
+  input: { symbol: 'NVDA', holder: '0x000000000000000000000000000000000000dEaD' },
   network: 'base',
 })
 console.log(`\npaid in ${Date.now() - before}ms`)

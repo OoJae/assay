@@ -1,16 +1,33 @@
 import 'dotenv/config'
-import * as dotenv from 'dotenv'
 import { provision, triggers } from '@openserv-labs/client'
 import { privateKeyToAccount } from 'viem/accounts'
 import { assayAgent } from '../src/agent/assay-agent.js'
+import { assertEnvPrivate } from '../src/lib/envfile.js'
+import { provisionCredentials, backupOpenServState } from '../src/lib/openserv-state.js'
 
 /**
  * Creates the ASSAY agent + workflow + x402 paywall on OpenServ.
  *
- * provision() is idempotent — safe to re-run. On the first run it mints a wallet and writes
- * WALLET_PRIVATE_KEY into .env, which is why we reload env with override afterwards.
+ * provision() is idempotent and safe to re-run, but only because the userApiKey saved in
+ * .openserv.json is passed back in. Left to itself the vendor re-authenticates by SIWE on any API
+ * error and overwrites that key with one for a different account (see provisionCredentials).
+ *
+ * WALLET_PRIVATE_KEY must already exist, from `pnpm wallets`. Left empty, provision() mints one and
+ * writes it into .env with its own line-replacing writer, outside the loss guard and the backup in
+ * src/lib/envfile.ts.
  */
+assertEnvPrivate()
+
+const pk = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined
+if (!pk) throw new Error('WALLET_PRIVATE_KEY missing — run pnpm wallets')
+const walletAddress = privateKeyToAccount(pk).address
+
+const credentials = provisionCredentials(walletAddress)
+if (!('userApiKey' in credentials)) console.log(`first run: signing in to OpenServ as ${walletAddress}`)
+backupOpenServState()
+
 const result = await provision({
+  ...credentials,
   agent: {
     instance: assayAgent,
     name: 'assay',
@@ -30,7 +47,7 @@ const result = await provision({
       'feed exists at all, and oraclePaused() — and always surface an explicit refusalReason ' +
       'when the reading is not safe to act on, such as a missing price feed or a feed past its ' +
       'heartbeat. The caller is an autonomous agent about to value, liquidate or collateralise ' +
-      'a tokenized equity position, so correctness and an honest refusal matter more than ' +
+      'a Stock Token position, so correctness and an honest refusal matter more than ' +
       'always producing a number.',
     trigger: triggers.x402({
       name: 'true-position',
@@ -58,10 +75,7 @@ const result = await provision({
   },
 })
 
-dotenv.config({ override: true })
-
-const pk = process.env.WALLET_PRIVATE_KEY
-const addr = pk ? privateKeyToAccount(pk as `0x${string}`).address : '(none)'
+const backup = backupOpenServState()
 
 console.log('\n=== PROVISIONED ===')
 console.log('agentId      ', result.agentId)
@@ -69,6 +83,7 @@ console.log('workflowId   ', result.workflowId)
 console.log('triggerId    ', result.triggerId)
 console.log('paywallUrl   ', result.paywallUrl)
 console.log('apiEndpoint  ', result.apiEndpoint)
+console.log('state backup ', backup)
 console.log('\n=== WALLET A (service owner) — fund with ~0.001 ETH on Base 8453 ===')
-console.log(addr)
+console.log(walletAddress)
 console.log('\nERC-8004 mint costs well under $0.01; 0.001 ETH is ~100x headroom.')

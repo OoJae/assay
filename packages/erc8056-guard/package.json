@@ -7,11 +7,21 @@
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
-  "files": ["dist", "README.md"],
-  "scripts": { "build": "tsc -p tsconfig.json" },
-  "keywords": ["erc8056", "robinhood-chain", "chainlink", "tokenized-equities", "scaled-ui-amount"],
-  "repository": { "type": "git", "url": "https://github.com/OoJae/assay", "directory": "packages/erc8056-guard" },
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js", "default": "./dist/index.js" },
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "sideEffects": false,
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepack": "tsc -p tsconfig.json"
+  },
+  "keywords": ["erc8056", "erc-8056", "robinhood-chain", "stock-tokens", "chainlink", "scaled-ui-amount", "viem"],
+  "homepage": "https://github.com/OoJae/assay/tree/main/packages/erc8056-guard#readme",
+  "bugs": { "url": "https://github.com/OoJae/assay/issues" },
+  "repository": { "type": "git", "url": "git+https://github.com/OoJae/assay.git", "directory": "packages/erc8056-guard" },
   "peerDependencies": { "viem": "^2.0.0" },
-  "devDependencies": { "typescript": "^5.7.2", "viem": "^2.56.8" }
+  "devDependencies": { "typescript": "5.9.3", "viem": "2.56.8" }
 }

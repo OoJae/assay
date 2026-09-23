@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import * as dotenv from 'dotenv'
 import { privateKeyToAccount } from 'viem/accounts'
-import { createPublicClient, http, erc20Abi, formatUnits } from 'viem'
+import { createPublicClient, http, erc20Abi, formatUnits, isAddress } from 'viem'
 import { base } from 'viem/chains'
 import { readFileSync } from 'node:fs'
 // Deep import: the SDK vendors an x402 client but does not re-export it. The package has no
@@ -20,12 +20,23 @@ import { createSigner, wrapFetchWithPayment } from '@openserv-labs/client/dist/x
  * against what this script expects. A client that will sign "up to" some generous amount is how a
  * repriced endpoint drains a wallet; this one signs the known price or nothing.
  *
- *   pnpm pay:contract [address]
+ *   pnpm pay:contract <address>
  */
 dotenv.config({ override: true })
 
 const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const
 const EXPECTED_ATOMIC = 250_000n // $0.25
+
+/**
+ * No default target. The default was a contract the old snapshot labelled NOT_AWARE, committed to a
+ * public repo, and it is an AMM pool the classifier now calls NOT_APPLICABLE. Nothing public names
+ * either kind, so the buyer names the address.
+ */
+const target = process.argv[2]
+if (!target || !isAddress(target, { strict: false })) {
+  console.error('usage: pnpm pay:contract <address>   (0x plus 40 hex characters)')
+  process.exit(1)
+}
 
 const buyerKey = process.env.BUYER_PRIVATE_KEY as `0x${string}` | undefined
 if (!buyerKey) throw new Error('BUYER_PRIVATE_KEY missing — run pnpm wallets')
@@ -38,7 +49,6 @@ const token = st.workflows.assay?.['ASSAY Contract Audit']?.triggerToken
 if (!token) throw new Error('no ASSAY Contract Audit workflow — run scripts/provision-contract-audit.ts')
 const url = `https://api.openserv.ai/webhooks/x402/trigger/${token}`
 
-const target = (process.argv[2] ?? '0xfab520051f96f4d2a32c22b6a3dd7fffdf231bfe') as `0x${string}`
 const body = JSON.stringify({ buyerAddress: buyer.address, payload: { address: target } })
 
 // --- read the price BEFORE signing anything ---
@@ -84,10 +94,26 @@ console.log(`status   ${out.status ?? '(none)'}`)
 const value = out.output?.value
 if (value) {
   try {
-    const r = JSON.parse(value) as { verdict?: string; conclusive?: boolean; holdings?: unknown[]; totalUsdHeld?: number; interpretation?: string }
+    const r = JSON.parse(value) as {
+      verdict?: string
+      conclusive?: boolean
+      incomplete?: string[]
+      holdings?: unknown[]
+      totalUsdHeld?: number | null
+      pricedUsdHeld?: number
+      interpretation?: string
+    }
+    // totalUsdHeld is null when a holding is unpriced or a read failed. Printing `?? 0` reported
+    // "$0 held" for exactly the case the audit returns null for, because unknown is not $0.
+    const usd = (n: number) => `$${Math.round(n).toLocaleString()}`
+    const held =
+      typeof r.totalUsdHeld === 'number'
+        ? `${usd(r.totalUsdHeld)} held`
+        : `at least ${usd(r.pricedUsdHeld ?? 0)} held (the rest is unpriced or unread)`
     console.log(`\n--- the answer ---`)
     console.log(`verdict     ${r.verdict}  (conclusive: ${r.conclusive})`)
-    console.log(`holdings    ${r.holdings?.length ?? 0} divergent token(s), $${Math.round(r.totalUsdHeld ?? 0).toLocaleString()} held`)
+    if (r.incomplete?.length) console.log(`incomplete  ${r.incomplete.join(', ')} (exposure unknown, not zero)`)
+    console.log(`holdings    ${r.holdings?.length ?? 0} divergent token(s), ${held}`)
     console.log(`meaning     ${r.interpretation?.slice(0, 160)}…`)
   } catch {
     console.log(`\n${value.slice(0, 600)}`)

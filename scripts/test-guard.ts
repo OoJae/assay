@@ -1,6 +1,6 @@
 import { execFileSync, spawn } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { createPublicClient, createWalletClient, http, defineChain, parseAbi } from 'viem'
+import { createPublicClient, createWalletClient, http, defineChain, parseAbi, parseAbiItem, zeroAddress } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
 /**
@@ -20,8 +20,16 @@ const ANVIL_KEY = '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f
 const CRWD = '0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931' as const
 const SGOV = '0x92FD66527192E3e61d4DDd13322Aa222DE86F9B5' as const
 const SGOV_FEED = '0xa0DF4ee0fFf975306345875E3548Fcc519577A11' as const
-const HOLDER = '0x8366a39CC670B4001A1121B8F6A443A643e40951' as const
-const NOT_AWARE = '0xfab520051f96f4d2a32c22b6a3dd7fffdf231bfe' as const
+/**
+ * Nothing here names a holder or an integrator contract.
+ *
+ * These were an address the old snapshot labelled NOT_AWARE (an AMM pool the classifier now calls
+ * NOT_APPLICABLE) and the v4 PoolManager as the CRWD holder, both committed to a public repo that
+ * names neither kind. The contract with no uiMultiplier() selector is now the SGOV Chainlink feed
+ * proxy, 9,571 bytes of well-known code, and the holder is found on the fork at run time.
+ */
+const NO_SELECTOR = SGOV_FEED
+const NO_SELECTOR_BYTES = 9571n
 
 const abi = parseAbi([
   'function shareEquivalents(address,address) view returns (uint256,bool,string)',
@@ -55,23 +63,42 @@ console.log(`deployed at ${address}\n`)
 const call = <T>(fn: string, args: unknown[]) =>
   pub.readContract({ address, abi, functionName: fn as never, args: args as never }) as Promise<T>
 
+const balanceAbi = parseAbi(['function balanceOf(address) view returns (uint256)'])
+
+/** The most recent CRWD recipient that still holds some, read from the fork's own Transfer logs. */
+async function findHolder(token: `0x${string}`): Promise<`0x${string}`> {
+  const transfer = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)')
+  const head = await pub.getBlockNumber()
+  for (let to = head; to > head - 200_000n; to -= 20_000n) {
+    const logs = await pub.getLogs({ address: token, event: transfer, fromBlock: to - 20_000n, toBlock: to })
+    for (const l of logs.reverse()) {
+      const who = l.args.to
+      if (!who || who === zeroAddress) continue
+      const bal = await pub.readContract({ address: token, abi: balanceAbi, functionName: 'balanceOf', args: [who] })
+      if (bal > 0n) return who
+    }
+  }
+  throw new Error('no CRWD holder found in the last 200,000 blocks of Transfer logs')
+}
+const HOLDER = await findHolder(CRWD)
+
 console.log('corrected numbers:')
 const [crwdShares, crwdSafe] = await call<[bigint, boolean, string]>('shareEquivalents', [CRWD, HOLDER])
-const crwdBal = await pub.readContract({ address: CRWD, abi: parseAbi(['function balanceOf(address) view returns (uint256)']), functionName: 'balanceOf', args: [HOLDER] })
-check('CRWD shares == balance x 4.0', crwdSafe && crwdShares === crwdBal * 4n, `${Number(crwdShares) / 1e18}`)
+const crwdBal = await pub.readContract({ address: CRWD, abi: balanceAbi, functionName: 'balanceOf', args: [HOLDER] })
+check('CRWD shares == balance x 4.0', crwdSafe && crwdBal > 0n && crwdShares === crwdBal * 4n, `${Number(crwdShares) / 1e18}`)
 
 const [, sgovSafe] = await call<[bigint, boolean, string]>('shareEquivalents', [SGOV, HOLDER])
 check('SGOV reading is safe', sgovSafe)
 
 console.log('\nintegrator check matches the off-chain auditor:')
-const [found, size] = await call<[boolean, bigint]>('referencesMultiplier', [NOT_AWARE])
-check('known NOT_AWARE contract: no selector, 22142 bytes', !found && size === 22142n)
+const [found, size] = await call<[boolean, bigint]>('referencesMultiplier', [NO_SELECTOR])
+check(`a contract without the selector: not found, ${NO_SELECTOR_BYTES} bytes`, !found && size === NO_SELECTOR_BYTES, `${size} bytes`)
 const [tokenFound, tokenSize] = await call<[boolean, bigint]>('referencesMultiplier', [SGOV])
 check('a 283-byte proxy stub reports small — the documented caveat', !tokenFound && tokenSize < 2048n, `${tokenSize} bytes`)
 
 console.log('\nrefusals — the point of the contract:')
 let reverted = false
-try { await call<bigint>('safeShareEquivalents', [NOT_AWARE, HOLDER]) } catch (e) { reverted = /balanceOf\(\) unreadable/.test(String(e)) }
+try { await call<bigint>('safeShareEquivalents', [NO_SELECTOR, HOLDER]) } catch (e) { reverted = /balanceOf\(\) unreadable/.test(String(e)) }
 check('safeShareEquivalents reverts with a reason on a non-token', reverted)
 
 const [usableNow] = await call<[boolean, string]>('feedUsable', [SGOV_FEED, 0n])

@@ -2,13 +2,23 @@ packages:
   - '.'
   - 'web'
 
+# Every entry must be a real boolean. pnpm writes 'set this to true or false' as a placeholder
+# for each dependency with a build script, and that placeholder was committed once: pnpm 11 and
+# 12 treat it as undecided, so a fresh-clone `pnpm install` exited 1 with ERR_PNPM_IGNORED_BUILDS
+# and every later `pnpm <script>` re-ran the install and failed again.
+#
+# Only esbuild keeps its script: it checks, and if missing fetches, the platform binary that tsx
+# and vitest run on. The rest are skipped on purpose, which is what production has always run
+# with: @coinbase/x402 only prints a ToS notice, the two opensea packages only run husky, and
+# bigint-buffer, bufferutil, keccak, secp256k1 and utf-8-validate are native speed-ups that fall
+# back to pure JS when unbuilt.
 allowBuilds:
-  '@coinbase/x402': set this to true or false
-  '@opensea/seaport-js': set this to true or false
-  bigint-buffer: set this to true or false
-  bufferutil: set this to true or false
+  '@coinbase/x402': false
+  '@opensea/seaport-js': false
+  bigint-buffer: false
+  bufferutil: false
   esbuild: true
-  keccak: set this to true or false
-  opensea-js: set this to true or false
-  secp256k1: set this to true or false
-  utf-8-validate: set this to true or false
+  keccak: false
+  opensea-js: false
+  secp256k1: false
+  utf-8-validate: false

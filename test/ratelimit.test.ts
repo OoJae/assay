@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest'
 import {
   RateLimiter,
+  InFlight,
   clientIp,
   normaliseIp,
+  toolBucket,
   trustedProxies,
   LIMITS,
   EXPENSIVE_TOOLS,
+  HEAVY_TOOL_CONCURRENCY,
+  HEAVY_TOOL_CONCURRENCY_PER_IP,
   MAX_TRACKED_CLIENTS,
 } from '../src/mcp/ratelimit.js'
 
@@ -49,6 +53,123 @@ describe('rate limiter', () => {
   it('the expensive sweep tool is limited far more tightly than cheap reads', () => {
     expect(EXPENSIVE_TOOLS.has('assay_check_symbol')).toBe(true)
     expect(LIMITS.expensiveCall.max).toBeLessThan(LIMITS.cheapCall.max)
+  })
+})
+
+describe('tool buckets', () => {
+  it('meters check_contract in its own bucket, not the 60/min cheap one', () => {
+    // It sat in the cheap bucket while it ran the full audit on every call: one IP could drive
+    // ~1,900 RPC reads a minute from the address the paid agent shares.
+    const b = toolBucket('assay_check_contract')
+    expect(b.key).toBe('contract')
+    expect(b.key).not.toBe(toolBucket('assay_findings').key)
+    expect(b.limit.max).toBeLessThan(LIMITS.cheapCall.max)
+  })
+
+  it('keeps check_symbol in the sweep bucket and everything else cheap', () => {
+    expect(toolBucket('assay_check_symbol')).toMatchObject({ key: 'exp', limit: LIMITS.expensiveCall })
+    expect(toolBucket('assay_true_position')).toMatchObject({ key: 'cheap', limit: LIMITS.cheapCall })
+    expect(toolBucket('no_such_tool')).toMatchObject({ key: 'cheap', limit: LIMITS.cheapCall })
+  })
+
+  it('a caller who spends the contract bucket still has its cheap reads', () => {
+    const rl = new RateLimiter()
+    const c = toolBucket('assay_check_contract')
+    for (let i = 0; i < c.limit.max; i++) expect(rl.check(`${c.key}:1.2.3.4`, c.limit, 0)).toBeNull()
+    expect(rl.check(`${c.key}:1.2.3.4`, c.limit, 0)).not.toBeNull()
+    const r = toolBucket('assay_findings')
+    expect(rl.check(`${r.key}:1.2.3.4`, r.limit, 0)).toBeNull()
+  })
+})
+
+describe('process-wide in-flight cap', () => {
+  it('refuses a call over the cap and admits one once a slot is released', () => {
+    const gate = new InFlight({ heavy: 2 })
+    const a = gate.tryEnter('heavy')
+    const b = gate.tryEnter('heavy')
+    expect(a).not.toBeNull()
+    expect(b).not.toBeNull()
+    expect(gate.tryEnter('heavy')).toBeNull()
+    a!()
+    expect(gate.tryEnter('heavy')).not.toBeNull()
+  })
+
+  it('a release called twice does not hand out a slot it never held', () => {
+    const gate = new InFlight({ heavy: 1 })
+    const a = gate.tryEnter('heavy')!
+    a()
+    a()
+    expect(gate.count('heavy')).toBe(0)
+    expect(gate.tryEnter('heavy')).not.toBeNull()
+    expect(gate.tryEnter('heavy')).toBeNull()
+  })
+
+  it('never caps a tool it has no limit for', () => {
+    const gate = new InFlight({ heavy: 1 })
+    for (let i = 0; i < 50; i++) expect(gate.tryEnter('assay_findings')).not.toBeNull()
+  })
+
+  it('one address holds at most its share, and the rest stay open to everyone else', () => {
+    const gate = new InFlight({ heavy: 4 }, { heavy: 2 })
+    const mine = [gate.tryEnter('heavy', '1.1.1.1'), gate.tryEnter('heavy', '1.1.1.1')]
+    expect(mine.every(Boolean)).toBe(true)
+    expect(gate.tryEnter('heavy', '1.1.1.1')).toBeNull()
+    expect(gate.count('heavy', '1.1.1.1')).toBe(2)
+    // Another address still gets in, up to the process cap.
+    expect(gate.tryEnter('heavy', '2.2.2.2')).not.toBeNull()
+    expect(gate.tryEnter('heavy', '3.3.3.3')).not.toBeNull()
+    expect(gate.tryEnter('heavy', '4.4.4.4')).toBeNull()
+    mine[0]!()
+    expect(gate.count('heavy', '1.1.1.1')).toBe(1)
+    expect(gate.tryEnter('heavy', '1.1.1.1')).not.toBeNull()
+  })
+
+  it('gives no address every slot of any heavy tool', () => {
+    for (const [tool, cap] of Object.entries(HEAVY_TOOL_CONCURRENCY)) {
+      expect([tool, HEAVY_TOOL_CONCURRENCY_PER_IP[tool]! < cap]).toEqual([tool, true])
+    }
+  })
+
+  it('caps every chain-reading tool, tightest for the sweep', () => {
+    expect(HEAVY_TOOL_CONCURRENCY.assay_check_symbol).toBeLessThan(HEAVY_TOOL_CONCURRENCY.assay_check_contract!)
+    expect(HEAVY_TOOL_CONCURRENCY.assay_true_position).toBeGreaterThan(0)
+    expect(HEAVY_TOOL_CONCURRENCY.assay_findings).toBeUndefined()
+  })
+})
+
+describe('a full bucket map evicts, it does not lock everyone out', () => {
+  const limit = { max: 1, windowMs: 60_000 }
+
+  it('admits a new client when the map is full', () => {
+    // It used to fail CLOSED: once rotating addresses filled the map, every NEW client got a 429,
+    // including the wall's fetches of /findings.json, which arrive from a fresh Vercel IP almost
+    // every render and fall back to the committed copy when refused.
+    const rl = new RateLimiter(3)
+    for (const k of ['a', 'b', 'c']) rl.check(k, limit, 0)
+    expect(rl.check('wall', limit, 0)).toBeNull()
+    expect(rl.size).toBe(3)
+  })
+
+  it('evicts the key used longest ago, not the one just used', () => {
+    const rl = new RateLimiter(3)
+    for (const k of ['a', 'b', 'c']) rl.check(k, limit, 0)
+    // 'a' is at its limit and asks again, which makes it the most recently used.
+    expect(rl.check('a', limit, 0)).not.toBeNull()
+    rl.check('d', limit, 0)
+    // 'b' went: it now gets a fresh bucket. 'a' kept its count and is still limited.
+    expect(rl.check('a', limit, 0)).not.toBeNull()
+    expect(rl.check('b', limit, 0)).toBeNull()
+  })
+
+  it('a caller being limited cannot shed its count by churning other keys', () => {
+    const rl = new RateLimiter(100)
+    expect(rl.check('attacker', limit, 0)).toBeNull()
+    let allowed = 0
+    for (let i = 0; i < 1_000; i++) {
+      rl.check(`churn-${i}`, limit, 0)
+      if (rl.check('attacker', limit, 0) === null) allowed++
+    }
+    expect(allowed).toBe(0)
   })
 })
 

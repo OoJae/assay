@@ -3,6 +3,7 @@ import * as dotenv from 'dotenv'
 import { PlatformClient } from '@openserv-labs/client'
 import { privateKeyToAccount } from 'viem/accounts'
 import { readFileSync } from 'node:fs'
+import { assertEnvPrivate } from '../src/lib/envfile.js'
 
 /**
  * Point an x402 trigger's payTo at the wallet ASSAY actually controls.
@@ -22,6 +23,7 @@ import { readFileSync } from 'node:fs'
  *   pnpm payto [triggerId]      (defaults to the provisioned true-position trigger)
  */
 dotenv.config({ override: true })
+assertEnvPrivate()
 
 const pk = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined
 if (!pk) throw new Error('WALLET_PRIVATE_KEY missing — run pnpm wallets')

@@ -3,6 +3,9 @@ import { createPublicClient, http, formatEther, formatUnits, erc20Abi } from 'vi
 import { base } from 'viem/chains'
 import { privateKeyToAccount } from 'viem/accounts'
 import { readFileSync, existsSync } from 'node:fs'
+import { assertEnvPrivate } from '../src/lib/envfile.js'
+
+assertEnvPrivate()
 
 const USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' as const
 

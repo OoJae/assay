@@ -55,41 +55,104 @@ export function is24x5(feed: ChainlinkFeed): boolean {
 }
 
 /**
- * Is the US equity market plausibly closed at this instant?
+ * How far past its heartbeat a feed may be before it counts as stale.
  *
- * Used only as a WEAK HINT. A hardcoded calendar gets DST and market holidays wrong, and
- * mislabelling a scheduled closure as an incident is the failure mode that would discredit
- * this whole product. The primary signal is cohort corroboration — see `scheduledClosure()`.
+ * A heartbeat is when the node SENDS the update, not when it lands. SGOV only updates on its
+ * heartbeat, and its consecutive rounds (52-64) are 86,400-86,426s apart: every day, for up to
+ * ~26s around 00:00 UTC, a strict `age > heartbeat` called it stale. 00:00 UTC is inside the 24/5
+ * session with the rest of the cohort fresh, so a sweep landing in that window published a
+ * high-severity "stale DURING MARKET HOURS" incident against a feed that was on schedule.
  *
- * Window is deliberately GENEROUS (Fri 22:00 UTC -> Mon 02:00 UTC) so that we err toward
- * "expected" rather than toward accusing anyone.
+ * Ten minutes is over twenty times the worst overshoot measured and under 1% of the 86,400s
+ * heartbeat every Robinhood feed publishes, so a feed that has genuinely stopped is still caught.
+ */
+export const HEARTBEAT_GRACE_SECONDS = 600
+
+/** True when a feed's age is past its heartbeat by more than the delivery grace above. */
+export function pastHeartbeat(ageSeconds: number, heartbeat: number): boolean {
+  return ageSeconds > heartbeat + HEARTBEAT_GRACE_SECONDS
+}
+
+/**
+ * The 24/5 US equity session, in New York time: it closes Friday 20:00 and reopens Sunday 20:00.
+ *
+ * The earlier window was fixed in UTC (Fri 22:00 -> Mon 02:00) because a calendar was only a
+ * tiebreaker. Now that the clock decides (see `scheduledClosure`), its edges are visible: that
+ * window opened two to three hours before the Friday close and ran one to two hours past the
+ * Sunday reopen, depending on DST. Intl resolves America/New_York with its DST rules, so no
+ * table is kept here.
+ */
+const NEW_YORK_CLOCK = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York',
+  weekday: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+})
+const WEEKDAY: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+const MINUTES_PER_DAY = 24 * 60
+const SESSION_CLOSES = 5 * MINUTES_PER_DAY + 20 * 60 // Friday 20:00 New York
+const SESSION_REOPENS = 0 * MINUTES_PER_DAY + 20 * 60 // Sunday 20:00 New York
+
+/**
+ * How long after the reopen the clock still says closed.
+ *
+ * The cohort does not refresh at 20:00:00. On Monday 2026-09-21 the 35 feeds made their first
+ * post-weekend updates between 00:00:19 and 00:00:50 UTC, so a cohort measured inside those 31
+ * seconds reads as half stale, below the 90% that corroborates a closure, and every feed not yet
+ * refreshed would be published as an incident. Fifteen minutes covers that window with room to
+ * spare, and it only delays an incident call; it never makes one.
+ */
+export const REOPEN_SETTLE_MINUTES = 15
+
+/** Minutes since Sunday 00:00 in New York at this instant. */
+function newYorkMinuteOfWeek(atSeconds: number): number {
+  const parts = NEW_YORK_CLOCK.formatToParts(new Date(atSeconds * 1000))
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? ''
+  return WEEKDAY[part('weekday')]! * MINUTES_PER_DAY + Number(part('hour')) * 60 + Number(part('minute'))
+}
+
+/**
+ * Is the US equity market inside its scheduled weekend closure at this instant?
+ *
+ * Weekday market holidays are not in here. There is no holiday table to go stale; the cohort
+ * covers them instead — see `scheduledClosure()`.
  */
 export function isEquityMarketClosed(atSeconds: number): boolean {
-  const d = new Date(atSeconds * 1000)
-  const day = d.getUTCDay() // 0 Sun .. 6 Sat
-  const hour = d.getUTCHours()
-  if (day === 6 || day === 0) return true // all of Saturday and Sunday UTC
-  if (day === 5 && hour >= 22) return true // Friday evening
-  if (day === 1 && hour < 2) return true // early Monday, before the EST/EDT open settles
-  return false
+  const m = newYorkMinuteOfWeek(atSeconds)
+  return m >= SESSION_CLOSES || m < SESSION_REOPENS + REOPEN_SETTLE_MINUTES
 }
+
+/**
+ * The stale fraction at which the cohort itself corroborates a closure.
+ *
+ * Exported because a closure the clock called is not one the cohort corroborated: on a Saturday
+ * morning 1 of 35 feeds can be stale and the market is still closed. Anything that SAYS the cohort
+ * corroborates the closure (a finding statement, the README line) has to test this, not
+ * `marketClosed`, or it prints "1 of 35 stale, which corroborates a closure".
+ */
+export const COHORT_CLOSURE_FRACTION = 0.9
 
 /**
  * Decide whether staleness across the 24/5 cohort is a SCHEDULED CLOSURE rather than an incident.
  *
- * All 35 Robinhood equity feeds share one publication schedule. If nearly all of them are stale
- * at the same instant, the overwhelmingly likelier explanation is that the market is shut — not
- * 35 simultaneous independent oracle failures. Conversely, one stale feed among fresh peers is a
- * genuine incident regardless of what any calendar says.
+ * The clock decides first. Inside the weekend closure, staleness is expected whatever fraction of
+ * the cohort has gone stale so far, because the cohort does not go stale together: each feed's
+ * last Friday update lands whenever its price last moved, and its heartbeat runs from there.
+ * Measured on-chain for Saturday 2026-09-19: SPY last updated Fri 12:22 UTC and went stale Sat
+ * 12:22, AAPL at 15:11, QQQ at 19:50, and SGOV not until Sun 00:01. The old rule called anything
+ * at or below 20% stale an incident before it looked at the clock, so for about 7.5 hours that
+ * Saturday it would have published seven named feeds as "stale DURING MARKET HOURS", the exact
+ * accusation this product exists to prevent, while the wall said the market was open.
  *
- * This is more robust than a hardcoded calendar: it needs no DST handling and no holiday table.
+ * Outside the weekend, the cohort covers what the clock cannot: on a weekday market holiday nearly
+ * the whole cohort goes stale together, so 90% or more is read as a closure. One stale feed among
+ * fresh peers on a weekday is still an incident.
  */
 export function scheduledClosure(staleCount: number, cohortSize: number, clockHint: boolean): boolean {
-  if (cohortSize < 3) return clockHint // too small to corroborate; fall back to the clock
-  const fraction = staleCount / cohortSize
-  if (fraction >= 0.9) return true // the whole cohort is down together -> closed
-  if (fraction <= 0.2) return false // isolated -> incident
-  return clockHint // ambiguous middle -> defer to the clock
+  if (clockHint) return true
+  if (cohortSize < 3) return false // too small to corroborate a holiday
+  return staleCount / cohortSize >= COHORT_CLOSURE_FRACTION // the whole cohort is down together -> closed
 }
 
 /**

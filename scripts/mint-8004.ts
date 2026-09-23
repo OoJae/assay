@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path'
 import { privateKeyToAccount } from 'viem/accounts'
 import { createPublicClient, createWalletClient, http, formatEther, parseEventLogs } from 'viem'
 import { base } from 'viem/chains'
+import { mergeIdentityState, type Erc8004State } from '../src/attest/registry.js'
 
 /**
  * Mint ASSAY's ERC-8004 identity DIRECTLY against the IdentityRegistry.
@@ -75,16 +76,6 @@ const wallet = createWalletClient({ account, chain: base, transport: http() })
  * concludes nothing has been minted, and mints. The guard has to be anchored to the repo.
  */
 const STATE = join(dirname(fileURLToPath(import.meta.url)), '..', 'data', 'erc8004.json')
-interface Erc8004State {
-  agentId: string
-  agentURI: string
-  owner: string
-  txHash: string
-  chainId: number
-  duplicates?: string[]
-  note?: string
-  frozen?: Array<{ agentId: string; owner: string; reason: string }>
-}
 const previous: Erc8004State | null = existsSync(STATE)
   ? (JSON.parse(readFileSync(STATE, 'utf8')) as Erc8004State)
   : null
@@ -100,6 +91,18 @@ if (previous && !process.argv.includes('--force')) {
   if (prev.duplicates?.length) console.log('duplicates', prev.duplicates.join(', '))
   console.log('\npass --force to mint anyway')
   process.exit(0)
+}
+
+/**
+ * Decided BEFORE the mint, not discovered after it. A new owner freezes the previous identity, and
+ * the record must say why; failing that check after an irreversible mint would leave a fourth
+ * identity with no record at all.
+ */
+const frozenReason = process.argv.find((a) => a.startsWith('--frozen-reason='))?.split('=').slice(1).join('=')
+if (previous && previous.owner.toLowerCase() !== account.address.toLowerCase() && !frozenReason) {
+  console.error(`this key is not the recorded owner (${previous.owner}), so ${previous.agentId} would become FROZEN.`)
+  console.error('pass --frozen-reason="…" to record why its key is no longer used.')
+  process.exit(1)
 }
 
 console.log(`signer   ${account.address}`)
@@ -160,67 +163,21 @@ for (let i = 0; i < 5; i++) {
 console.log('tokenURI   ', uri || '(not yet readable — state lag, retry shortly)')
 
 /**
- * A forced re-mint APPENDS to the duplicate record; it never erases it.
+ * A forced re-mint APPENDS to the record; it never erases it — see mergeIdentityState.
  *
  * The previous version wrote a fresh object, so `--force` silently dropped the `duplicates` and
  * `note` fields — the disclosure that two identities exist and why. Quietly deleting the record
  * of one's own mistake is precisely the behaviour this project grades other people for, and it
  * would have happened on the one code path taken while already knowing about the duplicate.
  */
-const ownerChangedEarly = Boolean(previous && previous.owner.toLowerCase() !== account.address.toLowerCase())
-// A previous identity under a DIFFERENT owner is frozen, not a duplicate — those are different
-// claims and conflating them would misdescribe why it exists. Only same-owner re-mints are
-// duplicates.
-const duplicates = previous
-  ? [...(previous.duplicates ?? []), ...(ownerChangedEarly ? [] : [previous.agentId])].filter(
-      (id) => id !== agentId.toString(),
-    )
-  : []
-
-/**
- * A NEW OWNER makes the previous note false, so it must not be carried forward.
- *
- * The note on 95265 read "95265 is canonical". When its signing key was lost and a replacement was
- * minted from a new wallet, preserving that sentence — which the code above would otherwise do —
- * would have recorded a false claim in the one file that exists to keep this history honest.
- */
-const ownerChanged = Boolean(previous && previous.owner.toLowerCase() !== account.address.toLowerCase())
-const supersededNote = ownerChanged
-  ? `${agentId} is canonical, owned by ${account.address}. ${previous!.agentId} (owner ${previous!.owner}) is FROZEN: ` +
-    `its signing key was lost when the local .env was overwritten with a copy of .env.example, so it ` +
-    `can never be updated again. Everything it already published — its agent card, the attestation ` +
-    `under it, and the x402 payments to its wallet — remains true and verifiable. ` +
-    ((previous!.duplicates ?? []).length
-      ? `${previous!.duplicates!.join(', ')} ${previous!.duplicates!.length > 1 ? 'were' : 'was'} an accidental duplicate of ${previous!.agentId}. `
-      : '') +
-    `Recorded rather than hidden.`
-  : null
-
-writeFileSync(
-  STATE,
-  JSON.stringify(
-    {
-      agentId: agentId.toString(),
-      agentURI: AGENT_URI,
-      owner: account.address,
-      txHash: hash,
-      chainId: 8453,
-      ...(duplicates.length ? { duplicates } : {}),
-      ...(ownerChanged ? { frozen: [{ agentId: previous!.agentId, owner: previous!.owner, reason: 'signing key lost' }] } : {}),
-      ...(supersededNote || previous?.note || duplicates.length
-        ? {
-            note:
-              supersededNote ??
-              previous?.note ??
-              `${agentId} is canonical. ${duplicates.join(', ')} ${duplicates.length > 1 ? 'were' : 'was'} ` +
-                `minted earlier by this script; all are owned by the same wallet and carry the same ` +
-                `agentURI. Recorded rather than hidden.`,
-          }
-        : {}),
-    },
-    null,
-    2,
-  ),
+const next = mergeIdentityState(
+  previous,
+  { agentId: agentId.toString(), agentURI: AGENT_URI, owner: account.address, txHash: hash },
+  frozenReason,
 )
+writeFileSync(STATE, JSON.stringify(next, null, 2))
 console.log(`\nrecorded in ${STATE}`)
-if (duplicates.length) console.log(`duplicate identities disclosed: ${duplicates.join(', ')}`)
+if (next.duplicates?.length) console.log(`duplicate identities disclosed: ${next.duplicates.join(', ')}`)
+if (next.frozen?.length) console.log(`frozen identities disclosed:    ${next.frozen.map((f) => f.agentId).join(', ')}`)
+// The card names the canonical registration; a new canonical id makes it wrong until it is edited.
+console.log(`\nNEXT: set registrations[0].agentId and erc8004.canonicalAgentId in web/public/agent-card.json to ${agentId}, then deploy.`)

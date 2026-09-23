@@ -96,7 +96,14 @@ export function backupEnv(path = ENV_PATH, to = ENV_BACKUP_PATH): string | null 
   try {
     mkdirSync(dirname(to), { recursive: true, mode: 0o700 })
     const body = readFileSync(path, 'utf8')
-    writeFileSync(`${to}.${new Date().toISOString().replace(/[:.]/g, '-')}`, body, { mode: 0o600 })
+    // 'wx' is the never-overwrite guarantee. The name alone was not: it is a millisecond stamp, and
+    // two backups in the same millisecond (a wipe followed by a fresh key, in one process) wrote the
+    // second over the first, so the copy that held the surviving key was the one destroyed. The
+    // test for exactly that scenario failed about 8 runs in 10.
+    const stamp = `${to}.${new Date().toISOString().replace(/[:.]/g, '-')}`
+    let dated = stamp
+    for (let n = 1; existsSync(dated); n++) dated = `${stamp}-${n}`
+    writeFileSync(dated, body, { mode: 0o600, flag: 'wx' })
 
     const next = parse(body)
     const lost = existsSync(to)

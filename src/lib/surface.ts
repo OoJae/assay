@@ -3,7 +3,9 @@ import { truePosition, didYouMean, type TruePosition } from './position.js'
 import { fetchRhAssets, fetchChainlinkFeeds, feedForSymbol } from './sources.js'
 import { sweep } from '../sweep/detect.js'
 import type { VerifiedFinding } from '../verify/index.js'
-import type { DefectClass, Severity } from '../sweep/types.js'
+import type { DefectClass, Evidence, Severity } from '../sweep/types.js'
+import type { IntegratorRole, IntegratorVerdict } from '../sweep/integrators.js'
+import { PAID_ENDPOINTS } from './endpoints.js'
 
 /**
  * ONE definition of each answer, shared by every surface that sells it.
@@ -111,21 +113,9 @@ export interface FindingsQuery {
   limit?: number
 }
 
-/**
- * The class whose findings name a third-party CONTRACT rather than an asset.
- *
- * These are withheld from every public surface and returned only through the paid/MCP call, which
- * is the decision taken when the integrator audit was built: the wall states a COUNT and a DOLLAR
- * FIGURE, and a name costs $0.25. The reason is not squeamishness — it is that a NOT_AWARE verdict
- * establishes the absence of a call, not the presence of a mistake, and a contract that merely
- * custodies a token should not be findable by name on a public page over a risk it may not carry.
- */
-const NAMED_INTEGRATOR_CLASS = 'INTEGRATOR_NOT_MULTIPLIER_AWARE'
-
-/** Strip named-integrator findings. Applied wherever a payload can reach the public. */
-export function withoutNamedIntegrators<T extends { defectClass: string }>(findings: T[]): T[] {
-  return findings.filter((f) => f.defectClass !== NAMED_INTEGRATOR_CLASS)
-}
+// The publication rule for named integrators lives in redact.ts; re-exported for existing callers.
+export { NAMED_INTEGRATOR_CLASS, withoutNamedIntegrators, redactSnapshot } from './redact.js'
+import { NAMED_INTEGRATOR_CLASS, isNamedIntegrator, withoutNamedIntegrators } from './redact.js'
 
 export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
   // Public by default. A caller that explicitly filters for the class gets an empty list and the
@@ -187,8 +177,8 @@ export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
       ? {
           note:
             'INTEGRATOR_NOT_MULTIPLIER_AWARE findings name a third-party contract and are not ' +
-            'returned on this endpoint. Use assay_check_contract(address) for a named audit with ' +
-            'its bytecode evidence.',
+            'returned on this endpoint. assay_check_contract(address) gives the free verdict for an ' +
+            `address you supply; its holdings and evidence are the paid audit at ${PAID_ENDPOINTS.checkContract.trigger}.`,
         }
       : {}),
   }
@@ -196,6 +186,40 @@ export function findingsPayload(q: FindingsQuery = {}, snap = loadSnapshot()) {
 
 export function truePositionPayload(p: TruePosition) {
   return p
+}
+
+/**
+ * The free half of assay_true_position: whether a reading is safe to act on, and why not, without
+ * the corrected position itself.
+ *
+ * The free MCP tool returned the same TruePosition the $0.01 x402 endpoint sells, so the paid tier
+ * had nothing in it. The verdict stays free because refusing is the safety-critical half — a
+ * caller about to move money learns that it should not, and why — and the figures are what is paid.
+ */
+export function truePositionVerdictPayload(p: TruePosition) {
+  const paid = PAID_ENDPOINTS.truePosition
+  return {
+    symbol: p.symbol,
+    holder: p.holder,
+    blockNumber: p.blockNumber,
+    observedAt: p.observedAt,
+    confidence: p.confidence,
+    refusalReason: p.refusalReason,
+    /** Which safety checks completed. `false` means UNKNOWN, not OK. */
+    checks: p.checks,
+    fullAnswer: {
+      priceUsd: paid.priceUsd,
+      x402: paid.trigger,
+      paywall: paid.paywall,
+      note:
+        'The share-equivalent count, token price, underlying share price and position value for this ' +
+        `holder are the paid ${paid.capability} answer ($${paid.priceUsd} over x402).`,
+    },
+  }
+}
+
+export async function truePositionVerdict(symbol: string, holder: `0x${string}`) {
+  return truePositionVerdictPayload(await truePosition(symbol, holder))
 }
 
 export interface CheckSymbolResult {
@@ -237,7 +261,13 @@ export async function checkSymbol(symbol: string): Promise<CheckSymbolResult> {
     }
   }
 
-  const r = await sweep({ symbols: [match] })
+  /**
+   * No integrator pass. It ran by default here, so this free tool returned every named
+   * INTEGRATOR_NOT_MULTIPLIER_AWARE contract for the ticker, with full addresses and citations,
+   * while the wall and /findings.json withheld the class. Names come only from the paid audit of an
+   * address the buyer supplies. The pass was also most of this tool's RPC cost.
+   */
+  const r = await sweep({ symbols: [match], integrators: false })
   /**
    * An asset we FAILED TO READ must never read as clean on the surface people pay for.
    *
@@ -260,9 +290,10 @@ export async function checkSymbol(symbol: string): Promise<CheckSymbolResult> {
     // caller cannot tell an expected weekend closure from an incident without it.
     marketClosed: r.marketClosed,
     cohort: r.cohort,
-    published: r.findings.length,
-    rejectedByVerifier: r.rejected.length,
-    findings: r.findings,
+    // Filtered as well, so a named row cannot reach this free tool even if the pass runs again.
+    published: withoutNamedIntegrators(r.findings).length,
+    rejectedByVerifier: r.rejected.filter((x) => !isNamedIntegrator(x.finding)).length,
+    findings: withoutNamedIntegrators(r.findings),
     chainNotes: r.chainNotes,
   }
 }
@@ -317,10 +348,20 @@ export async function checkSymbolSummary(symbol: string) {
  */
 export interface ContractAuditResult {
   address: string
-  /** AWARE | NOT_AWARE | PROXY_UNRESOLVED | EOA | TOO_SMALL */
-  verdict: string
-  /** False when no claim is made — a proxy that could not be resolved. */
+  /** AWARE | NOT_AWARE | NOT_APPLICABLE | PROXY_UNRESOLVED | EOA | TOO_SMALL */
+  verdict: IntegratorVerdict
+  /** NOT_APPLICABLE only: what the contract was recognised as, and the functions it implements that said so. */
+  role?: IntegratorRole
+  roleSelectors?: string[]
+  /**
+   * False when this result does not settle the question: the proxy could not be resolved, or a
+   * multiplier, balance or feed read failed. `incomplete` names the tokens affected.
+   */
   conclusive: boolean
+  /** Tokens whose multiplier, balance or feed read FAILED. Their exposure is unknown, not zero. */
+  incomplete: string[]
+  /** PROXY_UNRESOLVED only: which read failed. */
+  unresolvedReason?: string
   codeSize: number
   /** The bytecode actually tested, which for a proxy is the implementation's. */
   testedCodeSize?: number
@@ -330,10 +371,14 @@ export interface ContractAuditResult {
   codeHash: string
   blockNumber: string
   observedAt: string
-  /** Divergent-multiplier Stock Tokens this address holds, and the exposure on each. */
+  /** Stock Tokens whose on-chain uiMultiplier() is not exactly 1.0 at this block. Every one was checked. */
+  divergentTokensChecked: number
+  /** Divergent-multiplier Stock Tokens this address holds, and the exposure on each, all at `blockNumber`. */
   holdings: Array<{
     symbol: string
     token: string
+    /** On-chain uiMultiplier() at `blockNumber`, 1e18 fixed point. */
+    uiMultiplier: string
     multiplier: number
     tokenUnits: number
     shareEquivalents: number
@@ -341,70 +386,104 @@ export interface ContractAuditResult {
     misreadPct: number
     usdHeld: number | null
   }>
-  totalUsdHeld: number
+  /** Sum of usdHeld. null when any holding is unpriced or any read failed: unknown is not $0. */
+  totalUsdHeld: number | null
+  /** The priced holdings only — a lower bound whenever totalUsdHeld is null. */
+  pricedUsdHeld: number
+  /** Held tokens with no usable price. */
+  unpricedSymbols: string[]
+  /** Every read this result rests on, each re-runnable at its block. */
+  evidence: Evidence[]
   /** What this result does and does not establish. Always present. */
   interpretation: string
 }
 
-export async function auditContract(address: `0x${string}`): Promise<ContractAuditResult> {
-  const { classifyIntegrator, integratorExposure } = await import('../sweep/integrators.js')
+async function head() {
   const { rhClient } = await import('./chains.js')
-  const { readFeed } = await import('../sweep/oracle.js')
-
   const blockNumber = await rhClient.getBlockNumber()
   const block = await rhClient.getBlock({ blockNumber })
-  const observedAt = new Date(Number(block.timestamp) * 1000).toISOString()
+  return { blockNumber, nowSeconds: Number(block.timestamp), observedAt: new Date(Number(block.timestamp) * 1000).toISOString() }
+}
 
+/**
+ * How long the paid audit keeps reading holdings before it answers with what it has.
+ *
+ * The OpenServ agent gives each capability 45s and x402 allows 60s. 30s leaves room for the head,
+ * the classification and the directories before the scan, and for a read already in flight at
+ * the deadline, while still covering the 28.5s the full scan took from a laptop.
+ */
+export const AUDIT_READ_BUDGET_MS = 30_000
+
+/**
+ * THE INVARIANT truePosition() holds applies here too: a read that did not complete is never
+ * reported as one that found nothing. This dropped a failed balanceOf() with `continue`, counted an
+ * unreadable price as $0 (`totalUsdHeld: 0` for a contract holding 444 CCL, which has no feed),
+ * read balances at `latest` while citing the code at a pinned block, and quoted the REST registry's
+ * multiplier as uiMultiplier(). Every read is now pinned to one block, the multiplier comes from the
+ * chain, and anything that failed is named in `incomplete` with `conclusive: false`.
+ *
+ * The holdings scan stops reading AUDIT_READ_BUDGET_MS after the call starts; see scanHoldings.
+ */
+export async function auditContract(
+  address: `0x${string}`,
+  opts: { readBudgetMs?: number } = {},
+): Promise<ContractAuditResult> {
+  const { classifyIntegrator, holdingEvidence, integratorEvidence, scanHoldings, verdictInterpretation } =
+    await import('../sweep/integrators.js')
+  const deadline = Date.now() + (opts.readBudgetMs ?? AUDIT_READ_BUDGET_MS)
+
+  const { blockNumber, nowSeconds, observedAt } = await head()
   const reading = await classifyIntegrator(address, blockNumber)
   if (!reading) throw new Error(`could not read code at ${address}`)
 
   const [assets, feeds] = await Promise.all([fetchRhAssets(), fetchChainlinkFeeds()])
-  const holdings: ContractAuditResult['holdings'] = []
-  let totalUsdHeld = 0
-
-  for (const a of assets) {
-    const mult = Number((a as { currentMultiplier?: string }).currentMultiplier)
-    if (!Number.isFinite(mult) || Math.abs(mult - 1) <= 0.002) continue
+  const tokens = assets.flatMap((a) => {
     const dep = a.deployments?.find((d: { chainId: number }) => d.chainId === 4663)
-    if (!dep) continue
+    return dep ? [{ symbol: a.tokenSymbol, token: dep.contractAddress, feed: feedForSymbol(feeds, a.tokenSymbol) }] : []
+  })
+  const scan = await scanHoldings(reading, tokens, blockNumber, nowSeconds, deadline)
 
-    const feed = feedForSymbol(feeds, a.tokenSymbol)
-    let price: number | null = null
-    if (feed) {
-      const fr = await readFeed(feed.proxyAddress, feed.heartbeat, Number(block.timestamp), blockNumber)
-      if (fr?.usable) price = fr.price
-    }
-    const e = await integratorExposure(reading, a.tokenSymbol, dep.contractAddress, mult, price)
-    if (!e) continue
-    holdings.push({
-      symbol: e.symbol,
-      token: e.token,
-      multiplier: e.multiplier,
-      tokenUnits: e.tokenUnits,
-      shareEquivalents: e.shareEquivalents,
-      sharesUnaccounted: e.sharesUnaccounted,
-      misreadPct: e.misreadPct,
-      usdHeld: e.usdHeld,
-    })
-    totalUsdHeld += e.usdHeld ?? 0
-  }
+  const holdings: ContractAuditResult['holdings'] = scan.holdings.map((e) => ({
+    symbol: e.symbol,
+    token: e.token,
+    uiMultiplier: e.uiMultiplier.toString(),
+    multiplier: e.multiplier,
+    tokenUnits: e.tokenUnits,
+    shareEquivalents: e.shareEquivalents,
+    sharesUnaccounted: e.sharesUnaccounted,
+    misreadPct: e.misreadPct,
+    usdHeld: e.usdHeld,
+  }))
+  const pricedUsdHeld = holdings.reduce((t, h) => t + (h.usdHeld ?? 0), 0)
+  const totalKnown = scan.incomplete.length === 0 && scan.unpriced.length === 0
 
-  const conclusive = reading.verdict !== 'PROXY_UNRESOLVED'
-  const interpretation =
-    reading.verdict === 'AWARE'
-      ? 'This bytecode references uiMultiplier(), so it is capable of making the ERC-8056 correction. That it CAN does not prove it always DOES.'
-      : reading.verdict === 'NOT_AWARE'
-        ? 'This bytecode does not reference uiMultiplier(), so it cannot make that call directly. IT MAY NOT NEED TO — a contract that only custodies or routes the token is not wrong to lack it. What is established is the absence of the call, not the presence of a mistake.'
-        : reading.verdict === 'PROXY_UNRESOLVED'
-          ? 'This is a proxy whose implementation could not be resolved, so NO CLAIM IS MADE either way. Unchecked is not disproven.'
-          : reading.verdict === 'EOA'
-            ? 'No code at this address. An externally owned account holds tokens through whatever software controls its key, which cannot be inspected on-chain.'
-            : 'Too little bytecode to contain valuation logic — typically a stub or an unrecognised proxy. No claim is made.'
+  const gaps: string[] = []
+  const failed = scan.incomplete.filter((sym) => !scan.outOfTime.includes(sym))
+  if (failed.length)
+    gaps.push(
+      `${failed.length} token read(s) failed (${failed.join(', ')}), so the holdings ` +
+        `listed are INCOMPLETE and no total is given. This is not a clean result.`,
+    )
+  if (scan.outOfTime.length)
+    gaps.push(
+      `${scan.outOfTime.length} token(s) were not read before this audit's ` +
+        `${Number(((opts.readBudgetMs ?? AUDIT_READ_BUDGET_MS) / 1000).toFixed(1))}s read budget ran out ` +
+        `(${scan.outOfTime.join(', ')}), so the holdings listed are INCOMPLETE ` +
+        `and no total is given. The RPC was slow; this is not a clean result.`,
+    )
+  if (scan.unpriced.length)
+    gaps.push(
+      `${scan.unpriced.length} holding(s) have no usable price (${scan.unpriced.join(', ')}), so no dollar ` +
+        `total is given; pricedUsdHeld is a lower bound.`,
+    )
 
   return {
     address,
     verdict: reading.verdict,
-    conclusive,
+    ...(reading.role ? { role: reading.role, roleSelectors: reading.roleSelectors } : {}),
+    conclusive: reading.verdict !== 'PROXY_UNRESOLVED' && scan.incomplete.length === 0,
+    incomplete: scan.incomplete,
+    ...(reading.unresolvedReason ? { unresolvedReason: reading.unresolvedReason } : {}),
     codeSize: reading.codeSize,
     testedCodeSize: reading.testedCodeSize,
     implementation: reading.implementation,
@@ -413,8 +492,65 @@ export async function auditContract(address: `0x${string}`): Promise<ContractAud
     codeHash: reading.implementationCodeHash ?? reading.codeHash,
     blockNumber: blockNumber.toString(),
     observedAt,
+    divergentTokensChecked: scan.divergent.length,
     holdings,
-    totalUsdHeld,
-    interpretation,
+    totalUsdHeld: totalKnown ? pricedUsdHeld : null,
+    pricedUsdHeld,
+    unpricedSymbols: scan.unpriced,
+    evidence: [
+      ...integratorEvidence(reading, blockNumber, observedAt),
+      ...scan.holdings.flatMap((e) => holdingEvidence(e, observedAt)),
+    ],
+    interpretation: [verdictInterpretation(reading), ...gaps].join(' '),
+  }
+}
+
+/**
+ * The FREE answer about one contract: its verdict, and nothing about what it holds.
+ *
+ * The public MCP served the whole auditContract() result, holdings and dollars included, for free
+ * and at the cheap rate limit, while the same answer was sold for $0.25 over x402. The verdict is
+ * the part an agent needs before it acts ("can this counterparty make the ERC-8056 correction?"),
+ * so it stays free; the exposure figures are the paid audit, and this says where to get them.
+ */
+export interface ContractVerdict {
+  address: string
+  blockNumber: string
+  observedAt: string
+  verdict: IntegratorVerdict
+  /** NOT_APPLICABLE only. */
+  role?: IntegratorRole
+  codeHash: string
+  /** False when no claim is made either way — the proxy could not be resolved. */
+  conclusive: boolean
+  /** What the verdict does and does not establish. A bare NOT_AWARE reads as an accusation. */
+  interpretation: string
+  fullAudit: { priceUsd: number; x402: string; paywall: string; note: string }
+}
+
+export async function contractVerdict(address: `0x${string}`): Promise<ContractVerdict> {
+  const { classifyIntegrator, verdictInterpretation } = await import('../sweep/integrators.js')
+  const { blockNumber, observedAt } = await head()
+  const reading = await classifyIntegrator(address, blockNumber)
+  if (!reading) throw new Error(`could not read code at ${address}`)
+  const paid = PAID_ENDPOINTS.checkContract
+  return {
+    address,
+    blockNumber: blockNumber.toString(),
+    observedAt,
+    verdict: reading.verdict,
+    ...(reading.verdict === 'NOT_APPLICABLE' && reading.role ? { role: reading.role } : {}),
+    codeHash: reading.implementationCodeHash ?? reading.codeHash,
+    conclusive: reading.verdict !== 'PROXY_UNRESOLVED',
+    interpretation: verdictInterpretation(reading),
+    fullAudit: {
+      priceUsd: paid.priceUsd,
+      x402: paid.trigger,
+      paywall: paid.paywall,
+      note:
+        'Which divergent-multiplier Stock Tokens this address holds, the share-equivalents and dollars ' +
+        `at stake on each, and the cited reads behind them, are the paid ${paid.capability} audit ` +
+        `($${paid.priceUsd} over x402).`,
+    },
   }
 }

@@ -1,4 +1,13 @@
-import { sweep } from '../src/sweep/detect.js'
+import { sweep, type SweepResult } from '../src/sweep/detect.js'
+import {
+  privateSnapshotPath,
+  publicBoard,
+  shouldRefuse,
+  sweepStatusPath,
+  type GuardDecision,
+  type PreviousBoard,
+  type SweepStatus,
+} from '../src/sweep/guard.js'
 import { writeFileSync, readFileSync, existsSync, renameSync, unlinkSync } from 'node:fs'
 
 const args = process.argv.slice(2)
@@ -8,26 +17,7 @@ const force = args.includes('--force')
 // Overridable so the production host can write outside the git working tree — see
 // src/lib/surface.ts for why `git update-index --skip-worktree` is not sufficient.
 const OUT = process.env.ASSAY_FINDINGS_PATH || 'data/findings.json'
-// Unique per process. A single fixed temp path meant two overlapping sweeps -- the 8-minute timer
-// against a manual run, which is now a realistic overlap -- wrote each other's bytes, and whichever
-// renamed second published a file the first had already moved away.
-const TMP = `${OUT}.tmp.${process.pid}`
-
-/**
- * How far the published finding count may fall before this refuses to overwrite.
- *
- * The wall IS this file. A degraded RPC produces a sweep that legitimately finds almost nothing,
- * writes `findings: []` over good evidence, and exits 0 — so the failure looks like a clean run
- * and the board silently empties. A partial-symbol run is exempt, since a narrower scope is
- * expected to find less.
- */
-const REGRESSION_LIMIT = 0.8
-
-const result = await sweep({
-  onProgress: (d, t, s) => { if (d % 20 === 0 || d === t) process.stderr.write(`  ...${d}/${t} (${s})\n`) },
-  limit: limitArg ? Number(limitArg.split('=')[1]) : undefined,
-  symbols: symArg ? symArg.split('=')[1]!.split(',') : undefined,
-})
+const STATUS = sweepStatusPath(OUT)
 
 /**
  * A SCOPED run does not publish.
@@ -41,37 +31,118 @@ const scoped = Boolean(symArg || limitArg)
 const publishing = !scoped || args.includes('--publish')
 const target = publishing ? OUT : `${OUT.replace(/\.json$/, '')}.scoped.json`
 
-// Refuse a large regression unless it was asked for, and write atomically so an interrupted
-// run cannot leave a truncated board behind.
-//
-// The guard used to be gated on `!scoped`, so `--symbols=CRWD --publish` overwrote the full board
-// with a three-finding one at exit 0 and with no check at all -- the exact failure the guard
-// exists to prevent, reachable by the one flag that means "yes, publish this".
-if (publishing && !force && existsSync(OUT)) {
+/**
+ * Write through a temp file unique to this process, then rename.
+ *
+ * Unique per process: a single fixed temp path meant two overlapping sweeps -- the 8-minute timer
+ * against a manual run, which is now a realistic overlap -- wrote each other's bytes, and
+ * whichever renamed second published a file the first had already moved away. The rename means an
+ * interrupted run cannot leave a truncated board behind.
+ */
+function writeAtomic(path: string, body: string): void {
+  const tmp = `${path}.tmp.${process.pid}`
+  writeFileSync(tmp, body)
+  renameSync(tmp, path)
+  if (existsSync(tmp)) unlinkSync(tmp)
+}
+
+/**
+ * Record what this run did to the board. A scoped run that does not publish leaves the board, and
+ * so its status, alone. A failure to write the status is logged and does not fail the sweep.
+ */
+function recordStatus(s: Omit<SweepStatus, 'lastRunAt'>): void {
+  if (!publishing) return
+  const status: SweepStatus = { lastRunAt: new Date().toISOString(), ...s }
   try {
-    const prev = JSON.parse(readFileSync(OUT, 'utf8')) as { findings?: unknown[] }
-    const prevCount = prev.findings?.length ?? 0
-    if (prevCount > 0 && result.findings.length < prevCount * REGRESSION_LIMIT) {
-      console.error(
-        `\nREFUSING TO OVERWRITE ${OUT}.\n` +
-          `  published now:      ${result.findings.length}\n` +
-          `  published before:   ${prevCount}\n` +
-          `  sweep errors:       ${result.errors.length}\n` +
-          `  cohort read:        ${result.cohort.read}/${result.cohort.size}\n\n` +
-          `That is a drop of more than ${Math.round((1 - REGRESSION_LIMIT) * 100)}%, which is far more likely to be a\n` +
-          `degraded RPC than ${prevCount - result.findings.length} conditions clearing at once. The existing board is\n` +
-          `left untouched. Re-run with --force if the drop is real.`,
-      )
-      process.exit(2)
-    }
-  } catch {
-    // An unreadable previous artifact is not a reason to block a good sweep.
+    writeAtomic(STATUS, JSON.stringify(status, null, 2))
+  } catch (err) {
+    console.error(`could not write ${STATUS}: ${(err as Error).message}`)
   }
 }
 
-writeFileSync(TMP, JSON.stringify(result, null, 2))
-renameSync(TMP, target)
-if (existsSync(TMP)) unlinkSync(TMP)
+let result: SweepResult
+try {
+  result = await sweep({
+    onProgress: (d, t, s) => { if (d % 20 === 0 || d === t) process.stderr.write(`  ...${d}/${t} (${s})\n`) },
+    limit: limitArg ? Number(limitArg.split('=')[1]) : undefined,
+    symbols: symArg ? symArg.split('=')[1]!.split(',') : undefined,
+  })
+} catch (err) {
+  recordStatus({
+    outcome: 'refused',
+    reason: `sweep failed before producing a board: ${(err as Error).message}`,
+    published: 0,
+    errors: 0,
+    assetsScanned: 0,
+    block: null,
+  })
+  throw err
+}
+
+/**
+ * Named integrators never reach the published file.
+ *
+ * The committed data/findings.json carried 25 of them over 17 full addresses while the wall
+ * withheld the class, so one raw.githubusercontent.com request undid the withholding. The public
+ * board is redacted here, at the source, with a count of what was removed; the full snapshot goes
+ * to a gitignored `*.private.json` beside it for the operator.
+ */
+const board = publicBoard(result)
+
+// The guard judges the board that would be published against the one that is. It used to apply
+// only without --symbols, so `--symbols=CRWD --publish` overwrote the full board with a
+// three-finding one at exit 0 -- the exact failure the guard exists to prevent, reachable by the
+// one flag that means "yes, publish this".
+let decision: GuardDecision = {
+  refuse: false,
+  reason: force ? 'forced (--force): guard skipped' : 'scoped run: not published',
+}
+if (publishing && !force) {
+  let prev: PreviousBoard | null = null
+  if (existsSync(OUT)) {
+    try {
+      prev = JSON.parse(readFileSync(OUT, 'utf8')) as PreviousBoard
+    } catch {
+      // An unreadable previous artifact is not a reason to block a good sweep. Only the parse is
+      // in here: the guard itself must never fail open.
+    }
+  }
+  decision = shouldRefuse(prev, board)
+  if (decision.refuse) {
+    console.error(
+      `\nREFUSING TO OVERWRITE ${OUT}.\n` +
+        `  reason:             ${decision.reason}\n` +
+        `  published now:      ${board.findings.length}\n` +
+        `  published before:   ${prev?.findings?.length ?? 0}\n` +
+        `  sweep errors:       ${result.errors.length}\n` +
+        `  cohort read:        ${result.cohort.read}/${result.cohort.size}\n\n` +
+        `The existing board is left untouched and ${STATUS} records why.\n` +
+        `Re-run with --force if this board is right.`,
+    )
+    recordStatus({
+      outcome: 'refused',
+      reason: decision.reason,
+      published: board.findings.length,
+      errors: result.errors.length,
+      assetsScanned: result.assetsScanned,
+      block: result.blockNumber,
+    })
+    process.exit(2)
+  }
+}
+
+// Private first, so the public board is never newer than the snapshot it was redacted from.
+const privateTarget = privateSnapshotPath(target)
+writeAtomic(privateTarget, JSON.stringify(result, null, 2))
+writeAtomic(target, JSON.stringify(board, null, 2))
+recordStatus({
+  outcome: 'published',
+  reason: decision.reason,
+  published: board.findings.length,
+  errors: result.errors.length,
+  assetsScanned: result.assetsScanned,
+  block: result.blockNumber,
+})
 if (!publishing) {
   console.error(`\nscoped run — wrote ${target}, left ${OUT} untouched. Pass --publish to overwrite the board.`)
 }
@@ -83,7 +154,11 @@ const mismatch = result.rejected.filter((r) => r.reason === 'mismatch').length
 const unverifiable = result.rejected.filter((r) => r.reason === 'unverifiable_here').length
 const unchecked = result.rejected.filter((r) => r.reason === 'unchecked').length
 const noEvidence = result.rejected.filter((r) => r.reason === 'no_evidence').length
-console.log(`findings published: ${result.findings.length}`)
+console.log(
+  `findings published: ${board.findings.length}  (named integrators withheld: ` +
+    `${board.withheld.namedIntegrators} findings, ${board.withheld.namedIntegratorsRejected} rejected; ` +
+    `full snapshot in ${privateTarget})`,
+)
 console.log(
   `rejected: ${result.rejected.length}  (contradicted by chain state: ${mismatch}, ` +
     `block pruned: ${unverifiable}, RPC failed: ${unchecked}, no citations (our bug): ${noEvidence})`,

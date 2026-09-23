@@ -2,6 +2,8 @@ import type { ChainNote, Finding, Severity } from './types.js'
 import { evidence, readFeed, readStockToken } from './oracle.js'
 import {
   CHAINLINK_FEEDS_URL,
+  COHORT_CLOSURE_FRACTION,
+  REOPEN_SETTLE_MINUTES,
   RH_ASSETS_URL,
   RH_PRICES_URL,
   fetchChainlinkFeeds,
@@ -17,10 +19,17 @@ import {
 import { rhClient } from '../lib/chains.js'
 import { verifyFindingDetailed, type VerifiedFinding, type RejectedFinding } from '../verify/index.js'
 import {
+  INTEGRATOR_ROLES,
   classifyIntegrator,
   integratorExposure,
   integratorFinding,
+  isMaterial,
+  readMultiplier,
+  readPrice,
   recentCounterparties,
+  type IntegratorReading,
+  type IntegratorRole,
+  type PriceRead,
 } from './integrators.js'
 
 /**
@@ -32,8 +41,17 @@ import {
  *  - new ORACLE_STALE_INDETERMINATE, and cohort conclusions now require an 80% read quorum
  *  - ORACLE_PAUSED and PENDING_CORPORATE_ACTION now cite the bytes they actually fetched
  *  - CROSS_SURFACE_PRICE_MIX no longer asserts a cause for a residual it did not test
+ *
+ * v0.4.0 changed what a finding measures and when it is raised, so v0.3.0 results (the committed
+ * hard-trials run among them) must not be resumed or compared as if they were the same rules:
+ *  - SHARE_COUNT_MISREAD_RISK severity and impact.basisPoints measure |1 - 1/m|, the understatement
+ *    (CRWD 7,500 bps, was 30,000), and every numeric impact says what it measures
+ *  - the weekend closure is decided by the New York clock first, a feed gets a 600s delivery grace
+ *    past its heartbeat, and a closure the cohort did not corroborate no longer claims it did
+ *  - integrators: NOT_APPLICABLE for pools, pool managers, custody and distributors, counts of
+ *    distinct contracts, and a materiality floor below which nothing is named
  */
-export const METHODOLOGY_VERSION = 'assay-rh-v0.3.0'
+export const METHODOLOGY_VERSION = 'assay-rh-v0.4.0'
 
 /**
  * How often to re-read the chain head during a sweep.
@@ -57,6 +75,19 @@ const ONE_E18 = 10n ** 18n
  * coverage is stated rather than implied.
  */
 const INTEGRATOR_SCAN_CAP = 40
+
+/**
+ * Which divergent assets the integrator pass scans: those whose ON-CHAIN multiplier is more than
+ * 0.2% from 1.0. Measured on 2026-09-22, that is 9 of the 34 divergent assets (CRWD, CCL, PR, UPS,
+ * LHX, SGOV, UNH, KSS, ORCL); SPY, NVDA, AAPL and the rest move by less.
+ *
+ * A budget, not a judgement, for the same reason as INTEGRATOR_SCAN_CAP: each scanned asset costs
+ * five getLogs windows plus up to 40 classifications, and scanning all 34 would roughly quadruple a
+ * pass that has to finish inside the 8-minute cadence. The cutoff and the assets it left out are
+ * both reported in the aggregate, so the coverage is stated rather than implied. The paid
+ * single-address audit has no such budget and checks every divergent token.
+ */
+export const INTEGRATOR_MIN_DIVERGENCE = 0.002
 
 /**
  * Cohort pre-pass cache.
@@ -168,7 +199,7 @@ export interface SweepOptions {
 export interface SweepResult {
   blockNumber: string
   observedAt: string
-  /** True when cohort corroboration says the US equity market is shut. */
+  /** True when the 24/5 schedule, or on a weekday the cohort going stale together, says the US equity market is shut. */
   marketClosed: boolean
   /** Verifiable observations with no on-chain citation (absences). Never mixed into findings. */
   chainNotes: ChainNote[]
@@ -192,19 +223,68 @@ export interface SweepResult {
    * AGGREGATE integrator exposure, for the public wall.
    *
    * The named contracts live in `findings` (class INTEGRATOR_NOT_MULTIPLIER_AWARE) and are served
-   * only through the paid/MCP surface. The wall gets counts and dollars, so the public claim is
+   * only through the paid surface. The wall gets counts and dollars, so the public claim is
    * "N contracts holding $X cannot call uiMultiplier()" without naming anyone who might merely be
    * custodying the token.
    */
-  integrators: {
-    scanned: number
-    contracts: number
-    notAware: number
-    aware: number
-    proxyUnresolved: number
-    usdHeldByNotAware: number
-    sharesUnaccounted: number
-  }
+  integrators: IntegratorAggregate
+}
+
+/**
+ * Every contract COUNT here is of DISTINCT ADDRESSES. They used to be (address, token) pairs, so the
+ * v4 PoolManager counted four times and the wall's "25 of 66 contracts" was 17 contracts. Pair
+ * counts are kept, under names that say so (`holdings*`).
+ *
+ * Every dollar figure sums PRICED holdings only. A holding with no usable feed is counted in
+ * `unpriced*` instead of adding $0, so a dollar figure is a lower bound whenever its unpriced count
+ * is above zero.
+ */
+export interface IntegratorAggregate {
+  /** Distinct counterparty addresses examined. */
+  scanned: number
+  /** Distinct examined addresses with code. */
+  contracts: number
+  /** Distinct NOT_AWARE contracts holding a nonzero balance of a scanned token. */
+  notAware: number
+  /** Distinct contracts whose logic references uiMultiplier(). */
+  aware: number
+  /** Distinct proxies that could not be resolved. No claim is made about them. */
+  proxyUnresolved: number
+  /** Distinct NOT_APPLICABLE contracts (AMM pools, pool managers, custody, distributors) holding a scanned token. */
+  notApplicable: number
+  /** Distinct contracts with too little code to hold valuation logic. */
+  tooSmall: number
+  /** Distinct NOT_AWARE or NOT_APPLICABLE contracts that held none of the scanned tokens at the block. */
+  noHolding: number
+  /** NOT_APPLICABLE broken down by what each contract was recognised as. */
+  byRole: Record<IntegratorRole, { contracts: number; usdHeld: number }>
+  /** Priced NOT_AWARE holdings, balance x feed price. A lower bound when `unpricedNotAware` > 0. */
+  usdHeldByNotAware: number
+  /** Priced NOT_APPLICABLE holdings. A lower bound when `unpricedNotApplicable` > 0. */
+  usdHeldByNotApplicable: number
+  /** (address, token) holdings with no usable price, left out of the dollar sums. */
+  unpricedNotAware: number
+  unpricedNotApplicable: number
+  /** (address, token) holdings, NOT_AWARE and NOT_APPLICABLE. */
+  holdingsNotAware: number
+  holdingsNotApplicable: number
+  /** NOT_AWARE holdings below the materiality floor: counted above, never named. */
+  dustNotAware: number
+  /** |share-equivalents - raw balance| summed over NOT_AWARE holdings. */
+  sharesUnaccounted: number
+  /** (address, token) balance reads that failed. Not counted anywhere above, and not zero. */
+  unreadHoldings: number
+  /** The divergence cutoff, as a fraction (0.002 = 0.2%). */
+  minDivergence: number
+  /** Divergent assets whose holders were scanned. */
+  assetsScanned: string[]
+  /** Divergent assets at or under the cutoff, not scanned. */
+  assetsBelowCutoff: string[]
+  /**
+   * Divergent assets not scanned because a read failed: uiMultiplier() could not be re-read at the
+   * integrator block, or not one window of Transfer logs could be read.
+   */
+  assetsUnread: string[]
 }
 
 export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
@@ -287,6 +367,8 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
   let lastBlock = blockNumber
   let lastObservedAt = observedAt
   let lastNow = nowSeconds
+  /** Each asset's ON-CHAIN uiMultiplier(), for the integrator pass to gate on instead of REST. */
+  const onChainMultiplier = new Map<string, bigint>()
 
   for (const asset of scope) {
     const dep = rhDeployment(asset)!
@@ -339,6 +421,7 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
       })
       continue
     }
+    onChainMultiplier.set(sym, reading.multiplier)
     /**
      * How much a raw balanceOf() understates the true share count, as a percentage of the TRUE
      * value. This is bounded by 100% by construction.
@@ -359,6 +442,14 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
     const misreadPct = mult > 0 ? (1 - 1 / mult) * 100 : 0
     const understatementPct = Math.abs(misreadPct)
     const direction = misreadPct >= 0 ? 'understates' : 'overstates'
+    /**
+     * The same quantity in basis points, and the one severity is graded on.
+     *
+     * basisPoints used to be |m - 1| while percent was |1 - 1/m|, so the flagship CRWD page read
+     * "30,000 bps · 75%": two different measures side by side, the first being the "300%" framing
+     * retired above. One metric now, in two units.
+     */
+    const understatementBps = understatementPct * 100
 
     // --- Class 4: share-count misreport (only meaningful when multiplier != 1) ---
     if (multiplierUsable && divergenceBps > 0.01) {
@@ -387,7 +478,7 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
       findings.push({
         id: `${sym}-share-count`,
         defectClass: 'SHARE_COUNT_MISREAD_RISK',
-        severity: sev(divergenceBps),
+        severity: sev(understatementBps),
         subject: `${sym} (${token})`,
         affectedParty:
           `Any integrator that presents ${sym} balanceOf() as a share count. The contract itself ` +
@@ -403,9 +494,10 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
           `(the true count is ${mult.toFixed(4)}x the raw balance). ` +
           `Token value computed as balance * Chainlink feed price is unaffected, because the feed is already multiplier-adjusted.`,
         impact: {
-          basisPoints: Number(divergenceBps.toFixed(2)),
+          basisPoints: Number(understatementBps.toFixed(2)),
           /** Understatement as a share of the TRUE value. Bounded by 100% by construction. */
           percent: Number(understatementPct.toFixed(4)),
+          measures: `how far a raw balanceOf() read as shares ${direction} the true share count, as a share of the true count`,
           note:
             (rawShares !== null && trueShares !== null
               ? `totalSupply raw ${rawShares.toFixed(4)} tokens vs ${trueShares.toFixed(4)} share-equivalents ` +
@@ -492,6 +584,16 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
            */
           const indeterminate = !cohortM.quorum
           const scheduled = equity && cohortM.quorum && marketClosed
+          /**
+           * A closure the clock called is not one the cohort corroborated.
+           *
+           * The clock decides first now (src/lib/sources.ts), so on a Saturday morning the market is
+           * closed with 1 of 35 feeds stale. The statement used to say "1 of the 35 feeds ... are
+           * stale, which corroborates a scheduled market closure" on every scheduled finding, a
+           * false sentence on a byte-verified finding. It only claims corroboration when the cohort
+           * actually went stale together.
+           */
+          const corroborated = cohortM.read > 0 && cohortM.stale / cohortM.read >= COHORT_CLOSURE_FRACTION
           if (!scheduled && !indeterminate) stats.staleUnexpected++
           if (indeterminate) stats.staleIndeterminate++
           // C-6: the cohort was measured at ITS OWN block, up to ~17 minutes before this asset's
@@ -501,6 +603,12 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
             cohortM.blockNumber === blockNumber.toString()
               ? 'at this same block'
               : `at block ${cohortM.blockNumber} (this finding cites block ${blockNumber})`
+          // The title printed the TOTAL age as "Xh past heartbeat", so a weekend feed 23.9h late
+          // read as 47.9h late. It now states both, and says which is which.
+          const hours = (s: number) => `${Number((s / 3600).toFixed(1))}h`
+          const lateness =
+            `feed ${hours(reading2.ageSeconds)} old, ` +
+            `${hours(reading2.ageSeconds - feed.heartbeat)} past its ${hours(feed.heartbeat)} heartbeat`
           findings.push({
             id: `${sym}-stale-feed`,
             defectClass: indeterminate
@@ -520,10 +628,10 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
               `Any caller pricing ${sym} from this feed without checking updatedAt against the ` +
               `published ${feed.heartbeat}s heartbeat.`,
             title: indeterminate
-              ? `${sym}: feed ${(reading2.ageSeconds / 3600).toFixed(1)}h past heartbeat (cause undetermined — cohort unread)`
+              ? `${sym}: ${lateness} (cause undetermined — cohort unread)`
               : scheduled
-                ? `${sym}: feed ${(reading2.ageSeconds / 3600).toFixed(1)}h past heartbeat (market closed — no on-chain signal)`
-                : `${sym}: feed ${(reading2.ageSeconds / 3600).toFixed(1)}h past heartbeat DURING MARKET HOURS`,
+                ? `${sym}: ${lateness} (market closed — no on-chain signal)`
+                : `${sym}: ${lateness} DURING MARKET HOURS`,
             statement:
               `latestRoundData() for ${sym} returns updatedAt = ${reading2.updatedAt}, which is ` +
               `${reading2.ageSeconds} seconds (${(reading2.ageSeconds / 3600).toFixed(2)} hours) before the current block timestamp, ` +
@@ -536,10 +644,16 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
                   `itself is byte-verified; its cause is not claimed. ` +
                   `Robinhood's documentation requires callers to check updatedAt against the heartbeat either way.`
                 : scheduled
-                  ? `This feed is marked marketHours="${feed.docs?.marketHours}" and ${cohortM.stale} of the ` +
-                    `${cohortM.read} 24/5 equity feeds that could be read ${cohortWhen} are stale, which ` +
-                    `corroborates a scheduled market closure rather than an oracle incident. The staleness is ` +
-                    `therefore EXPECTED BY DESIGN. It is reported because the contract gives callers no on-chain ` +
+                  ? `This feed is marked marketHours="${feed.docs?.marketHours}" and ` +
+                    (corroborated
+                      ? `${cohortM.stale} of the ${cohortM.read} 24/5 equity feeds that could be read ${cohortWhen} ` +
+                        `are stale, which corroborates a scheduled market closure rather than an oracle incident. `
+                      : `the US equity market is closed per the published 24/5 schedule (Friday 20:00 to Sunday ` +
+                        `20:00 New York time, plus ${REOPEN_SETTLE_MINUTES} minutes for the feeds to refresh after the ` +
+                        `reopen); ${cohortM.stale} of the ${cohortM.read} 24/5 equity feeds that could be read ` +
+                        `${cohortWhen} are past their heartbeat so far. The cohort does not go stale together at ` +
+                        `the close: each feed's heartbeat runs from its own last update before it. `) +
+                    `The staleness is therefore EXPECTED BY DESIGN. It is reported because the contract gives callers no on-chain ` +
                     `way to distinguish it: latestRoundData() returns a price either way, and marketHours exists only in ` +
                     `off-chain metadata. Robinhood's documentation requires callers to check updatedAt against the heartbeat. ` +
                     `A caller without that guard is pricing off data up to ${(reading2.ageSeconds / 3600).toFixed(1)} hours old.`
@@ -615,6 +729,7 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
               impact: {
                 basisPoints: Number(divergenceBps.toFixed(2)),
                 percent: Number(((mult - 1) * 100).toFixed(4)),
+                measures: 'how far the on-chain token price differs from the off-chain share price, as a share of the share price',
                 note: `feed ${reading2.price.toFixed(4)} vs underlying-mid ${under.mid.toFixed(4)} x multiplier ${mult.toFixed(9)} = ${predicted.toFixed(4)}`,
               },
               evidence: [
@@ -724,6 +839,7 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
           `Chainlink feed price is multiplier-adjusted and steps with it.`,
         impact: {
           percent: Number((((newMult - mult) / mult) * 100).toFixed(4)),
+          measures: 'how much the share-equivalent count of a fixed balance changes at the effective time',
           note:
             `Share-equivalents for a fixed balance change by ${(((newMult - mult) / mult) * 100).toFixed(4)}% at ` +
             `${effective}. Cached multipliers become wrong at that instant.`,
@@ -770,61 +886,122 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
   //
   // Only DIVERGENT assets are scanned. Where the multiplier is 1.0 there is nothing to misread, so
   // naming a contract would be pure noise about a party with no exposure at all.
-  const integrators = {
+  //
+  // Gated on the ON-CHAIN multiplier from the asset pass, then re-read at the block the holdings
+  // are read at, so the multiplier a finding quotes is the one it cites. It used to be the REST
+  // registry's value, printed as "uiMultiplier() = X" with no citation behind it.
+  const integrators: IntegratorAggregate = {
     scanned: 0,
     contracts: 0,
     notAware: 0,
     aware: 0,
     proxyUnresolved: 0,
+    notApplicable: 0,
+    tooSmall: 0,
+    noHolding: 0,
+    byRole: Object.fromEntries(
+      INTEGRATOR_ROLES.map((r) => [r, { contracts: 0, usdHeld: 0 }]),
+    ) as IntegratorAggregate['byRole'],
     usdHeldByNotAware: 0,
+    usdHeldByNotApplicable: 0,
+    unpricedNotAware: 0,
+    unpricedNotApplicable: 0,
+    holdingsNotAware: 0,
+    holdingsNotApplicable: 0,
+    dustNotAware: 0,
     sharesUnaccounted: 0,
+    unreadHoldings: 0,
+    minDivergence: INTEGRATOR_MIN_DIVERGENCE,
+    assetsScanned: [],
+    assetsBelowCutoff: [],
+    assetsUnread: [],
   }
 
   if (opts.integrators !== false) {
     const seen = new Set<string>()
+    /** One classification per ADDRESS: the same pool or router turns up under several tokens. */
+    const classified = new Map<`0x${string}`, IntegratorReading | null>()
+    const holding = { notAware: new Set<string>(), notApplicable: new Set<string>(), unread: new Set<string>() }
     for (const asset of scope) {
-      const mult = Number((asset as { currentMultiplier?: string }).currentMultiplier)
-      if (!Number.isFinite(mult) || Math.abs(mult - 1) <= 0.002) continue
-      const dep = rhDeployment(asset)
-      if (!dep) continue
       const sym = asset.tokenSymbol
-      const feed = feedForSymbol(feeds, sym)
-
-      let priceUsd: number | null = null
-      if (feed) {
-        const fr = await readFeed(feed.proxyAddress, feed.heartbeat, lastNow, lastBlock)
-        if (fr?.usable) priceUsd = fr.price
-      }
-
-      let counterparties: Set<`0x${string}`>
-      try {
-        counterparties = await recentCounterparties(dep.contractAddress, lastBlock)
-      } catch {
+      const onChain = onChainMultiplier.get(sym)
+      // Unread in the asset pass (already in `errors`), or exactly 1.0: nothing to gate on.
+      if (onChain === undefined || onChain === ONE_E18) continue
+      if (Math.abs(Number(onChain) / 1e18 - 1) <= INTEGRATOR_MIN_DIVERGENCE) {
+        integrators.assetsBelowCutoff.push(sym)
         continue
       }
+      const dep = rhDeployment(asset)
+      if (!dep) continue
+      const m = await readMultiplier(sym, dep.contractAddress, lastBlock)
+      if (!m) {
+        // Kept out of `errors`, which the publish guard reads as unread ASSETS.
+        integrators.assetsUnread.push(sym)
+        continue
+      }
+      // Read the holders BEFORE counting the asset as scanned: `assetsScanned` is the public
+      // coverage statement, and an asset whose first Transfer-log window failed had no holder read.
+      const counterparties = await recentCounterparties(dep.contractAddress, lastBlock)
+      if (counterparties.windowsRead === 0) {
+        integrators.assetsUnread.push(sym)
+        continue
+      }
+      integrators.assetsScanned.push(sym)
 
-      for (const addr of [...counterparties].slice(0, INTEGRATOR_SCAN_CAP)) {
+      // A failed feed read leaves the price unknown: those holdings are counted as unpriced.
+      const feed = feedForSymbol(feeds, sym)
+      const price: PriceRead | null = feed ? (await readPrice(feed, lastNow, lastBlock)).price : null
+
+      for (const addr of [...counterparties.addrs].slice(0, INTEGRATOR_SCAN_CAP)) {
         const key = `${addr}:${sym}`
         if (seen.has(key)) continue
         seen.add(key)
-        integrators.scanned++
 
-        const reading = await classifyIntegrator(addr, lastBlock)
-        if (!reading || reading.verdict === 'EOA') continue
-        integrators.contracts++
-        if (reading.verdict === 'AWARE') { integrators.aware++; continue }
-        if (reading.verdict === 'PROXY_UNRESOLVED') { integrators.proxyUnresolved++; continue }
-        if (reading.verdict === 'TOO_SMALL') continue
+        let reading = classified.get(addr)
+        if (reading === undefined) {
+          reading = await classifyIntegrator(addr, lastBlock)
+          classified.set(addr, reading)
+        }
+        if (!reading || (reading.verdict !== 'NOT_AWARE' && reading.verdict !== 'NOT_APPLICABLE')) continue
 
-        const exposure = await integratorExposure(reading, sym, dep.contractAddress, mult, priceUsd)
-        if (!exposure) continue
+        const x = await integratorExposure(reading, m, price)
+        if (x.status === 'unreadable') {
+          integrators.unreadHoldings++
+          holding.unread.add(addr)
+          continue
+        }
+        if (x.status === 'empty') continue
+        const e = x.exposure
 
-        const f = integratorFinding(exposure, lastBlock, lastObservedAt, METHODOLOGY_VERSION)
+        if (reading.verdict === 'NOT_APPLICABLE') {
+          // Its own line, never inside the NOT_AWARE headline, and never named.
+          holding.notApplicable.add(addr)
+          integrators.holdingsNotApplicable++
+          if (e.usdHeld === null) integrators.unpricedNotApplicable++
+          else {
+            integrators.usdHeldByNotApplicable += e.usdHeld
+            if (reading.role) integrators.byRole[reading.role].usdHeld += e.usdHeld
+          }
+          continue
+        }
+
+        holding.notAware.add(addr)
+        integrators.holdingsNotAware++
+        integrators.sharesUnaccounted += Math.abs(e.sharesUnaccounted)
+        if (e.usdHeld === null) integrators.unpricedNotAware++
+        else integrators.usdHeldByNotAware += e.usdHeld
+        // Counted, never named.
+        if (!isMaterial(e)) {
+          integrators.dustNotAware++
+          continue
+        }
+
+        const f = integratorFinding(e, lastBlock, lastObservedAt, METHODOLOGY_VERSION)
         if (shouldVerify) {
           try {
             const r = await verifyFindingDetailed(f)
-            if (!r.ok) { rejected.push(r.rejected); continue }
-            verified.push(r.finding)
+            if (r.ok) verified.push(r.finding)
+            else rejected.push(r.rejected)
           } catch (err) {
             rejected.push({
               finding: f,
@@ -832,18 +1009,29 @@ export async function sweep(opts: SweepOptions = {}): Promise<SweepResult> {
               detail: `verification threw: ${(err as Error).message.slice(0, 160)}`,
               results: [],
             })
-            continue
           }
         } else {
           verified.push(f as VerifiedFinding)
         }
-        integrators.notAware++
-        integrators.sharesUnaccounted += exposure.sharesUnaccounted
-        integrators.usdHeldByNotAware += exposure.usdHeld ?? 0
       }
     }
-  }
 
+    // Distinct-address counts, once every holding has been read. The aggregate counts what was
+    // read at the pinned block; verification gates only the named finding.
+    for (const [addr, r] of classified) {
+      integrators.scanned++
+      if (!r || r.verdict === 'EOA') continue
+      integrators.contracts++
+      if (r.verdict === 'AWARE') integrators.aware++
+      else if (r.verdict === 'PROXY_UNRESOLVED') integrators.proxyUnresolved++
+      else if (r.verdict === 'TOO_SMALL') integrators.tooSmall++
+      else if (r.verdict === 'NOT_AWARE' && holding.notAware.has(addr)) integrators.notAware++
+      else if (r.verdict === 'NOT_APPLICABLE' && holding.notApplicable.has(addr)) {
+        integrators.notApplicable++
+        if (r.role) integrators.byRole[r.role].contracts++
+      } else if (!holding.unread.has(addr)) integrators.noHolding++
+    }
+  }
 
   // ---- Chain-level notes -----------------------------------------------------------
   // Absences. These carry sources a third party can check, not eth_call citations, so they

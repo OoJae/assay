@@ -29,7 +29,9 @@ export type DefectClass =
    * the asset that was read, this one names a party that reads it.
    *
    * Strictly an absence-of-capability claim, proven by eth_getCode and re-runnable by the verifier.
-   * It is NOT a claim that the contract misvalues anything — see src/sweep/integrators.ts.
+   * It is NOT a claim that the contract misvalues anything — see src/sweep/integrators.ts. AMM
+   * pools, pool managers, custody wallets and distributors are never this class (their verdict is
+   * NOT_APPLICABLE), and neither is a holding below the materiality floor.
    */
   | 'INTEGRATOR_NOT_MULTIPLIER_AWARE'
   | 'ORACLE_PAUSED'
@@ -61,6 +63,14 @@ export interface Evidence {
   contract: `0x${string}`
   /** Solidity signature actually called, e.g. "uiMultiplier()" */
   call: string
+  /**
+   * The exact calldata sent, for a call that takes arguments (e.g. "balanceOf(address)").
+   *
+   * A signature alone cannot be re-run when the call has arguments: `balanceOf(address)` cited
+   * without the holder is a promise nobody can check. Absent for argument-less calls, whose
+   * calldata is just the selector.
+   */
+  calldata?: `0x${string}`
   /** Raw hex returned by eth_call, byte-for-byte */
   rawReturn: string
   blockNumber: string
@@ -87,10 +97,19 @@ export interface Finding {
   title: string
   /** Strictly factual, neutral engineering language. No accusation, no intent. */
   statement: string
-  /** Quantified impact where it can be computed from chain state alone. */
+  /**
+   * Quantified impact where it can be computed from chain state alone.
+   *
+   * `basisPoints` and `percent` are ONE quantity in two units (basisPoints = percent x 100), and
+   * `measures` says what that quantity is. The share-count page used to render "30,000 bps · 75%"
+   * for CRWD: basisPoints was |m - 1| and percent was |1 - 1/m|, two different measures side by
+   * side, and the first was the "300%" framing the project had already retired as an overclaim.
+   */
   impact: {
     basisPoints?: number
     percent?: number
+    /** What `percent` measures, in words, so no surface has to guess. */
+    measures?: string
     note: string
   }
   evidence: Evidence[]

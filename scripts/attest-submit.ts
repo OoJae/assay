@@ -3,7 +3,14 @@ import * as dotenv from 'dotenv'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { privateKeyToAccount } from 'viem/accounts'
 import { VALIDATION_REGISTRY, validationRegistryAbi } from '../src/attest/registry.js'
-import { hashDocument, publicBase, walletFor } from '../src/attest/index.js'
+import {
+  confirmServed,
+  hashBytes,
+  publicBase,
+  requestReuse,
+  requestStatus,
+  walletFor,
+} from '../src/attest/index.js'
 
 /**
  * STEP 2 of 2: submit the attestation for the document ALREADY on disk and ALREADY published.
@@ -12,6 +19,9 @@ import { hashDocument, publicBase, walletFor } from '../src/attest/index.js'
  * responseURI serves byte-identical content, and only then signs. That ordering is the whole
  * guarantee: responseHash is worthless unless the bytes it commits to are the bytes a third party
  * can fetch.
+ *
+ * The same holds for the REQUEST. requestHash is keccak256 of the request document attest:build
+ * wrote, re-derived here from the bytes on disk and checked against the live requestURI.
  */
 dotenv.config({ override: true })
 
@@ -24,57 +34,76 @@ const pending = JSON.parse(readFileSync('data/attestation-pending.json', 'utf8')
   agentId: string
   tag: string
   score: number
+  requestHash?: `0x${string}`
+  requestFile?: string
+  requestURI?: string
   responseHash: `0x${string}`
   filename: string
+  responseURI?: string
 }
-const agentId = BigInt(st.agentId)
 
-// Hash the bytes on disk — never a freshly built object.
-const onDisk = readFileSync(pending.filename, 'utf8')
-const responseHash = hashDocument(onDisk)
-if (responseHash !== pending.responseHash) {
-  console.error(`the file changed since attest:build\n  built ${pending.responseHash}\n  disk  ${responseHash}`)
+function refuse(...lines: string[]): never {
+  for (const l of lines) console.error(l)
   process.exit(1)
 }
 
-const responseURI = `https://assay-steel.vercel.app/attestations/${st.agentId}.json`
-const requestURI = 'https://github.com/OoJae/assay#publication-ethics'
-const requestHash = hashDocument(requestURI)
+if (!pending.requestHash || !pending.requestFile || !pending.requestURI || !pending.responseURI) {
+  // The 95265 build predates per-request hashes, and it was submitted: data/attestation-self.json.
+  refuse('data/attestation-pending.json predates per-request hashes (it is the already-submitted 95265 build).', 'Run attest:build first.')
+}
+if (pending.agentId !== st.agentId) {
+  refuse(`the pending build is for agent ${pending.agentId}, but the canonical identity is ${st.agentId}. Run attest:build again.`)
+}
+const agentId = BigInt(st.agentId)
+
+// Hash the bytes on disk — never a freshly built object, and never decoded text.
+const responseHash = hashBytes(new Uint8Array(readFileSync(pending.filename)))
+if (responseHash !== pending.responseHash) {
+  refuse(`the file changed since attest:build\n  built ${pending.responseHash}\n  disk  ${responseHash}`)
+}
+const requestHash = hashBytes(new Uint8Array(readFileSync(pending.requestFile)))
+if (requestHash !== pending.requestHash) {
+  refuse(`the request changed since attest:build\n  built ${pending.requestHash}\n  disk  ${requestHash}`)
+}
+const { requestURI, responseURI } = pending
 
 console.log(`agentId      8453:${st.agentId}`)
+console.log(`requestURI   ${requestURI}`)
+console.log(`requestHash  ${requestHash}`)
 console.log(`responseURI  ${responseURI}`)
 console.log(`responseHash ${responseHash}`)
 
 // HARD PRECONDITION: the published bytes must match, or the attestation proves nothing.
-const servedRes = await fetch(responseURI, { cache: 'no-store' })
-if (!servedRes.ok) {
-  console.error(`\nresponseURI is not reachable (HTTP ${servedRes.status}). Deploy first.`)
-  process.exit(1)
-}
-const servedHash = hashDocument(await servedRes.text())
-if (servedHash !== responseHash) {
-  console.error(`\nMISMATCH — refusing to attest.\n  served ${servedHash}\n  disk   ${responseHash}`)
-  console.error(`Deploy ${pending.filename}, then re-run.`)
-  process.exit(1)
+for (const [label, uri, hash, file] of [
+  ['request', requestURI, requestHash, pending.requestFile],
+  ['response', responseURI, responseHash, pending.filename],
+] as const) {
+  const served = await confirmServed(uri, hash)
+  if (!served.ok) {
+    refuse(
+      served.servedHash
+        ? `\n${label} MISMATCH — refusing to attest.\n  served ${served.servedHash}\n  disk   ${hash}`
+        : `\n${label}URI is not reachable (HTTP ${served.status}). Deploy first.`,
+      `Deploy ${file}, then re-run.`,
+    )
+  }
 }
 console.log('published bytes match — proceeding\n')
 
 const pub = publicBase()
 const wallet = walletFor(pk)
 
-let alreadyRequested = false
-try {
-  const ex = (await pub.readContract({
-    address: VALIDATION_REGISTRY, abi: validationRegistryAbi,
-    functionName: 'getValidationStatus', args: [requestHash],
-  })) as readonly [`0x${string}`, bigint, number, `0x${string}`, string, bigint]
-  alreadyRequested = ex[0] !== '0x0000000000000000000000000000000000000000'
-} catch {
-  // getValidationStatus reverts on an unknown hash rather than returning zeroes.
-  alreadyRequested = false
+/**
+ * Reuse a request only when it is OURS: same validator, same agentId. A request under the same
+ * hash that belongs to anyone else is a collision, and signing against it would revert — or worse,
+ * attach this response to another identity's request.
+ */
+const existing = await requestStatus(requestHash)
+const reuse = requestReuse(existing, account.address, agentId)
+if (reuse === 'collision') {
+  refuse(`requestHash ${requestHash} already belongs to validator ${existing!.validator}, agent ${existing!.agentId}.`, 'Run attest:build again for a fresh request.')
 }
-
-if (!alreadyRequested) {
+if (reuse === 'new') {
   console.log('submitting validationRequest…')
   const t = await wallet.writeContract({
     address: VALIDATION_REGISTRY, abi: validationRegistryAbi,
@@ -82,7 +111,7 @@ if (!alreadyRequested) {
   })
   console.log(`  ${(await pub.waitForTransactionReceipt({ hash: t })).status} https://basescan.org/tx/${t}`)
 } else {
-  console.log('validationRequest already on-chain — reusing it')
+  console.log('validationRequest already on-chain for this validator and agent — reusing it')
 }
 
 // validationResponse has no already-answered guard: the same validator may overwrite
@@ -103,6 +132,9 @@ const check = (await pub.readContract({
 console.log(`\non-chain responseHash ${check[3]}`)
 console.log(`matches published     ${check[3] === responseHash ? 'YES' : 'NO'}`)
 
-writeFileSync('data/attestation-self.json', JSON.stringify(
-  { agentId: st.agentId, tag: pending.tag, score: pending.score, requestHash, responseURI, responseHash, responseTx: tx },
+// Keyed by requestHash: data/attestation-self.json is the record of the 95265 attestation and stays.
+const record = `data/attestation-self-${requestHash}.json`
+writeFileSync(record, JSON.stringify(
+  { agentId: st.agentId, tag: pending.tag, score: pending.score, requestHash, requestURI, responseURI, responseHash, responseTx: tx },
   null, 2))
+console.log(`recorded in ${record}`)

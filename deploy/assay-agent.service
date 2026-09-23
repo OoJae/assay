@@ -18,12 +18,30 @@ User=ubuntu
 # package.json and the wrong data/ directory.
 WorkingDirectory=/home/ubuntu/assay
 ExecStart=/usr/bin/env pnpm serve:remote
+# Take the tunnel over from a stale registration instead of dying on it.
+#
+# OpenServ drops the tunnel with a 1006 about once an hour and the SDK reconnects at once. About one
+# reconnect in thirty is refused with "Tunnel exists for agent. Pass FORCE_TUNNEL=true", which the
+# SDK treats as a fatal auth error: 2026-09-22 19:26:32Z, 51 minutes into a healthy process, the
+# paid agent went dark for 22s; 2026-09-21 13:51Z a start was refused seven times in a row (83s).
+#
+# NEVER run `pnpm serve` or `pnpm serve:remote` on a laptop with these agent credentials while this
+# unit is running. With FORCE_TUNNEL on both sides the two instances evict each other on every
+# reconnect, which is more outage than this setting prevents.
+Environment=FORCE_TUNNEL=true
 Restart=always
-RestartSec=10
+# 5s, not 10s: every second here is a second the paid endpoint is unreachable after a tunnel exit.
+RestartSec=5
 StandardOutput=append:/home/ubuntu/assay/agent.log
 StandardError=append:/home/ubuntu/assay/agent.log
 
 # The agent only reads public chain state and answers tasks. Lock the rest down.
+#
+# NOT LOOPBACK-ONLY. The OpenServ SDK (2.4.1) listens with `app.listen(port)` and offers no host
+# option, so the agent's express server binds *:7378 even though tunnel mode only needs loopback.
+# /health answers unauthenticated there, and every other request costs a bcrypt compare whose cost
+# factor the CLIENT chooses. Port 7378 must stay closed at the Lighthouse firewall, and a host rule
+# that drops non-loopback traffic to it is the second layer (see RUNBOOK).
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict

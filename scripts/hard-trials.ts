@@ -1,11 +1,13 @@
 import 'dotenv/config'
 import { writeFileSync, readFileSync, existsSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import { sweep } from '../src/sweep/detect.js'
 import { adjudicate, type Verdict } from '../src/adjudicate/serv.js'
 import { METHODOLOGY_VERSION } from '../src/adjudicate/methodology.js'
-import { provenance, summariseUsage, type UsageSummary } from '../src/adjudicate/harness.js'
+import { artifactPath, newRunId, provenance, summariseUsage, type UsageSummary } from '../src/adjudicate/harness.js'
 import type { Adjudication } from '../src/adjudicate/serv.js'
 import { HARD_CASES } from '../src/adjudicate/hard-cases.js'
+import type { VerifiedFinding } from '../src/verify/index.js'
 
 /**
  * The BRAID A/B on the HARD adjudication set.
@@ -16,38 +18,32 @@ import { HARD_CASES } from '../src/adjudicate/hard-cases.js'
  * and adjacent-but-not-affected scope.
  *
  * If BRAID's branching-instruction claim is real, this is where it should show.
+ *
+ *   pnpm hard [--n=4] [--dev]                 a NEW run, written to its own run-id file
+ *   pnpm hard --n=4 --resume=<path>           continue THAT run; never a committed file
  */
-const dev = process.argv.includes('--dev')
-const n = Number(process.argv.find((a) => a.startsWith('--n='))?.split('=')[1] ?? 2)
 
-console.error('sweeping for base findings…')
-const r = await sweep({ symbols: ['CRWD', 'NVDA'] })
-const share = r.findings.find((f) => f.defectClass === 'SHARE_COUNT_MISREAD_RISK')
-const stale = r.findings.find((f) => f.defectClass.startsWith('ORACLE_STALE'))
-if (!share) {
-  console.error('no SHARE_COUNT_MISREAD_RISK finding available — cannot run the hard set')
-  process.exit(1)
+/** One adjudication, with the reason text. Rows used to keep verdicts only, so no refusal could be attributed to a gate. */
+export interface TrialRecord {
+  verdict: Verdict
+  severity: string
+  rationale: string
+  withheld_reason: string | null
+  finishReason: string
+  inputHash: string
+  latencyMs: number
 }
 
-// Stale-feed findings only exist while a feed is actually past its heartbeat. Equity feeds are
-// 24/5, so outside a closure window there is nothing to adjudicate — and fabricating one would
-// break the rule that every citation must reproduce against chain state. Skip, and say so.
-const skipped = stale ? [] : HARD_CASES.filter((c) => c.findingClass !== 'SHARE_COUNT_MISREAD_RISK')
-const cases = stale ? HARD_CASES : HARD_CASES.filter((c) => c.findingClass === 'SHARE_COUNT_MISREAD_RISK')
-if (skipped.length) {
-  console.error(
-    `NOTE: no stale-feed finding at this block (market ${r.marketClosed ? 'closed' : 'open'}, ` +
-      `cohort ${r.cohort.stale}/${r.cohort.size} stale). Skipping ${skipped.length} case(s): ` +
-      skipped.map((c) => c.id).join(', '),
-  )
-}
-console.error(`base findings ready at block ${r.blockNumber}, running ${cases.length} cases\n`)
-
-interface CaseResult {
+export interface CaseResult {
   id: string
   expected: Verdict
   arm: 'braid-on' | 'braid-off'
+  /** The finding adjudicated, and the invocation (and so the block) it was swept in. */
+  findingId?: string
+  invocation?: number
+  block?: string
   verdicts: Verdict[]
+  trials?: TrialRecord[]
   /** How many calls were ASKED for. Optional so an older artifact still resumes. */
   attempted?: number
   errored?: number
@@ -58,91 +54,91 @@ interface CaseResult {
   inputHashes?: string[]
 }
 
-async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<CaseResult> {
-  const finding = c.findingClass === 'SHARE_COUNT_MISREAD_RISK' ? share! : stale!
-  const verdicts: Verdict[] = []
-  const errors: string[] = []
-  const all: Adjudication[] = []
-  for (let i = 0; i < n; i++) {
-    try {
-      const a = await adjudicate(finding, c.mandate, { dev, disableBraid: !braid })
-      verdicts.push(a.verdict)
-      all.push(a)
-      const mark = a.verdict === c.expected ? '✓' : '✗'
-      console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'} ${i + 1}/${n}: ${mark} ${a.verdict}`)
-    } catch (e) {
-      // Recorded, not discarded. Dropping a failed call silently shrinks the denominator, so an
-      // arm that mostly errored used to print as a confident accuracy figure.
-      errors.push((e as Error).message.slice(0, 160))
-      console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'} ${i + 1}/${n}: ERROR ${(e as Error).message.slice(0, 50)}`)
-    }
-  }
-  return {
-    id: c.id,
-    expected: c.expected,
-    arm: braid ? 'braid-on' : 'braid-off',
-    verdicts,
-    attempted: n,
-    errored: errors.length,
-    errors,
-    correct: verdicts.filter((v) => v === c.expected).length,
-    usage: summariseUsage(all),
-    inputHashes: [...new Set(all.map((a) => a.meta.inputHash))],
-  }
+export interface Invocation {
+  at: string
+  block: string
+  marketClosed: boolean
+  cohort: unknown
+  /** The base findings as swept, so every row's inputHash can be recomputed from this file. */
+  findings?: Record<string, VerifiedFinding>
 }
 
-/**
- * RESUMABLE. Two long runs were killed partway through, so each invocation reloads whatever is
- * already in the artifact and only runs the case/arm pairs that are missing. Re-running until it
- * reports complete is therefore safe and cheap — finished trials are never paid for twice.
- * A methodologyVersion change invalidates prior results, since the rubric IS the experiment.
- */
-let results: CaseResult[] = []
-/**
- * Keyed by methodology version.
- *
- * A fixed filename meant a rubric bump overwrote the sample measured under the previous one --
- * destroying the only evidence for this project's actual finding, that SPECIFICATION rather than
- * model configuration was the dominant variable. Keying it also makes resume correct: a run can
- * only resume a partial run of the SAME rubric, which is what the version check below intended.
- */
-/**
- * The DETECTION methodology is part of the input. The rubric version alone did not identify what
- * a number was measured on — the finding text changed under an unchanged rubric — so a resumed run
- * could silently mix trials from two different inputs. No run id here, deliberately: a resumed run
- * must find its own partial file.
- */
-const DETECTION_VERSION = share!.methodologyVersion
-const OUT = `data/hard-trials-${METHODOLOGY_VERSION}-${DETECTION_VERSION}.json`
+export interface HardTrialsArtifact {
+  runId?: string
+  generatedAt: string
+  updatedAt?: string
+  complete: boolean
+  methodologyVersion: string
+  detectionMethodologyVersion?: string
+  trialsPerCase: number
+  block: string
+  cases: Array<{ id: string; expected: Verdict; rationale: string }>
+  skippedCases: string[]
+  marketClosed: boolean
+  cohort: unknown
+  invocations?: Invocation[]
+  results: CaseResult[]
+}
 
-if (existsSync(OUT)) {
+/** Read-only git: is this path committed? A resumed file must not be. */
+export function isGitTracked(path: string): boolean {
   try {
-    const prev = JSON.parse(readFileSync(OUT, 'utf8')) as {
-      methodologyVersion?: string
-      detectionMethodologyVersion?: string
-      trialsPerCase?: number
-      results?: CaseResult[]
-    }
-    if (
-      prev.methodologyVersion === METHODOLOGY_VERSION &&
-      prev.detectionMethodologyVersion === DETECTION_VERSION &&
-      prev.trialsPerCase === n
-    ) {
-      results = (prev.results ?? []).filter((x) => x.verdicts.length === n)
-      if (results.length) console.error(`resuming: ${results.length} case/arm pairs already done\n`)
-    } else if (prev.results?.length) {
-      console.error(
-        `previous artifact is methodology ${prev.methodologyVersion} n=${prev.trialsPerCase}; ` +
-          `current is ${METHODOLOGY_VERSION} n=${n} — starting fresh\n`,
-      )
-    }
+    execFileSync('git', ['ls-files', '--error-unmatch', '--', path], { stdio: 'ignore' })
+    return true
   } catch {
-    /* corrupt or absent: start fresh */
+    return false
   }
 }
-const done = new Set(results.map((x) => `${x.id}:${x.arm}`))
 
-function summarise(arm: CaseResult['arm']) {
+/**
+ * Where this run writes, and what it continues. Pure but for the two functions passed in.
+ *
+ * WHY. OUT used to be keyed by rubric and detection version with no run id — exactly the committed
+ * file the README's headline row cites. The default was n=2 while that file holds n=4, so a bare
+ * `pnpm hard` saw a mismatch, "started fresh", and overwrote it on the first checkpoint. Now a run
+ * gets its own file, resume is explicit, a committed path is refused, and a mismatched resume is an
+ * error rather than a silent restart.
+ */
+export function planRun(opts: {
+  resume?: string
+  n: number
+  detectionVersion: string
+  runId: string
+  isTracked: (path: string) => boolean
+  readPrevious: (path: string) => HardTrialsArtifact | null
+}): { ok: true; out: string; previous: HardTrialsArtifact | null } | { ok: false; reason: string } {
+  if (!opts.resume) {
+    const out = artifactPath('hard-trials', opts.detectionVersion, opts.runId)
+    if (opts.isTracked(out)) return { ok: false, reason: `${out} is committed` }
+    return { ok: true, out, previous: null }
+  }
+  if (opts.isTracked(opts.resume)) {
+    return { ok: false, reason: `${opts.resume} is a committed artifact. It is evidence, not a checkpoint; start a new run.` }
+  }
+  const previous = opts.readPrevious(opts.resume)
+  if (!previous) return { ok: false, reason: `${opts.resume} is missing or unreadable` }
+  const mismatch = [
+    previous.methodologyVersion !== METHODOLOGY_VERSION && `rubric ${previous.methodologyVersion} != ${METHODOLOGY_VERSION}`,
+    (previous.detectionMethodologyVersion ?? '') !== opts.detectionVersion &&
+      `detection ${previous.detectionMethodologyVersion} != ${opts.detectionVersion}`,
+    previous.trialsPerCase !== opts.n && `n=${previous.trialsPerCase} != n=${opts.n}`,
+  ].filter(Boolean)
+  if (mismatch.length) return { ok: false, reason: `cannot resume ${opts.resume}: ${mismatch.join(', ')}` }
+  return { ok: true, out: opts.resume, previous }
+}
+
+/**
+ * The case/arm pairs still to run. A row that exists is done, errors and all: re-running an
+ * errored pair used to replace its row, which erased the record that the call had failed.
+ */
+export function pendingPairs(caseIds: string[], results: CaseResult[]): Array<{ id: string; arm: CaseResult['arm'] }> {
+  const done = new Set(results.map((x) => `${x.id}:${x.arm}`))
+  return caseIds.flatMap((id) =>
+    (['braid-on', 'braid-off'] as const).filter((arm) => !done.has(`${id}:${arm}`)).map((arm) => ({ id, arm })),
+  )
+}
+
+export function summarise(results: CaseResult[], arm: CaseResult['arm']) {
   const rows = results.filter((x) => x.arm === arm)
   const completed = rows.reduce((s, x) => s + x.verdicts.length, 0)
   const attempted = rows.reduce((s, x) => s + (x.attempted ?? x.verdicts.length), 0)
@@ -161,83 +157,208 @@ function summarise(arm: CaseResult['arm']) {
   }
 }
 
-/**
- * Persist after EVERY case. An earlier run died partway through and lost all of it, because the
- * artifact was only written at the end. Long, expensive, network-bound runs must checkpoint.
- */
-function persist(complete: boolean) {
-  writeFileSync(
-    OUT,
-    JSON.stringify(
-      {
-        generatedAt: new Date().toISOString(),
-        complete,
-        methodologyVersion: METHODOLOGY_VERSION,
-        trialsPerCase: n,
-        block: r.blockNumber,
-        cases: cases.map((c) => ({ id: c.id, expected: c.expected, rationale: c.rationale })),
-        skippedCases: skipped.map((c) => c.id),
-        marketClosed: r.marketClosed,
-        cohort: r.cohort,
-        results,
-        summary: { braidOn: summarise('braid-on'), braidOff: summarise('braid-off') },
-        ...provenance(DETECTION_VERSION, results.flatMap((x) => x.inputHashes ?? [])),
-        usage: {
-          promptTokens: results.reduce((t, x) => t + (x.usage?.promptTokens ?? 0), 0),
-          completionTokens: results.reduce((t, x) => t + (x.usage?.completionTokens ?? 0), 0),
-          estimatedUsd: Number(results.reduce((t, x) => t + (x.usage?.estimatedUsd ?? 0), 0).toFixed(4)),
-          basis: results.find((x) => x.usage)?.usage?.basis ?? '',
-        },
-      },
-      null,
-      2,
-    ),
-  )
-}
+async function main() {
+  const dev = process.argv.includes('--dev')
+  const n = Number(process.argv.find((a) => a.startsWith('--n='))?.split('=')[1] ?? 2)
+  const resume = process.argv.find((a) => a.startsWith('--resume='))?.split('=').slice(1).join('=')
 
-for (const c of cases) {
-  for (const braid of [true, false]) {
-    const key = `${c.id}:${braid ? 'braid-on' : 'braid-off'}`
-    if (done.has(key)) {
-      console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'}  (cached)`)
+  console.error('sweeping for base findings…')
+  const r = await sweep({ symbols: ['CRWD', 'NVDA'] })
+  const share = r.findings.find((f) => f.defectClass === 'SHARE_COUNT_MISREAD_RISK')
+  const stale = r.findings.find((f) => f.defectClass.startsWith('ORACLE_STALE'))
+  if (!share) {
+    console.error('no SHARE_COUNT_MISREAD_RISK finding available — cannot run the hard set')
+    process.exit(1)
+  }
+
+  /**
+   * The DETECTION methodology is part of the input. The rubric version alone did not identify what
+   * a number was measured on — the finding text changed under an unchanged rubric — so a resumed
+   * run could silently mix trials from two different inputs.
+   */
+  const DETECTION_VERSION = share.methodologyVersion
+  const newId = newRunId()
+  const plan = planRun({
+    resume,
+    n,
+    detectionVersion: DETECTION_VERSION,
+    runId: newId,
+    isTracked: isGitTracked,
+    readPrevious: (p) => {
+      try {
+        return existsSync(p) ? (JSON.parse(readFileSync(p, 'utf8')) as HardTrialsArtifact) : null
+      } catch {
+        return null
+      }
+    },
+  })
+  if (!plan.ok) {
+    console.error(plan.reason)
+    process.exit(1)
+  }
+  const { out: OUT, previous } = plan
+
+  /**
+   * A resumed run keeps ITS case list. Stale-feed cases exist only while a feed is past its
+   * heartbeat; a run started with the market open skipped them, and appending them on a later,
+   * closed-market invocation made a two-day mix read as one run.
+   */
+  const available = stale ? HARD_CASES : HARD_CASES.filter((c) => c.findingClass === 'SHARE_COUNT_MISREAD_RISK')
+  const cases = previous
+    ? HARD_CASES.filter((c) => previous.cases.some((p) => p.id === c.id))
+    : available
+  const skipped = previous
+    ? HARD_CASES.filter((c) => previous.skippedCases.includes(c.id))
+    : HARD_CASES.filter((c) => !available.includes(c))
+  const runnable = new Set(available.map((c) => c.id))
+  if (skipped.length && !previous) {
+    console.error(
+      `NOTE: no stale-feed finding at this block (market ${r.marketClosed ? 'closed' : 'open'}, ` +
+        `cohort ${r.cohort.stale}/${r.cohort.size} stale). Skipping ${skipped.length} case(s): ` +
+        skipped.map((c) => c.id).join(', '),
+    )
+  }
+
+  const results: CaseResult[] = previous?.results ?? []
+  const invocations: Invocation[] = [
+    ...(previous?.invocations ??
+      (previous ? [{ at: previous.generatedAt, block: previous.block, marketClosed: previous.marketClosed, cohort: previous.cohort }] : [])),
+    {
+      at: new Date().toISOString(),
+      block: r.blockNumber,
+      marketClosed: r.marketClosed,
+      cohort: r.cohort,
+      findings: { [share.id]: share, ...(stale ? { [stale.id]: stale } : {}) },
+    },
+  ]
+  const invocation = invocations.length - 1
+  const first = invocations[0]!
+  const runId = previous ? previous.runId : newId
+  if (previous) console.error(`resuming ${OUT}: ${results.length} case/arm pairs already recorded\n`)
+  console.error(`base findings ready at block ${r.blockNumber}, running ${cases.length} cases → ${OUT}\n`)
+
+  async function runCase(c: (typeof HARD_CASES)[number], braid: boolean): Promise<CaseResult> {
+    const finding = c.findingClass === 'SHARE_COUNT_MISREAD_RISK' ? share! : stale!
+    const verdicts: Verdict[] = []
+    const trials: TrialRecord[] = []
+    const errors: string[] = []
+    const all: Adjudication[] = []
+    for (let i = 0; i < n; i++) {
+      try {
+        const a = await adjudicate(finding, c.mandate, { dev, disableBraid: !braid })
+        verdicts.push(a.verdict)
+        trials.push({
+          verdict: a.verdict,
+          severity: a.severity,
+          rationale: a.rationale,
+          withheld_reason: a.withheld_reason ?? null,
+          finishReason: a.meta.finishReason,
+          inputHash: a.meta.inputHash,
+          latencyMs: a.meta.latencyMs,
+        })
+        all.push(a)
+        const mark = a.verdict === c.expected ? '✓' : '✗'
+        console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'} ${i + 1}/${n}: ${mark} ${a.verdict}`)
+      } catch (e) {
+        // Recorded, not discarded. Dropping a failed call silently shrinks the denominator, so an
+        // arm that mostly errored used to print as a confident accuracy figure. An adjudicator
+        // refusal or truncation lands here too, as ADJUDICATOR_ERROR, never as a verdict.
+        errors.push((e as Error).message.slice(0, 160))
+        console.error(`  ${c.id.padEnd(34)} ${braid ? 'on ' : 'off'} ${i + 1}/${n}: ERROR ${(e as Error).message.slice(0, 50)}`)
+      }
+    }
+    return {
+      id: c.id,
+      expected: c.expected,
+      arm: braid ? 'braid-on' : 'braid-off',
+      findingId: finding.id,
+      invocation,
+      block: r.blockNumber,
+      verdicts,
+      trials,
+      attempted: n,
+      errored: errors.length,
+      errors,
+      correct: verdicts.filter((v) => v === c.expected).length,
+      usage: summariseUsage(all),
+      inputHashes: [...new Set(all.map((a) => a.meta.inputHash))],
+    }
+  }
+
+  /**
+   * Persist after EVERY case. An earlier run died partway through and lost all of it, because the
+   * artifact was only written at the end. Long, expensive, network-bound runs must checkpoint.
+   * `block`, `marketClosed` and `cohort` are the FIRST invocation's; later ones are listed.
+   */
+  function persist(complete: boolean) {
+    const artifact: HardTrialsArtifact & Record<string, unknown> = {
+      runId,
+      generatedAt: first.at,
+      updatedAt: new Date().toISOString(),
+      complete,
+      methodologyVersion: METHODOLOGY_VERSION,
+      trialsPerCase: n,
+      block: first.block,
+      cases: cases.map((c) => ({ id: c.id, expected: c.expected, rationale: c.rationale })),
+      skippedCases: skipped.map((c) => c.id),
+      marketClosed: first.marketClosed,
+      cohort: first.cohort,
+      invocations,
+      results,
+      summary: { braidOn: summarise(results, 'braid-on'), braidOff: summarise(results, 'braid-off') },
+      ...provenance(DETECTION_VERSION, results.flatMap((x) => x.inputHashes ?? [])),
+      usage: {
+        promptTokens: results.reduce((t, x) => t + (x.usage?.promptTokens ?? 0), 0),
+        completionTokens: results.reduce((t, x) => t + (x.usage?.completionTokens ?? 0), 0),
+        estimatedUsd: Number(results.reduce((t, x) => t + (x.usage?.estimatedUsd ?? 0), 0).toFixed(4)),
+        basis: results.find((x) => x.usage)?.usage?.basis ?? '',
+      },
+    }
+    writeFileSync(OUT, JSON.stringify(artifact, null, 2))
+  }
+
+  for (const { id, arm } of pendingPairs(cases.map((c) => c.id), results)) {
+    const c = cases.find((x) => x.id === id)!
+    if (!runnable.has(id)) {
+      console.error(`  ${id.padEnd(34)} ${arm}  (no finding of its class at this block — left for a later resume)`)
       continue
     }
     try {
-      results.push(await runCase(c, braid))
-      done.add(key)
+      results.push(await runCase(c, arm === 'braid-on'))
       persist(false)
     } catch (e) {
-      console.error(`  ${c.id} ${key} aborted: ${(e as Error).message.slice(0, 110)}`)
+      console.error(`  ${id} ${arm} aborted: ${(e as Error).message.slice(0, 110)}`)
     }
   }
+
+  const on = summarise(results, 'braid-on')
+  const off = summarise(results, 'braid-off')
+  const expectedPairs = cases.length * 2
+  persist(results.length === expectedPairs)
+  if (results.length !== expectedPairs) {
+    console.error(`\nINCOMPLETE: ${results.length}/${expectedPairs} case/arm pairs. Resume with --resume=${OUT}`)
+  }
+
+  const pct = (x: number | null) => (x === null ? 'n/a' : `${(x * 100).toFixed(1)}%`)
+  console.log('\n' + '='.repeat(82))
+  console.log(`HARD ADJUDICATION SET — ${cases.length} cases x ${n} trials per arm`)
+  console.log('='.repeat(82))
+  console.log(`\n${'case'.padEnd(36)}${'expected'.padEnd(24)}${'braid-on'.padEnd(11)}braid-off`)
+  for (const c of cases) {
+    const o = results.find((x) => x.id === c.id && x.arm === 'braid-on')
+    const f = results.find((x) => x.id === c.id && x.arm === 'braid-off')
+    const cell = (x: CaseResult | undefined) => (x ? `${x.correct}/${x.verdicts.length}` : '-')
+    console.log(`${c.id.padEnd(36)}${c.expected.padEnd(24)}${cell(o).padEnd(11)}${cell(f)}`)
+  }
+  console.log(`\n${'ACCURACY'.padEnd(36)}${''.padEnd(24)}${pct(on.accuracy).padEnd(11)}${pct(off.accuracy)}`)
+  console.log(`${'(correct/completed)'.padEnd(36)}${''.padEnd(24)}${`${on.correct}/${on.completed}`.padEnd(11)}${off.correct}/${off.completed}`)
+  if (on.errored || off.errored) {
+    console.log(
+      `\nWARNING: ${on.errored + off.errored} call(s) errored and are EXCLUDED from the accuracy above.\n` +
+        `Over all ATTEMPTED calls: braid-on ${pct(on.accuracyOverAttempted)}, braid-off ${pct(off.accuracyOverAttempted)}.`,
+    )
+  }
+  console.log(`\nsaved to ${OUT}`)
 }
 
-const on = summarise('braid-on')
-const off = summarise('braid-off')
-const expectedPairs = cases.length * 2
-persist(results.length === expectedPairs)
-if (results.length !== expectedPairs) {
-  console.error(`\nINCOMPLETE: ${results.length}/${expectedPairs} case/arm pairs. Re-run to resume.`)
-}
-
-const pct = (x: number | null) => (x === null ? 'n/a' : `${(x * 100).toFixed(1)}%`)
-console.log('\n' + '='.repeat(82))
-console.log(`HARD ADJUDICATION SET — ${cases.length} cases x ${n} trials per arm`)
-console.log('='.repeat(82))
-console.log(`\n${'case'.padEnd(36)}${'expected'.padEnd(24)}${'braid-on'.padEnd(11)}braid-off`)
-for (const c of cases) {
-  const o = results.find((x) => x.id === c.id && x.arm === 'braid-on')!
-  const f = results.find((x) => x.id === c.id && x.arm === 'braid-off')!
-  console.log(
-    `${c.id.padEnd(36)}${c.expected.padEnd(24)}${`${o.correct}/${o.verdicts.length}`.padEnd(11)}${f.correct}/${f.verdicts.length}`,
-  )
-}
-console.log(`\n${'ACCURACY'.padEnd(36)}${''.padEnd(24)}${pct(on.accuracy).padEnd(11)}${pct(off.accuracy)}`)
-console.log(`${'(correct/completed)'.padEnd(36)}${''.padEnd(24)}${`${on.correct}/${on.completed}`.padEnd(11)}${off.correct}/${off.completed}`)
-if (on.errored || off.errored) {
-  console.log(
-    `\nWARNING: ${on.errored + off.errored} call(s) errored and are EXCLUDED from the accuracy above.\n` +
-      `Over all ATTEMPTED calls: braid-on ${pct(on.accuracyOverAttempted)}, braid-off ${pct(off.accuracyOverAttempted)}.`,
-  )
-}
-console.log(`\nsaved to ${OUT}`)
+if (import.meta.url === `file://${process.argv[1]}`) await main()

@@ -1,40 +1,132 @@
 import { encodeFunctionData, decodeFunctionResult } from 'viem'
 import { rhClient } from '../lib/chains.js'
 import { aggregatorV3Abi, stockTokenAbi } from '../lib/abis.js'
+import { pastHeartbeat } from '../lib/sources.js'
 import type { Evidence } from './types.js'
 
 const EXPLORER = 'https://robinhoodchain.blockscout.com'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-/** A transient failure is worth retrying; a revert or a pruned block is not. */
-export function isTransient(message: string): boolean {
-  const m = message.toLowerCase()
-  if (m.includes('execution reverted')) return false
-  if (m.includes('historical state')) return false
+/** The error and every `cause` beneath it, outermost first. viem nests the HTTP fault 2-3 deep. */
+function causeChain(err: unknown): unknown[] {
+  const out: unknown[] = []
+  for (let e = err; e != null && out.length < 10 && !out.includes(e); e = (e as { cause?: unknown }).cause) {
+    out.push(e)
+  }
+  return out
+}
+
+const errName = (e: unknown) => (typeof e === 'object' && e !== null ? String((e as Error).name ?? '') : '')
+
+/** HTTP statuses a retry can outlive: Cloudflare's challenge page (403), timeouts, rate limits, 5xx. */
+const transientStatus = (s: unknown) =>
+  typeof s === 'number' && (s === 403 || s === 408 || s === 429 || s >= 500)
+
+/**
+ * JSON-RPC codes that mean "not now" rather than "no": LimitExceeded (-32005), Internal (-32603),
+ * QuickNode's rate limit (-32007), and the bare 429 some providers put in a 200 response body.
+ */
+const TRANSIENT_RPC_CODES = new Set([-32005, -32603, -32007, 429])
+
+/**
+ * Phrases that mean the same, for plain strings and for errors that did not come from viem. The
+ * block phrases are a fallback RPC a few blocks behind the one that reported the head: official
+ * "unsupported block number", dRPC "Unknown block", Pocket "header not found", all measured.
+ */
+const TRANSIENT_TEXT = [
+  'timeout',
+  'timed out',
+  'took too long',
+  'econnreset',
+  'econnrefused',
+  'enotfound',
+  'socket',
+  'fetch failed',
+  'network',
+  'rate limit',
+  'too many requests',
+  'limitexceeded',
+  'internalrpcerror',
+  'unsupported block number',
+  'unknown block',
+  'header not found',
+]
+
+/**
+ * A transient failure is worth retrying; a revert or a pruned block is not.
+ *
+ * TAKES THE ERROR, NOT ITS MESSAGE. This matched substrings of `err.message` on the stated premise
+ * that viem's error class names appear in the message it throws. They do not: a Cloudflare 403 is
+ * an HttpRequestError whose message reads "HTTP request failed. Status: 403", a hung request is a
+ * TimeoutError reading "The request took too long to respond.", and readContract wraps both two
+ * levels down inside ContractFunctionExecutionError. So the retry never fired for the two faults
+ * this RPC actually has, the paid call failed ~1.5s into a 12s budget, and the sweep dropped the
+ * read. Walking the cause chain and reading `status`, `code` and the class name is what works.
+ *
+ * A string is still accepted for old callers, and is judged on its text alone.
+ */
+export function isTransient(err: unknown): boolean {
+  const links = causeChain(err)
+  const text = links
+    .map((e) => (typeof e === 'string' ? e : `${errName(e)}: ${(e as Error)?.message ?? String(e)}`))
+    .join('\n')
+    .toLowerCase()
+  // A revert is the contract's answer and a pruned block is not coming back. Neither is retried,
+  // whatever else the chain says.
+  if (text.includes('execution reverted')) return false
+  if (text.includes('contractfunctionrevertederror')) return false
+  if (text.includes('historical state')) return false
+
+  for (const e of links) {
+    const name = errName(e)
+    // By name rather than instanceof, so an error from a second copy of viem still classifies.
+    if (name === 'TimeoutError') return true
+    if (name === 'HttpRequestError' && transientStatus((e as { status?: unknown }).status)) return true
+    const code = (e as { code?: unknown } | null)?.code
+    if (typeof code === 'number' && TRANSIENT_RPC_CODES.has(code)) return true
+  }
   return (
-    m.includes('timeout') ||
-    // viem's own error CLASS NAMES, which appear in the message it throws. Matching only on
-    // free-text phrases missed the two most common faults on this RPC — a request that timed out
-    // and a rate-limit response — so the bounded retry never fired for either, and a single blip
-    // dropped an asset that one more attempt would have read.
-    m.includes('timeouterror') ||
-    m.includes('limitexceeded') ||
-    m.includes('httprequesterror') ||
-    m.includes('internalrpcerror') ||
-    m.includes('econnreset') ||
-    m.includes('econnrefused') ||
-    m.includes('enotfound') ||
-    m.includes('socket') ||
-    m.includes('fetch failed') ||
-    m.includes('network') ||
-    m.includes('rate limit') ||
-    m.includes('too many requests') ||
-    m.includes('429') ||
-    m.includes('502') ||
-    m.includes('503') ||
-    m.includes('504')
+    TRANSIENT_TEXT.some((t) => text.includes(t)) ||
+    // "Status: 503" as viem prints it. A bare '503' also matched digits inside an address or a
+    // calldata word in the message, which retried a revert until the deadline.
+    /\bstatus:?\s*(403|408|429|5\d\d)\b/.test(text)
   )
+}
+
+/**
+ * One line, safe to log and to hand a buyer.
+ *
+ * A Cloudflare 403 from this RPC carries ~5KB of challenge-page HTML in its details, and that
+ * went verbatim into agent.log, into MCP responses and into refusalReason. Only the host of the
+ * URL is kept, because a keyed provider's URL carries its key in the path.
+ */
+export function describeRpcError(err: unknown): string {
+  for (const e of causeChain(err)) {
+    const name = errName(e)
+    if (name === 'HttpRequestError') {
+      const { status, details, url } = e as { status?: number; details?: string; url?: string }
+      let host = 'RPC'
+      try {
+        if (url) host = new URL(url).host
+      } catch {
+        /* keep the generic label */
+      }
+      if (status === 403 && /just a moment|cloudflare|cf-chl/i.test(details ?? '')) {
+        return `${host} is serving a Cloudflare challenge (HTTP 403); these episodes last minutes, retry shortly`
+      }
+      // viem JSON-stringifies a non-JSON body, so an HTML page arrives as "\"<!DOCTYPE html>...".
+      const d = details && !/^"?\s*</.test(details) ? `: ${details.slice(0, 120)}` : ''
+      return `${host} returned HTTP ${status ?? 'error'}${d}`
+    }
+    if (name === 'TimeoutError') return 'RPC request timed out'
+  }
+  const top = causeChain(err)[0]
+  const msg =
+    typeof top === 'string'
+      ? top
+      : ((top as { shortMessage?: string } | null)?.shortMessage ?? (top as Error | null)?.message ?? String(top))
+  return (msg.split('\n')[0] ?? '').slice(0, 200)
 }
 
 /**
@@ -51,7 +143,6 @@ export async function rawCall<TAbi extends readonly unknown[]>(
   blockNumber: bigint,
   attempts = 3,
 ): Promise<{ raw: string; decoded: unknown } | null> {
-  let lastErr = ''
   for (let i = 0; i < attempts; i++) {
     try {
       const data = encodeFunctionData({ abi: abi as never, functionName } as never)
@@ -67,9 +158,8 @@ export async function rawCall<TAbi extends readonly unknown[]>(
       } as never)
       return { raw, decoded }
     } catch (err) {
-      lastErr = (err as Error).message ?? String(err)
-      if (!isTransient(lastErr)) return null
-      await sleep(150 * 2 ** i)
+      if (!isTransient(err)) return null
+      if (i < attempts - 1) await sleep(150 * 2 ** i)
     }
   }
   return null
@@ -149,7 +239,9 @@ export async function readFeed(
     price: decimals === null ? null : Number(answer) / 10 ** decimals,
     ageSeconds,
     heartbeat,
-    stale: ageSeconds > heartbeat,
+    // With the delivery grace from sources.ts, as truePosition applies it: an on-schedule feed
+    // lands up to ~26s after its heartbeat, and a strict comparison called that an incident.
+    stale: pastHeartbeat(ageSeconds, heartbeat),
     /** A non-positive answer is not a price, and an incomplete round carries an older one. */
     usable: decimals !== null && answer > 0n && answeredInRound >= roundId,
     raw: r.raw,

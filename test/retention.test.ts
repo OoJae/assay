@@ -60,14 +60,18 @@ describe('scheduled-closure corroboration', () => {
   it('treats a whole-cohort outage as a scheduled closure', () => {
     expect(scheduledClosure(35, 35, false)).toBe(true)
   })
-  it('treats one stale feed among fresh peers as an incident', () => {
-    expect(scheduledClosure(1, 35, true)).toBe(false)
+  it('treats one stale feed among fresh peers on a weekday as an incident', () => {
+    expect(scheduledClosure(1, 35, false)).toBe(false)
   })
-  it('defers to the clock when the signal is ambiguous', () => {
+  it('treats one stale feed inside the weekend closure as the closure starting', () => {
+    // The cohort goes stale one feed at a time through Saturday; see test/sources.test.ts.
+    expect(scheduledClosure(1, 35, true)).toBe(true)
+  })
+  it('lets the clock decide inside the closure whatever the fraction', () => {
     expect(scheduledClosure(18, 35, true)).toBe(true)
     expect(scheduledClosure(18, 35, false)).toBe(false)
   })
-  it('falls back to the clock for a tiny cohort', () => {
+  it('follows the clock for a tiny cohort', () => {
     expect(scheduledClosure(1, 2, true)).toBe(true)
   })
 })

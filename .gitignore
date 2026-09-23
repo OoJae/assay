@@ -1,6 +1,21 @@
 node_modules
+# Secrets, and every copy of one. The repo is public, and the natural response to "copy these keys
+# somewhere durable" is `cp .env .env.bak`, which one `git add -A` would have published. Only the
+# template is tracked.
 .env
-.env.local
+.env.*
+!.env.example
+.env~
+env.backup*
+*.bak
+*.backup
+.openserv.json*
+*.private.json
+# scripts/sweep.ts writes through `<path>.tmp.<pid>` and renames. A sweep killed between the two
+# leaves that file behind, and for the private snapshot it holds every named integrator, which
+# `*.private.json` above does not match.
+*.tmp.[0-9]*
+
 # Trial artifacts and the published sweep ARE committed: they are the evidence the
 # README points at, and the wall reads findings.json at request time.
 data/*.tmp.json
@@ -15,16 +30,16 @@ web/.next
 /*.png
 docs/scratch/*.png
 
-.openserv.json
 web/tsconfig.tsbuildinfo
 data/findings.scoped.json
+# The outcome of the last local sweep. The production copy is served by the MCP, not committed.
+data/sweep-status.json
 
 # Scratch reproductions written by review agents; working material, never a gate.
 test/zz-*.test.ts
 **/*.scratch.*
 src/**/*.head.ts
 data/findings.tmp.*.json
-.env.tmp
 
 # Service logs written into the checkout on the production host.
 *.log
@@ -32,3 +47,5 @@ data/findings.tmp.*.json
 *.log.*.gz
 
 packages/*/dist
+# Written into the repo root by the rtk vitest wrapper.
+.vitest/

@@ -1,10 +1,11 @@
 # Regenerate the published findings. Install to /etc/systemd/system/assay-sweep.service
 #
 # WHY THIS EXISTS. Nothing regenerated findings.json. Every published citation carries a block
-# number and a "reproduce this yourself" cast command, and this RPC serves roughly head-5000 to
-# head-20000 at ~100ms per block -- so every citation on the wall became permanently
-# unreproducible within about half an hour of the sweep that produced it. The evidence was not
-# wrong, it was unavailable, which for a tool selling reproducibility is close to the same thing.
+# number and a "reproduce this yourself" cast command, and this RPC serves state only 5,000 to
+# 10,000 blocks back at ~0.1s per block (measured; see assay-sweep.timer) -- so every citation on
+# the wall became permanently unreproducible 8 to 17 minutes after the sweep that produced it. The
+# evidence was not wrong, it was unavailable, which for a tool selling reproducibility is close to
+# the same thing.
 [Unit]
 Description=ASSAY findings sweep
 Documentation=https://github.com/OoJae/assay
@@ -19,6 +20,14 @@ ExecStart=/usr/bin/env pnpm sweep
 # The sweep refuses to overwrite a good board with a degraded one and exits 2. That is a correct
 # outcome, not a unit failure, so do not let it mark the service failed.
 SuccessExitStatus=0 2
+# One hung sweep must not stop every later one.
+#
+# A oneshot's start timeout defaults to infinity, and while this unit is still activating the timer
+# does not queue another run: `list-timers` shows NEXT as `-`. A single wedged socket would freeze
+# the board with no alert, and every published citation expires on this RPC 8-17 minutes later.
+# Sweeps measured on the host take 159s on average and 262s at most (2026-09-22, 140 runs), so 7
+# minutes is headroom for a slow run and still ends a stuck one before the next 8-minute tick.
+TimeoutStartSec=7min
 # Live artifact OUTSIDE the git working tree.
 #
 # The sweep rewrites this every 8 minutes. If it were the tracked data/findings.json, `git pull`

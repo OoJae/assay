@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
-import { readEnv, appendEnvSecret, assertEnvPrivate, ENV_PATH } from '../src/lib/envfile.js'
+import { readEnv, appendEnvSecret, assertEnvPrivate, backupEnv, ENV_PATH } from '../src/lib/envfile.js'
 
 /**
  * Wallet B — the buyer agent.
@@ -26,6 +26,10 @@ if (existing) {
   }
   key = existing
   console.log(`reusing the existing buyer wallet from ${ENV_PATH}`)
+  // appendEnvSecret backs up on every write, but a reused key is never written, so a backup taken
+  // before it existed never gains it. That was the state found in audit: the buyer key in .env and
+  // nowhere else. Re-running this puts it in ~/.assay without touching .env.
+  console.log(`backup: ${backupEnv() ?? 'FAILED — save this key yourself'}`)
 } else {
   key = generatePrivateKey()
   appendEnvSecret('BUYER_PRIVATE_KEY', key)

@@ -5,12 +5,10 @@ import type { PublicClient } from 'viem'
  *
  * Under ERC-8056 a corporate action moves `uiMultiplier()`, not balances. So `balanceOf()` returns
  * TOKENS and the share-equivalent count is `balance * uiMultiplier() / 1e18`. Get that wrong and a
- * CRWD holder with 13 tokens is reported as holding 13 shares when they hold 52.
+ * holder of 10 CRWD tokens at CRWD's 4.0 multiplier is reported as holding 10 shares, not 40.
  *
- * This package is free and preventive. It is the other half of ASSAY, which detects the mistake
- * after the fact and publishes it: measured on chain 4663, roughly 80% of the addresses holding
- * these tokens are contracts, and the substantial ones sampled contained no `uiMultiplier()`
- * selector at all — they could not make the correction even in principle.
+ * This package is free and preventive. It is the other half of ASSAY, which audits the contracts
+ * that hold these tokens after the fact and publishes what it finds.
  *
  * THE REFUSAL IS THE POINT. When the inputs do not support a number this returns `safe: false`
  * with a reason instead of a plausible-looking wrong figure. A naive integration returns the wrong
@@ -20,11 +18,25 @@ import type { PublicClient } from 'viem'
 export const CHAIN_ID = 4663
 export const RPC_URL = 'https://rpc.mainnet.chain.robinhood.com'
 
+/**
+ * The same ladder on-chain: `ERC8056Guard` on chain 4663, verified as an exact match on Sourcify.
+ * Immutable, so its caveats are permanent: see the README before calling it from a contract.
+ */
+export const GUARD_ADDRESS = '0x674f9b0eC3C3643c1f51c0a40D4837932F9c1648' as const
+
 /** 1e18 fixed point, regardless of the token's own decimals(). */
 export const ONE = 10n ** 18n
 
 /** Every Robinhood equity feed publishes this heartbeat. */
 export const DEFAULT_HEARTBEAT_SECONDS = 86_400
+
+/**
+ * How far a feed's `updatedAt` may run ahead of the clock `readFeed` measures against before the
+ * round is refused. A feed on the same chain cannot report a round from the future, so anything
+ * past this is a wrong clock or a wrong feed. The margin exists because a caller's local clock can
+ * trail chain time by seconds.
+ */
+export const FUTURE_TOLERANCE_SECONDS = 60
 
 export const stockTokenAbi = [
   { type: 'function', name: 'balanceOf', stateMutability: 'view', inputs: [{ type: 'address' }], outputs: [{ type: 'uint256' }] },
@@ -49,12 +61,24 @@ export const aggregatorV3Abi = [
   },
 ] as const
 
+export interface ReadOptions {
+  /** Read at this block. Defaults to the latest block, fetched once and used for every read. */
+  blockNumber?: bigint
+}
+
 export interface GuardedReading {
-  /** balance * uiMultiplier / 1e18, in wei. Null when unsafe. */
+  /**
+   * balance * uiMultiplier / 1e18, in the token's base units: the same scale as balanceOf(), so
+   * for an 18-decimal token 48.68 share-equivalents is 48680000000000000000n. Display it with
+   * viem's `formatUnits(shareEquivalents, decimals)`. Null when unsafe.
+   */
   shareEquivalents: bigint | null
-  /** The raw ERC-20 balance. NOT a share count. */
+  /** The raw ERC-20 balance, in the token's base units. NOT a share count. */
   rawBalance: bigint | null
+  /** uiMultiplier(), 1e18 fixed point: 4.0 is 4000000000000000000n. */
   multiplier: bigint | null
+  /** The block every read was made at. Null only when the block number itself was unreadable. */
+  blockNumber: bigint | null
   /** False means the reading must not be acted on. */
   safe: boolean
   /** Why it is unsafe. Empty when safe. */
@@ -77,10 +101,11 @@ export function toTokenUnits(shareEquivalents: bigint, uiMultiplier: bigint): bi
   return (shareEquivalents * ONE) / uiMultiplier
 }
 
-const fail = (reason: string, checks: GuardedReading['checks']): GuardedReading => ({
+const fail = (reason: string, checks: GuardedReading['checks'], blockNumber: bigint | null): GuardedReading => ({
   shareEquivalents: null,
   rawBalance: null,
   multiplier: null,
+  blockNumber,
   safe: false,
   reason,
   checks,
@@ -91,51 +116,75 @@ const fail = (reason: string, checks: GuardedReading['checks']): GuardedReading 
  *
  * Mirrors the on-chain ERC8056Guard and ASSAY's paid `truePosition()` primitive, in the same order.
  * A check that did not COMPLETE is never reported as one that passed.
+ *
+ * Every read is pinned to ONE block. Unpinned, the three calls each ran at whatever "latest" was
+ * when they arrived, and on a chain with sub-second blocks a multiplier change landing between
+ * them pairs a balance from one state with a multiplier from another.
  */
 export async function shareEquivalents(
   client: PublicClient,
   token: `0x${string}`,
   holder: `0x${string}`,
+  options: ReadOptions = {},
 ): Promise<GuardedReading> {
   const checks = { balanceRead: false, multiplierRead: false, multiplierSane: false, pauseChecked: false, notPaused: false }
 
+  let blockNumber: bigint
+  try {
+    blockNumber = options.blockNumber ?? (await client.getBlockNumber())
+  } catch {
+    return fail('block number unreadable', checks, null)
+  }
+
   let rawBalance: bigint
   try {
-    rawBalance = (await client.readContract({ address: token, abi: stockTokenAbi, functionName: 'balanceOf', args: [holder] })) as bigint
+    rawBalance = (await client.readContract({ address: token, abi: stockTokenAbi, functionName: 'balanceOf', args: [holder], blockNumber })) as bigint
     checks.balanceRead = true
   } catch {
-    return fail('balanceOf() unreadable', checks)
+    return fail('balanceOf() unreadable', checks, blockNumber)
   }
 
   let multiplier: bigint
   try {
-    multiplier = (await client.readContract({ address: token, abi: stockTokenAbi, functionName: 'uiMultiplier' })) as bigint
+    multiplier = (await client.readContract({ address: token, abi: stockTokenAbi, functionName: 'uiMultiplier', blockNumber })) as bigint
     checks.multiplierRead = true
   } catch {
-    return fail('uiMultiplier() unreadable', checks)
+    return fail('uiMultiplier() unreadable', checks, blockNumber)
   }
-  if (multiplier <= 0n) return fail('uiMultiplier() is zero', checks)
+  if (multiplier <= 0n) return fail('uiMultiplier() is zero', checks, blockNumber)
   checks.multiplierSane = true
 
   // oraclePaused() is a SAFETY check: failing to read it is not the same as reading false.
   try {
-    const paused = (await client.readContract({ address: token, abi: stockTokenAbi, functionName: 'oraclePaused' })) as boolean
+    const paused = (await client.readContract({ address: token, abi: stockTokenAbi, functionName: 'oraclePaused', blockNumber })) as boolean
     checks.pauseChecked = true
-    if (paused) return fail('oraclePaused() is true', checks)
+    if (paused) return fail('oraclePaused() is true', checks, blockNumber)
     checks.notPaused = true
   } catch {
-    return fail('oraclePaused() unreadable — corporate-action check did not complete', checks)
+    return fail('oraclePaused() unreadable — corporate-action check did not complete', checks, blockNumber)
   }
 
-  return { shareEquivalents: toShareEquivalents(rawBalance, multiplier), rawBalance, multiplier, safe: true, reason: '', checks }
+  return { shareEquivalents: toShareEquivalents(rawBalance, multiplier), rawBalance, multiplier, blockNumber, safe: true, reason: '', checks }
 }
 
 export interface FeedReading {
   usable: boolean
   reason: string
-  /** Multiplier-adjusted TOKEN price. Already includes the corporate action — do NOT re-apply it. */
+  /**
+   * Multiplier-adjusted TOKEN price as a JS number, e.g. 181.42 for $181.42. Already includes the
+   * corporate action — do NOT re-apply it.
+   */
   price: number | null
+  /** Seconds since the round was updated, against the clock used. Never negative. */
   ageSeconds: number | null
+  /** The block both feed reads were made at. */
+  blockNumber: bigint | null
+}
+
+/** viem's one-line summary when there is one; its full message runs to several lines of help text. */
+const brief = (err: unknown): string => {
+  const e = err as { shortMessage?: string; message?: string }
+  return (e.shortMessage ?? e.message ?? String(err)).slice(0, 80)
 }
 
 /**
@@ -144,33 +193,67 @@ export interface FeedReading {
  * The feed returns a TOKEN price that ALREADY includes the multiplier. Applying the multiplier to
  * it again is the single most common ERC-8056 mistake and Robinhood's own docs warn about it, so
  * this returns the price unmodified and says so.
+ *
+ * Omit `nowSeconds` to measure age against the timestamp of the block the feed is read at, which
+ * is what the on-chain guard does with `block.timestamp`. Passing a local clock still works. A
+ * round dated AHEAD of that clock used to pass as fresh, because a negative age is never
+ * `> heartbeat`; past FUTURE_TOLERANCE_SECONDS it is now refused, as the on-chain guard refuses it.
+ *
+ * This does NOT check that the feed belongs to the token you are pricing. Pass the feed for that
+ * token; any live feed will return a usable price.
  */
 export async function readFeed(
   client: PublicClient,
   feed: `0x${string}`,
-  nowSeconds: number,
+  nowSeconds?: number,
   heartbeat = DEFAULT_HEARTBEAT_SECONDS,
+  options: ReadOptions = {},
 ): Promise<FeedReading> {
+  let blockNumber: bigint
+  let now: number
+  try {
+    if (nowSeconds === undefined) {
+      const block = await client.getBlock(options.blockNumber === undefined ? {} : { blockNumber: options.blockNumber })
+      if (block.number === null) throw new Error('pending block has no number')
+      blockNumber = block.number
+      now = Number(block.timestamp)
+    } else {
+      blockNumber = options.blockNumber ?? (await client.getBlockNumber())
+      now = nowSeconds
+    }
+  } catch (err) {
+    return { usable: false, reason: `block unreadable: ${brief(err)}`, price: null, ageSeconds: null, blockNumber: null }
+  }
+
+  const refuse = (reason: string, ageSeconds: number | null = null): FeedReading => ({ usable: false, reason, price: null, ageSeconds, blockNumber })
+
   try {
     const [roundId, answer, , updatedAt, answeredInRound] = (await client.readContract({
       address: feed,
       abi: aggregatorV3Abi,
       functionName: 'latestRoundData',
+      blockNumber,
     })) as readonly [bigint, bigint, bigint, bigint, bigint]
 
-    if (answer <= 0n) return { usable: false, reason: 'non-positive answer is not a price', price: null, ageSeconds: null }
-    if (answeredInRound < roundId) return { usable: false, reason: 'incomplete round — answer carried from an earlier one', price: null, ageSeconds: null }
+    if (answer <= 0n) return refuse('non-positive answer is not a price')
+    if (answeredInRound < roundId) return refuse('incomplete round — answer carried from an earlier one')
+    if (updatedAt === 0n) return refuse('updatedAt is zero — the round never completed')
 
     // A wrong exponent is a 10^n error, so an unreadable decimals() refuses rather than guessing 8.
-    const decimals = (await client.readContract({ address: feed, abi: aggregatorV3Abi, functionName: 'decimals' })) as number
+    const decimals = (await client.readContract({ address: feed, abi: aggregatorV3Abi, functionName: 'decimals', blockNumber })) as number
 
-    const ageSeconds = nowSeconds - Number(updatedAt)
-    if (ageSeconds > heartbeat) {
-      return { usable: false, reason: `feed is ${(ageSeconds / 3600).toFixed(1)}h old, past its ${heartbeat}s heartbeat`, price: null, ageSeconds }
+    const rawAge = now - Number(updatedAt)
+    if (rawAge < -FUTURE_TOLERANCE_SECONDS) {
+      return refuse(`feed updatedAt is ${-rawAge}s in the future — the clock or the feed is wrong`)
     }
-    return { usable: true, reason: '', price: Number(answer) / 10 ** Number(decimals), ageSeconds }
+    // Inside the tolerance the difference is clock skew, not age: the round is as fresh as it gets.
+    const ageSeconds = Math.max(0, rawAge)
+    if (ageSeconds > heartbeat) {
+      return refuse(`feed is ${(ageSeconds / 3600).toFixed(1)}h old, past its ${heartbeat}s heartbeat`, ageSeconds)
+    }
+    return { usable: true, reason: '', price: Number(answer) / 10 ** Number(decimals), ageSeconds, blockNumber }
   } catch (err) {
-    return { usable: false, reason: `feed unreadable: ${(err as Error).message.slice(0, 80)}`, price: null, ageSeconds: null }
+    return refuse(`feed unreadable: ${brief(err)}`)
   }
 }
 
@@ -195,7 +278,9 @@ export async function referencesMultiplier(
   return {
     found: hex.toLowerCase().includes(UI_MULTIPLIER_SELECTOR.slice(2)),
     codeSize,
-    // Anything this small is a stub, and the answer above is not meaningful for it.
+    // Anything this small is a stub, and the answer above is not meaningful for it. That includes an
+    // EIP-7702 delegated EOA (23 bytes: 0xef0100 then the delegate's address), which runs the
+    // delegate's code, so the delegate is what would need checking.
     isLikelyProxy: codeSize > 0 && codeSize < 2048,
   }
 }

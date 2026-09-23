@@ -1,8 +1,10 @@
 import 'dotenv/config'
-import * as dotenv from 'dotenv'
 import { run } from '@openserv-labs/sdk'
 import { provision, triggers } from '@openserv-labs/client'
+import { privateKeyToAccount } from 'viem/accounts'
 import { assayAgent } from '../src/agent/assay-agent.js'
+import { assertEnvPrivate } from '../src/lib/envfile.js'
+import { provisionCredentials, backupOpenServState } from '../src/lib/openserv-state.js'
 
 /**
  * Start the ASSAY agent so the platform can actually execute paid work.
@@ -12,12 +14,25 @@ import { assayAgent } from '../src/agent/assay-agent.js'
  * result — a paid call that returns nothing. So the agent must be up BEFORE any payment is made.
  *
  * run() opens a WebSocket tunnel to OpenServ, so no public URL or ngrok is needed locally. For
- * always-on operation this belongs on a VPS.
+ * always-on operation this belongs on a VPS, and it is there: `pnpm serve:remote` runs this same
+ * agent. Stop that one before starting this, or the two runtimes contend for one agent's tunnel.
  *
- * provision() is idempotent, so re-running is safe and reuses the existing agent, workflow,
- * trigger and wallet from .openserv.json / .env.
+ * provision() is idempotent, so re-running reuses the existing agent, workflow and trigger from
+ * .openserv.json. That holds only because the saved userApiKey is passed back in: left to itself
+ * the vendor re-authenticates by SIWE and overwrites it (see provisionCredentials). And only with
+ * WALLET_PRIVATE_KEY already set, or provision() mints a wallet and writes .env itself, unguarded.
  */
+assertEnvPrivate()
+
+const pk = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined
+if (!pk) throw new Error('WALLET_PRIVATE_KEY missing — run pnpm wallets')
+const walletAddress = privateKeyToAccount(pk).address
+
+const credentials = provisionCredentials(walletAddress)
+backupOpenServState()
+
 const result = await provision({
+  ...credentials,
   agent: {
     instance: assayAgent,
     name: 'assay',
@@ -37,7 +52,7 @@ const result = await provision({
       'feed exists at all, and oraclePaused() — and always surface an explicit refusalReason ' +
       'when the reading is not safe to act on, such as a missing price feed or a feed past its ' +
       'heartbeat. The caller is an autonomous agent about to value, liquidate or collateralise ' +
-      'a tokenized equity position, so correctness and an honest refusal matter more than ' +
+      'a Stock Token position, so correctness and an honest refusal matter more than ' +
       'always producing a number.',
     trigger: triggers.x402({
       name: 'true-position',
@@ -66,12 +81,13 @@ const result = await provision({
   },
 })
 
-dotenv.config({ override: true })
+const backup = backupOpenServState()
 
 console.log('agent      ', result.agentId)
 console.log('workflow   ', result.workflowId)
 console.log('paywall    ', result.paywallUrl)
 console.log('endpoint   ', result.apiEndpoint)
+console.log('backup     ', backup)
 console.log('\nstarting agent — leave this running, then pay from another shell\n')
 
 await run(assayAgent)
