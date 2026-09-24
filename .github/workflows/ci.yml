@@ -16,9 +16,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # One per major the engines range in package.json admits: its 22.12 floor, 24 (what the
-        # production VPS runs) and 26.
-        node: ['22.12', '24', '26']
+        # One per major the engines range in package.json admits: its 22.13 floor, 24 (what the
+        # production VPS runs) and 26. The floor was 22.12 until CI showed that the pinned pnpm
+        # 11.1.2 refuses to start below 22.13, so a 22.12 install could never have worked.
+        node: ['22.13', '24', '26']
     steps:
       - uses: actions/checkout@v7
 

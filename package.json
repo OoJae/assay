@@ -6,7 +6,7 @@
   "type": "module",
   "description": "Independent valuation integrity audit for agents on Robinhood Chain (EIP-155 4663)",
   "engines": {
-    "node": "^22.12.0 || ^24.0.0 || >=26.0.0"
+    "node": "^22.13.0 || ^24.0.0 || >=26.0.0"
   },
   "scripts": {
     "sweep": "tsx scripts/sweep.ts",

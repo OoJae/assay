@@ -499,7 +499,7 @@ the two that did not survive are named above.
 server are public chain reads against Robinhood Chain 4663 and run on a fresh clone with an empty
 `.env`. Every script that does need a secret validates it up front and exits naming it.
 
-pnpm (11 or 12) is the supported installer; CI runs pnpm 11.1.2 on Node 22.12, 24 and 26.
+pnpm (11 or 12) is the supported installer; CI runs pnpm 11.1.2 on Node 22.13, 24 and 26 (pnpm 11 needs Node 22.13 or later).
 `npm install` works too: the `overrides` field in `package.json` points `@openserv-labs/sdk`'s
 `openai` peer at the root `openai`, which is what pnpm resolves anyway. Without pnpm, each
 script-running `pnpm` command is `npx tsx` on the file `package.json` names for it, and the name
