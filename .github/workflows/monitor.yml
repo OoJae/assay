@@ -31,7 +31,10 @@ jobs:
     env:
       FEED: https://sonar.my.id/assay-mcp/findings.json
       SWEEP: https://sonar.my.id/assay-mcp/health/sweep
-      WALL: https://assay-steel.vercel.app/
+      # The wall moved from / to /wall when the landing took /. No trailing slash: Next answers
+      # /wall/ with a 308, and fetch() below does not follow redirects.
+      WALL: https://assay-steel.vercel.app/wall
+      LANDING: https://assay-steel.vercel.app/
       # The sweep publishes every 8 minutes; the MCP server calls a board stale past 1200 s too.
       MAX_AGE_SECONDS: '1200'
       GH_TOKEN: ${{ github.token }}
@@ -74,6 +77,11 @@ jobs:
           elif grep -q 'LIVE FEED UNREACHABLE' body.out; then
             echo "the wall cannot reach the live feed and is showing its committed fallback" >> "$problems"
           fi
+
+          # Only a status check: the landing is rebuilt from the live board at most once a minute and
+          # falls back to the committed snapshot by itself, so a feed outage shows on the wall, above.
+          code=$(fetch "$LANDING")
+          [ "$code" = 200 ] || echo "the landing page returned HTTP $code" >> "$problems"
 
           if [ -s "$problems" ]; then
             { echo '### Problems'; sed 's/^/- /' "$problems"; } >> "$GITHUB_STEP_SUMMARY"

@@ -26,7 +26,8 @@ and both paid calls use no model at all. No subject has requested a verdict yet,
 so far is a measurement: what we measured, including a null result, is
 [below](#what-we-measured-about-serv-and-what-we-found).
 
-**Live wall:** <https://assay-steel.vercel.app> · **Repo:** <https://github.com/OoJae/assay>
+**Live wall:** <https://assay-steel.vercel.app/wall> · **Site:** <https://assay-steel.vercel.app> ·
+**Repo:** <https://github.com/OoJae/assay>
 
 ### On-chain proofs
 
@@ -515,8 +516,8 @@ pnpm sweep --symbols=CRWD,NVDA,SPY       # scoped: writes data/findings.scoped.j
                                          # published board; --publish replaces it, and the guard
                                          # refuses a narrower board unless --force
 pnpm readme:stats             # regenerate this README's numbers from the artifact (--print: stdout only)
-pnpm test                     # all 511 tests in 27 files (20 of them, in 3 files, hit live chain state)
-pnpm test:offline             # 491 tests in 24 files, no network at all — what CI runs on every push
+pnpm test                     # all 541 tests in 29 files (20 of them, in 3 files, hit live chain state)
+pnpm test:offline             # 521 tests in 26 files, no network at all — what CI runs on every push
 pnpm typecheck
 
 npx tsx scripts/true-position.ts CRWD <holder>   # any address holding CRWD
@@ -551,7 +552,10 @@ pnpm verify:attestation       # independently check on-chain hash == served byte
 ```
 
 Production configuration — units, timer, nginx, logrotate, runbook — is in
-[`deploy/`](deploy/RUNBOOK.md), in version control rather than only on the host.
+[`deploy/`](deploy/RUNBOOK.md), in version control rather than only on the host. The website in
+`web/` is covered there too: its routes, the landing's 3D kill switch, rollback, and
+`NEXT_DIST_DIR` for local builds ([The website](deploy/RUNBOOK.md#the-website)). Its brand, type and
+colour rules are in [docs/BRAND.md](docs/BRAND.md).
 
 ### Buy a call
 

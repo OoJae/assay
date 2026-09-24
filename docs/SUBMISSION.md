@@ -28,17 +28,26 @@ Everything here is for **Oluwademilade to post** from their own account.
        lists as `??`: the CI workflow, `src/lib/redact.ts`, `src/lib/endpoints.ts`, new tests and
        wall components. Stage those too. Without the workflow the README's CI badge and thread 23/
        are false, so its first run on GitHub must be green before anything is posted.
-3. [ ] Every number marked **[refresh]** below re-read from the live wall
-       (<https://assay-steel.vercel.app>) minutes before posting. They are written here from the
+3. [ ] **The redesign is live in production and checked**, before anything below is recorded or
+       posted: the demo opens on the landing, and two of the images come from it. From `web/`,
+       `vercel --prod`, then every check under "The website" in `deploy/RUNBOOK.md`: `/`, `/wall`,
+       a finding page and `/pricing` answer 200, `/f/nope` answers 404, `/wall` shows no
+       `LIVE FEED UNREACHABLE`, and `agent-card.json` and the three attestation files are
+       byte-identical to git. In a browser, `/#check` lands on `/wall#check`. Only then push
+       `.github/workflows/monitor.yml`, which now probes `/wall`, and let its first run go green.
+4. [ ] Every number marked **[refresh]** below re-read from the live wall
+       (<https://assay-steel.vercel.app/wall>) minutes before posting. They are written here from the
        committed board, block 70789445 (2026-09-23 20:11 UTC), and the live board moves every 8
        minutes.
-4. [ ] Test counts re-run: `ASSAY_OFFLINE_ONLY=1 npx vitest run`, then `npx vitest run`. Written
-       below as 491 offline in 24 files and 511 in all 27 files, from runs on 2026-09-23.
-5. [ ] `npx tsx scripts/test-guard.ts` passes (needs `anvil`).
-6. [x] `npx tsx scripts/verify-attestation.ts` returns VERIFIES (now for the 95374 attestation; 95265 still verifies too).
-7. [ ] The wall, `/pricing`, a finding page and a missing page all load; the free wallet check
-       returns rows for `0x000000000000000000000000000000000000dEaD`.
-8. [x] (checked 2026-09-24: 200, `fullAudit`, `fullAnswer`) The live MCP host runs this release. Each line should print what its comment says:
+5. [ ] Test counts re-run: `ASSAY_OFFLINE_ONLY=1 npx vitest run`, then `npx vitest run`. Written
+       below as 521 offline in 26 files and 541 in all 29 files, both from runs on 2026-09-24 after
+       the redesign added `test/landing-data.test.ts` and `test/landing-pose.test.ts`. A test added
+       after that changes both, and the README's Usage block with them.
+6. [ ] `npx tsx scripts/test-guard.ts` passes (needs `anvil`).
+7. [x] `npx tsx scripts/verify-attestation.ts` returns VERIFIES (now for the 95374 attestation; 95265 still verifies too).
+8. [ ] The landing (`/`), the wall (`/wall`), `/pricing`, a finding page and a missing page all
+       load; the free wallet check returns rows for `0x000000000000000000000000000000000000dEaD`.
+9. [x] (checked 2026-09-24: 200, `fullAudit`, `fullAnswer`) The live MCP host runs this release. Each line should print what its comment says:
 
        ```bash
        curl -s -o /dev/null -w '%{http_code}\n' https://sonar.my.id/assay-mcp/health/sweep   # 200
@@ -55,26 +64,32 @@ Everything here is for **Oluwademilade to post** from their own account.
        the old code, which serves neither `/health/sweep` nor `/mcp` and gives the figures away
        free. Until all three lines pass, the README's Streamable HTTP and free-verdicts-only claims
        are not true of the live host, so do not post.
-9. [ ] Demo recorded per `docs/DEMO.md`: **2:00 target, 2:20 at most**, which is X's video limit
-       without Premium. Uploaded to YouTube (unlisted is fine) for the form's second link.
-10. [x] The posting account is **@_OoJae**; its sidebar offers "Upgrade to Premium+", which X shows to Premium subscribers. Check whether it has **X Premium**. Nothing below needs it: every post is
+10. [ ] Demo recorded per `docs/DEMO.md`, after item 3, since it opens on the landing: **2:00
+        target, 2:20 at most**, which is X's video limit without Premium. Uploaded to YouTube
+        (unlisted is fine) for the form's second link.
+11. [x] The posting account is **@_OoJae**; its sidebar offers "Upgrade to Premium+", which X shows to Premium subscribers. Check whether it has **X Premium**. Nothing below needs it: every post is
         280 characters or fewer as X counts them. Without Premium a video must be 2:20 or shorter.
-11. [ ] Post section 1 with its 4 images and **@openservai**. Post the video as the first reply.
-12. [ ] Fill the form (section 3). Keep the Typeform confirmation screen or email.
-13. [ ] Only then, optionally, the thread in section 2, as replies under the submission post.
+12. [ ] Post section 1 with its 4 images and **@openservai**. Post the video as the first reply.
+13. [ ] Fill the form (section 3). Keep the Typeform confirmation screen or email.
+14. [ ] Only then, optionally, the thread in section 2, as replies under the submission post.
 
 When there is time, none of it blocking:
-- Set the GitHub repo's homepage to the wall and add topics (robinhood-chain, erc-8056, x402,
-  erc-8004, mcp, openserv), so a judge landing on GitHub has one click to the live product.
+- Set the GitHub repo's homepage to <https://assay-steel.vercel.app> and add topics
+  (robinhood-chain, erc-8056, x402, erc-8004, mcp, openserv), so a judge landing on GitHub has one
+  click to the live product.
 - Set `git config user.email` to your GitHub noreply address, and only then turn on "Block command
   line pushes that expose my email"; in the other order the next push is rejected. Two personal
   addresses are already in the public history; do not rewrite it during judging.
 - Turn on two-factor authentication for the console.openserv.ai account.
 - Make a dated copy of `.openserv.json` (see `deploy/RUNBOOK.md`, Secrets), and keep X DMs open
   until winners are announced.
+- If the posting account should carry the brand while judging runs: the avatar is
+  `web/public/brand/assay-avatar-400.png`, and the banner, `web/public/brand/assay-banner-1500x500.png`,
+  keeps its lower-left corner clear for the avatar.
 
 Links used throughout:
-- wall: <https://assay-steel.vercel.app>
+- site: <https://assay-steel.vercel.app>, the landing, which leads into the wall
+- live wall: <https://assay-steel.vercel.app/wall>
 - repo: <https://github.com/OoJae/assay>
 - settled payment, $0.25 contract audit, to the current payTo `0x6328…7911`: <https://basescan.org/tx/0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2>
 - settled payment, $0.01, to the frozen 95265 wallet: <https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b>
@@ -91,9 +106,16 @@ Links used throughout:
 This is the post whose URL goes on the form. It carries everything the rules ask for: name,
 concept, images, links and the @openservai tag.
 
-Attach 4 images in this order: the wall's hero and stat row · the CRWD refusal in a terminal ·
-the wall's "Where SERV Reasoning runs" card · the Basescan page of the $0.25
-`transferWithAuthorization`.
+Attach 4 images in this order: the landing's hero · the strike, step 03 of the landing's assay
+scene, with the gold hallmark and its bytes showing · the CRWD refusal in a terminal · the wall's
+"Where SERV Reasoning runs" card. X takes four at most, so the Basescan page of the $0.25
+`transferWithAuthorization`, which this list used to end on, is left to the video's last beat and
+the README.
+
+Take both landing images from production at 1920×1080, with Reduce motion off so the 3D bar
+renders rather than a still frame (the checks at the top of `docs/DEMO.md` apply): the hero once
+the bar has faded in, and the strike once the hallmark is struck and its bytes are legible. Keep
+the header in both frames, so the ASSAY lockup outranks any mention of Robinhood Chain in them.
 
 Paste each block as it is. Links count as 23 characters on X however long they are, and nothing
 inside the blocks is markdown. Every block is at most 280 characters; the longest is 279. Count
@@ -113,7 +135,7 @@ https://github.com/OoJae/assay
 **Video reply** (the first reply, with the demo attached)
 
 ```text
-Two minutes, against live chain state: a wallet check, a refusal, the contracts holding the tokens, a free guard contract, where SERV Reasoning runs, and a settled x402 payment.
+Two minutes on live chain state: a Stock Token assayed byte by byte, a wallet check, a refusal, holder contracts, a free guard contract, where SERV Reasoning runs, and a settled x402 payment.
 
 Independent project; not affiliated with Robinhood or Chainlink. Not financial advice.
 ```
@@ -274,7 +296,7 @@ Detection is worth less than prevention. A free, ownerless, view-only contract o
 **23/**
 
 ```text
-Two paid calls settle over x402 on Base: $0.01 for an audited position, $0.25 for a contract audit. The public MCP gives the verdicts free. ERC-8004 identity 8453:95374. 511 tests, 491 with no network, which CI runs on every push. [refresh]
+Two paid calls settle over x402 on Base: $0.01 for an audited position, $0.25 for a contract audit. The public MCP gives the verdicts free. ERC-8004 identity 8453:95374. 541 tests, 521 with no network, which CI runs on every push. [refresh]
 ```
 
 **24/**
@@ -302,9 +324,9 @@ Independent project; not affiliated with Robinhood or Chainlink. Not financial a
 | Your X submission link | the URL of the section 1 post, not a reply |
 | Name of your project | `ASSAY` |
 | Describe the project | the text below |
-| Link to your project | **one URL**: <https://assay-steel.vercel.app> (the wall links the repo) |
+| Link to your project | **one URL**: <https://assay-steel.vercel.app>, the landing, which leads into the wall; its header and footer link the repo |
 | Additional links | **one URL**: the demo video |
-| Logotype | a square PNG of the icon: `qlmanage -t -s 1024 -o . web/app/icon.svg` writes a 1024 × 1024 `icon.svg.png` |
+| Logotype | `web/public/brand/assay-mark-512.png`: the hallmark, gold on touchstone, 512 × 512 |
 | Did you enable data collection? | yes. It is on for the console org, and the SERV measurement runs are the usage it checks. |
 | Experience with AI / agent development | Some hands-on experience |
 | Country, affiliation, role, profile link, OpenServ updates | optional: blank unless you say otherwise |

@@ -10,6 +10,9 @@ Host: **Sonar-VPS2**, Tencent Lighthouse, `170.106.175.243`. Ubuntu, 3.7 GB RAM 
 nginx 1.24, node at `/usr/bin/node`, pnpm 12. Checkout lives at `/home/ubuntu/assay`; the live
 board lives outside it, in `/home/ubuntu/assay-data`.
 
+The website is not on this host. It is deployed from `web/` to Vercel; [The website](#the-website)
+covers its routes, the 3D kill switch and rollback.
+
 ## What runs
 
 | unit | what it does | port |
@@ -157,11 +160,16 @@ to publish.
 **The external monitor** is `.github/workflows/monitor.yml`, so it needs no account beyond GitHub.
 Every 15 minutes it checks that `/findings.json` is at most 20 minutes old and non-empty, that
 `/health/sweep` answers (a 503 is noted in the run summary, not alerted on, since one refusal is
-normal and a sustained one ages the board past the first check), and that the wall renders without
-`LIVE FEED UNREACHABLE`. An incident opens one `sweep-monitor` issue mentioning the owner and fails
-the run; a change in the problems adds a comment; recovery closes the issue. Run it by hand with
-`gh workflow run monitor`. GitHub disables scheduled workflows in a public repo after 60 days without
-activity, and a disabled monitor fails silently: re-enable it from the Actions tab.
+normal and a sustained one ages the board past the first check), that the wall at `/wall` renders
+without `LIVE FEED UNREACHABLE`, and that the landing at `/` answers 200. An incident opens one
+`sweep-monitor` issue mentioning the owner and fails the run; a change in the problems adds a
+comment; recovery closes the issue. Run it by hand with `gh workflow run monitor`. GitHub disables
+scheduled workflows in a public repo after 60 days without activity, and a disabled monitor fails
+silently: re-enable it from the Actions tab.
+
+The wall was at `/` until the redesign. Push a `monitor.yml` that probes `/wall` only once
+production serves `/wall`, and point it back at `/` for as long as a rollback past the redesign
+stands (see [Rollback](#rollback)); otherwise the monitor reports a 404 as an outage.
 
 **Why a sweep refuses.** `scripts/sweep.ts` compares each new board with the one it would replace
 (`src/sweep/guard.ts`) and exits 2 without publishing when more than 10% of assets could not be
@@ -290,6 +298,119 @@ board until the next tick — which is exactly what happened once.
 
 The committed `data/findings.json` stays in the repo as the **wall's fallback** for when this host
 is unreachable. It is not the live board, and it is redacted like the live one.
+
+## The website
+
+The site is the Next.js app in `web/`, on Vercel, deployed from a laptop with `vercel --prod` run
+in `web/` (the CLI's link to the project is `web/.vercel`, gitignored). Vercel uploads only `web/`
+and installs it with npm and no lockfile, which is why `web/package.json` pins exact versions.
+Every route below except the static files reads the live board from
+`https://sonar.my.id/assay-mcp/findings.json` and falls back to the committed one when it cannot;
+the landing and the wall both say which one they are showing.
+
+| route | what it is | how it renders |
+|---|---|---|
+| `/` | The landing: one Stock Token bar assayed in five steps (01 weigh to 05 re-fetch), who reads it wrong, how to use ASSAY, the way into the wall | static, rebuilt from the live board at most once every 60 s; its provenance line says *live board* or *committed snapshot*, with the block |
+| `/wall` | The findings wall. It was `/` until the redesign | on every request |
+| `/f/<id>` | One finding, as a certificate | on every request |
+| `/pricing` | Every tier, its price, and whether it can be bought today | on every request |
+| `/og` | The social card image | on every request |
+| `/agent-card.json`, `/attestations/*` | Documents third parties fetch and hash: the ERC-8004 token points at the card, and each attestation's on-chain hash is of its exact bytes. They never move and are never edited | static files |
+| `/landing/v1/*` | The landing's poster frames, cached as immutable for a year; a changed frame ships under `v2`, never over `v1` | static files |
+
+Links to the wall's old anchors (`/#check`, `/#use-it`, `/#exposure` and the rest) land on the same
+section of `/wall`. A fragment never reaches the server, so the landing does this in the browser;
+curl cannot check it.
+
+### Deploying the site
+
+```bash
+cd web
+vercel ls        # note the Production deployment serving the domain now: the rollback target
+vercel --prod
+```
+
+Then check it from outside:
+
+```bash
+S=https://assay-steel.vercel.app
+for p in / /wall /f/CRWD-share-count /pricing; do
+  printf '%s %s\n' "$(curl -s -o /dev/null -w '%{http_code}' "$S$p")" "$p"   # 200 each
+done
+curl -s -o /dev/null -w '%{http_code}\n' "$S/f/nope"                            # 404
+curl -s -o /dev/null -w '%{http_code} %{content_type}\n' "$S/og"                # 200 image/png
+curl -s "$S/wall" | grep -c 'LIVE FEED UNREACHABLE'                             # 0
+
+# Served bytes must equal git's: an attestation's on-chain hash is of exactly these bytes.
+cd "$(git rev-parse --show-toplevel)"
+for f in agent-card.json attestations/95265.json \
+  attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.json \
+  attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.request.json; do
+  cmp -s <(curl -s "$S/$f") <(git show "HEAD:web/public/$f") && echo "same  $f" || echo "DIFFERS  $f"
+done
+npx tsx scripts/verify-attestation.ts                                           # VERIFIES
+```
+
+### The 3D kill switch
+
+The landing's assay scene runs in one of three modes, chosen in the browser before the first paint.
+*webgl* is the default. *posters* keeps the same scrolling stage but crossfades still frames of the
+scene; it is used without WebGL2, with Save-Data on, on low-memory devices, or after the page's own
+frame-time guard gives up on a slow device for the rest of that tab's session. *static* stacks the
+frames and captions in plain flow, for reduced motion and no JavaScript. Every number and byte is
+page text, never part of a frame, so the fallbacks lose motion, not information.
+
+To put everyone on posters, set the kill switch and rebuild:
+
+```bash
+cd web
+printf off | vercel env add NEXT_PUBLIC_LANDING_3D production
+vercel --prod
+```
+
+A `NEXT_PUBLIC_` variable is compiled into the page when it is built, so setting it changes nothing
+until that production build; there is no switch that acts on a running deployment. To undo it:
+`vercel env rm NEXT_PUBLIC_LANDING_3D production`, then `vercel --prod` again.
+
+Use it when the scene misbehaves on some class of device (dropped frames, a crashed GPU process,
+WebGL contexts leaking across navigations) and the rest of the site is fine. For one browser, with
+no deploy, `?3d=0` shows the posters and `?3d=1` forces WebGL; the second is for testing only.
+
+### Rollback
+
+When the site is broken, not just the scene, put the previous production deployment back. It takes
+effect at once, with no build:
+
+```bash
+cd web
+vercel rollback                      # the production deployment before the current one
+vercel rollback <deployment-url>     # or a specific one
+vercel rollback status
+```
+
+A Hobby account can only go back to the deployment immediately before the current one. Two things
+follow from a rollback:
+
+- Vercel stops assigning the production domain to new production deployments. Once a fix is
+  deployed with `vercel --prod`, `vercel promote <its deployment URL>` puts it live.
+- A rollback past the redesign puts the wall back at `/`, and `/wall` becomes a 404. Point the
+  monitor's `WALL` at `https://assay-steel.vercel.app/` while the rollback stands, or expect an
+  incident within 15 minutes. `/f/<id>`, `/pricing`, `/agent-card.json` and `/attestations/*` have
+  the same paths on both sides, so the agent card and the attestation hashes are unaffected.
+
+### Local builds
+
+```bash
+cd web
+NEXT_DIST_DIR=.next-local npx next build
+NEXT_DIST_DIR=.next-dev npx next dev -p 3001
+```
+
+Give each build and each dev server its own directory: two processes sharing `.next` corrupt
+whichever finishes second. `.next-*` is gitignored. Unset, it is `.next`, which is what Vercel
+builds with. Both commands also rewrite `web/next-env.d.ts` and `web/tsconfig.json` to point at the
+directory they used, so `git diff web/next-env.d.ts web/tsconfig.json` must be empty before a
+commit; restore the two files from git unless you meant to change them.
 
 ## Secrets
 
