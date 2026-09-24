@@ -9,7 +9,7 @@
     "prebuild": "node scripts/prebuild.mjs"
   },
   "dependencies": {
-    "next": "15.5.25",
+    "next": "15.5.26",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "viem": "2.56.8"
