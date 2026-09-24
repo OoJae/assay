@@ -22,7 +22,7 @@ Everything here is for **Oluwademilade to post** from their own account.
 1. [x] `npm view erc8056-guard version` prints `0.1.0` (published 2026-09-24) before the commit that carries this README
        is pushed. The README says the package is on npm; until it is published that line is false,
        and the name is open to anyone.
-2. [ ] The code in this change is committed and deployed: the VPS (free MCP verdicts, sweep guard,
+2. [x] (2026-09-23) The code in this change is committed and deployed: the VPS (free MCP verdicts, sweep guard,
        agent) and the Vercel wall and agent card together. The post and the README describe them.
        `git add -u` stages only files git already tracks, so it leaves out every file `git status`
        lists as `??`: the CI workflow, `src/lib/redact.ts`, `src/lib/endpoints.ts`, new tests and
@@ -35,10 +35,10 @@ Everything here is for **Oluwademilade to post** from their own account.
 4. [ ] Test counts re-run: `ASSAY_OFFLINE_ONLY=1 npx vitest run`, then `npx vitest run`. Written
        below as 491 offline in 24 files and 511 in all 27 files, from runs on 2026-09-23.
 5. [ ] `npx tsx scripts/test-guard.ts` passes (needs `anvil`).
-6. [ ] `npx tsx scripts/verify-attestation.ts` returns VERIFIES.
+6. [x] `npx tsx scripts/verify-attestation.ts` returns VERIFIES (now for the 95374 attestation; 95265 still verifies too).
 7. [ ] The wall, `/pricing`, a finding page and a missing page all load; the free wallet check
        returns rows for `0x000000000000000000000000000000000000dEaD`.
-8. [ ] The live MCP host runs this release. Each line should print what its comment says:
+8. [x] (checked 2026-09-24: 200, `fullAudit`, `fullAnswer`) The live MCP host runs this release. Each line should print what its comment says:
 
        ```bash
        curl -s -o /dev/null -w '%{http_code}\n' https://sonar.my.id/assay-mcp/health/sweep   # 200
@@ -57,7 +57,7 @@ Everything here is for **Oluwademilade to post** from their own account.
        are not true of the live host, so do not post.
 9. [ ] Demo recorded per `docs/DEMO.md`: **2:00 target, 2:20 at most**, which is X's video limit
        without Premium. Uploaded to YouTube (unlisted is fine) for the form's second link.
-10. [ ] Check whether the posting account has **X Premium**. Nothing below needs it: every post is
+10. [x] The posting account is **@_OoJae**; its sidebar offers "Upgrade to Premium+", which X shows to Premium subscribers. Check whether it has **X Premium**. Nothing below needs it: every post is
         280 characters or fewer as X counts them. Without Premium a video must be 2:20 or shorter.
 11. [ ] Post section 1 with its 4 images and **@openservai**. Post the video as the first reply.
 12. [ ] Fill the form (section 3). Keep the Typeform confirmation screen or email.
@@ -298,7 +298,7 @@ Independent project; not affiliated with Robinhood or Chainlink. Not financial a
 |---|---|
 | Full name | yours |
 | Email | the console.openserv.ai login (see the top of this file) |
-| Track (select all that apply) | **Robinhood Chain / MCP**, the form's name for the page's *Mainnet & MCP* track. Never leave it blank. Add **Open Track** only if the organisers confirm in t.me/openservai that entries in two tracks are judged separately. Do not tick Coinbase AgentKit or IXS Vaults: the AgentKit provider is read-only and IXS is not used. |
+| Track (select all that apply) | **Robinhood Chain / MCP**, **Coinbase AgentKit** and **Open Track** (decided 2026-09-24). Robinhood Chain / MCP is the core fit; the AgentKit provider is `src/agentkit`; Open Track is anything on SERV Reasoning. Not IXS Vaults. |
 | Your X submission link | the URL of the section 1 post, not a reply |
 | Name of your project | `ASSAY` |
 | Describe the project | the text below |
@@ -306,6 +306,8 @@ Independent project; not affiliated with Robinhood or Chainlink. Not financial a
 | Additional links | **one URL**: the demo video |
 | Logotype | a square PNG of the icon: `qlmanage -t -s 1024 -o . web/app/icon.svg` writes a 1024 × 1024 `icon.svg.png` |
 | Did you enable data collection? | yes. It is on for the console org, and the SERV measurement runs are the usage it checks. |
+| Experience with AI / agent development | Some hands-on experience |
+| Country, affiliation, role, profile link, OpenServ updates | optional: blank unless you say otherwise |
 | Team status | I'm joining solo |
 
 **Describe the project** (about 190 words):
