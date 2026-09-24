@@ -142,7 +142,7 @@
     },
     {
       "name": "npm",
-      "endpoint": "https://github.com/OoJae/assay/tree/main/packages/erc8056-guard"
+      "endpoint": "https://www.npmjs.com/package/erc8056-guard"
     }
   ],
   "x402Support": true,

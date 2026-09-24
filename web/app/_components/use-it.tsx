@@ -129,8 +129,11 @@ export async function UseIt({ missingFeeds, assetsScanned }: { missingFeeds?: nu
           </a>
           , ownerless and view-only. <span className="mono">shareEquivalents(token, holder)</span> returns
           the share count or a refusal with its reason; <span className="mono">positionValue</span> adds
-          the feed price. A TypeScript helper lives in{' '}
-          <a href={`${REPO}/tree/main/packages/erc8056-guard`}>packages/erc8056-guard</a>.
+          the feed price. The TypeScript helper is on npm as{' '}
+          <a href="https://www.npmjs.com/package/erc8056-guard">
+            <span className="mono">erc8056-guard</span>
+          </a>{' '}
+          (<a href={`${REPO}/tree/main/packages/erc8056-guard`}>source</a>).
         </li>
       </ul>
     </section>

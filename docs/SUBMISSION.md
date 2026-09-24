@@ -19,7 +19,7 @@ Everything here is for **Oluwademilade to post** from their own account.
 
 ## In this order
 
-1. [ ] `npm view erc8056-guard version` prints `0.1.0` before the commit that carries this README
+1. [x] `npm view erc8056-guard version` prints `0.1.0` (published 2026-09-24) before the commit that carries this README
        is pushed. The README says the package is on npm; until it is published that line is false,
        and the name is open to anyone.
 2. [ ] The code in this change is committed and deployed: the VPS (free MCP verdicts, sweep guard,
