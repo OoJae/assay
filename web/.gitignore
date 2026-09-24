@@ -1,1 +1,3 @@
 .vercel
+# Per-agent and per-server build directories (NEXT_DIST_DIR in next.config.mjs).
+.next-*

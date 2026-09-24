@@ -1,140 +1,1828 @@
+/* ==========================================================================
+   ASSAY — the assay office.
+   The touchstone is black stone that gold leaves a streak on; the cupel is bone-ash white. The
+   streak colour is not decoration: on this site it means a value was re-fetched from chain state
+   and byte-compared (raw bytes, a decoded value beside its bytes, an N/N re-fetched count, the
+   hallmark), and nothing else is ever that colour. Motion is sterling, never gold.
+   ========================================================================== */
+
 :root {
-  --bg: #0b0d10;
-  --panel: #12161b;
-  --panel-2: #171c22;
-  --line: #232a33;
-  --fg: #e6edf3;
-  --muted: #8b98a8;
-  --crit: #ff5c5c;
-  --high: #ff9f45;
-  --med: #e8c547;
-  --low: #6fb1ff;
-  --ok: #4ec9a5;
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+
+  --touchstone: #0d0d0c;
+  --cupel: #eeeae2;
+  --ash: #8c877e;
+  --streak: #d6b25e;
+  --aqua: #e2573f; /* aqua fortis: refusal, mismatch, stale. Rare. */
+  --aqua-fortis: var(--aqua);
+  --sterling: #b9bec4;
+  --hair: color-mix(in srgb, var(--cupel) 14%, transparent);
+  --hair-strong: color-mix(in srgb, var(--cupel) 26%, transparent);
+  --slab: #141412;
+  --slab-2: #1a1917;
+
+  --display: var(--font-display), 'Bodoni 72', Didot, 'Bodoni MT', serif;
+  --sans: var(--font-sans), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: var(--font-mono), ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  --step-hero: clamp(3rem, 9vw, 10.5rem);
+  --step-section: clamp(2.25rem, 5vw, 5rem);
+  --step-h3: clamp(1.35rem, 1.8vw, 1.75rem);
+  --step-body: clamp(1rem, 1.05vw, 1.15rem);
+  --step-label: 0.72rem;
+  --step-data: 0.9rem;
+
+  --measure: 1180px;
+  --gutter: 20px;
+  --header-h: 64px;
+  --radius: 2px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* expo.out, the one ease every reveal uses */
+
+  /* ---- Aliases. Every token name the wall used before the redesign still resolves, so its
+     inline styles and components keep working unchanged. --ok marks verified values only (the
+     .verified counts and "citations reproduced"), which is exactly what streak means. ---- */
+  --bg: var(--touchstone);
+  --fg: var(--cupel);
+  --muted: var(--ash);
+  --line: var(--hair);
+  --panel: var(--slab);
+  --panel-2: var(--slab-2);
+  --ok: var(--streak);
+  --crit: var(--aqua);
+  --high: color-mix(in srgb, var(--aqua) 70%, var(--cupel));
+  --med: var(--cupel);
+  --low: var(--sterling);
 }
-* { box-sizing: border-box; }
-html, body { padding: 0; margin: 0; background: var(--bg); color: var(--fg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
-a { color: inherit; }
-.wrap { max-width: 1180px; margin: 0 auto; padding: 32px 20px 80px; }
-.mono { font-family: var(--mono); }
-header.top { border-bottom: 1px solid var(--line); margin-bottom: 28px; padding-bottom: 22px; }
-h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -0.5px; }
-.tag { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: 1.4px; text-transform: uppercase; }
-.lede { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 76ch; margin: 14px 0 0; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; margin: 22px 0 8px; }
-.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
-.stat .n { font-size: 26px; font-family: var(--mono); font-weight: 600; }
-.stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
-.banner { border: 1px solid var(--line); background: var(--panel-2); border-radius: 10px;
-  padding: 13px 16px; margin: 18px 0; font-size: 13.5px; color: var(--muted); line-height: 1.55; }
-.banner strong { color: var(--fg); }
-table { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13.5px; }
-th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.1px;
-  color: var(--muted); padding: 9px 10px; border-bottom: 1px solid var(--line); font-weight: 600; }
-td { padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-tr:hover td { background: var(--panel); }
-.sev { font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 3px 7px;
-  border-radius: 4px; text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
-.sev.critical { background: rgba(255,92,92,.14); color: var(--crit); }
-.sev.high { background: rgba(255,159,69,.14); color: var(--high); }
-.sev.medium { background: rgba(232,197,71,.13); color: var(--med); }
-.sev.low { background: rgba(111,177,255,.13); color: var(--low); }
-.sev.info { background: rgba(139,152,168,.13); color: var(--muted); }
-.cls { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-.sym { font-family: var(--mono); font-weight: 600; }
-.verified { font-family: var(--mono); font-size: 11px; color: var(--ok); white-space: nowrap; }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin: 14px 0; }
-pre { background: #0a0c0f; border: 1px solid var(--line); border-radius: 8px; padding: 13px;
-  overflow-x: auto; font-size: 11.5px; font-family: var(--mono); color: #b9c6d4; line-height: 1.5; }
-.ev { border-left: 2px solid var(--line); padding-left: 14px; margin: 14px 0; }
-.ev .claim { font-family: var(--mono); font-size: 12.5px; margin-bottom: 7px; }
-.meta { font-size: 11.5px; color: var(--muted); font-family: var(--mono); line-height: 1.75; }
-.back { font-size: 12.5px; color: var(--muted); text-decoration: none; }
-.back:hover { color: var(--fg); }
-footer { margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--line);
-  font-size: 12px; color: var(--muted); line-height: 1.75; }
 
-/* --- Commercial surface: the argument used to live entirely in the README --- */
-.navbar { display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
-  border-bottom: 1px solid var(--line); padding: 12px 0; margin-bottom: 18px; font-size: 12.5px; }
-.navbar .brand { font-family: var(--mono); font-weight: 700; letter-spacing: 1px; }
-.navbar a { color: var(--muted); text-decoration: none; }
-.navbar a:hover { color: var(--fg); }
-.navbar .spacer { flex: 1 1 auto; }
-.proofs { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 10px; margin: 16px 0; }
-.proof { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
-.proof .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
-.proof .val { font-family: var(--mono); font-size: 12.5px; margin-top: 5px; overflow-wrap: anywhere; }
-.proof a { color: var(--low); text-decoration: none; }
+/* ---- Base ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  background: var(--touchstone);
+  color: var(--cupel);
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: color-mix(in srgb, var(--cupel) 22%, transparent) transparent;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--touchstone);
+  color: var(--cupel);
+  font-family: var(--sans);
+  font-size: var(--step-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* A safety net, not a layout tool: clip (unlike hidden) creates no scroll container, so the
+     sticky header and the landing's sticky stage still stick. */
+  overflow-x: clip;
+}
+::selection {
+  background: color-mix(in srgb, var(--sterling) 34%, transparent);
+  color: var(--cupel);
+}
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+a:hover {
+  text-decoration-color: currentColor;
+}
+/* Anchored sections land below the sticky header, natively and through Lenis alike. */
+[id] {
+  scroll-margin-top: calc(var(--header-h) + 16px);
+}
+h1 {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  font-size: clamp(2.1rem, 4.2vw, 3.5rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.3em;
+  text-wrap: balance;
+}
+.wrap {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: clamp(28px, 4vw, 48px) var(--gutter) 24px;
+}
 
-/* --- Withheld findings: the mechanism is only credible if the misses are visible --- */
-.withheld { opacity: 0.82; }
-.withheld td { color: var(--muted); }
-.rsn { font-family: var(--mono); font-size: 10.5px; font-weight: 700; padding: 3px 7px;
-  border-radius: 4px; text-transform: uppercase; letter-spacing: 0.6px; white-space: nowrap; }
-.rsn.mismatch { background: rgba(255,92,92,.14); color: var(--crit); }
-.rsn.unverifiable_here { background: rgba(111,177,255,.13); color: var(--low); }
-.rsn.unchecked { background: rgba(139,152,168,.13); color: var(--muted); }
-.rsn.no_evidence { background: rgba(232,197,71,.13); color: var(--med); }
+/* ---- Type utilities (the scale from the brand system) ---- */
+.display {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 400;
+  font-optical-sizing: auto;
+}
+.t-hero {
+  font-size: var(--step-hero);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+}
+.t-section {
+  font-size: var(--step-section);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+}
+.t-h3 {
+  font-size: var(--step-h3);
+  line-height: 1.15;
+}
+/* Stamps and labels: Martian Mono at its widest, spaced caps. */
+.label {
+  font-family: var(--mono);
+  font-size: var(--step-label);
+  font-stretch: 112.5%;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+/* Figures, blocks, tables: condensed, so long numbers stay on one line. */
+.data {
+  font-family: var(--mono);
+  font-size: var(--step-data);
+  font-stretch: 87.5%;
+}
+/* Martian Mono's x-height is far taller than Instrument Sans'; at the same size an inline call
+   like uiMultiplier() reads a size too loud in a sentence. */
+.mono {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+/* Martian Mono is a wide face; data is set condensed so a 42-character address or a 66-character
+   return fits a phone, and breaks anywhere rather than pushing the page sideways at 375px. */
+.mono,
+.meta,
+pre,
+code,
+.sym,
+.cls,
+.sev,
+.rsn,
+.badge,
+.verified,
+.stat .n,
+.ev .claim,
+.proof .val {
+  font-stretch: 87.5%;
+}
+.mono,
+.meta {
+  overflow-wrap: anywhere;
+}
+.hex {
+  font-family: var(--mono);
+  font-stretch: 75%;
+  overflow-wrap: anywhere;
+}
+/* Byte-verified values only. See the header of this file. */
+.streak {
+  color: var(--streak);
+}
 
-.badge { font-family: var(--mono); font-size: 10px; font-weight: 700; padding: 2px 6px;
-  border-radius: 4px; letter-spacing: 0.6px; background: rgba(232,197,71,.15); color: var(--med); }
-.h2 { font-size: 15px; margin: 34px 0 2px; letter-spacing: -0.2px; }
-.sub { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; line-height: 1.6; max-width: 80ch; }
-.tscroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* ---- Skip link ---- */
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 0.65em 1em;
+  border-radius: var(--radius);
+  background: var(--cupel);
+  color: var(--touchstone);
+  font: 600 0.875rem/1 var(--sans);
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(-160%);
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  opacity: 1;
+  transform: none;
+}
 
-/* --- Calls to action, the wallet check and the "Use it" section --- */
-.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-.btn { display: inline-block; font-size: 13px; padding: 8px 14px; border-radius: 8px; text-decoration: none;
-  border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; font-family: inherit; }
-.btn:hover { border-color: var(--muted); }
-.btn.primary { background: var(--ok); border-color: var(--ok); color: #06140f; font-weight: 600; }
-.btn:disabled { opacity: 0.6; cursor: progress; }
-.navbar a.btn.primary { color: #06140f; padding: 5px 11px; }
-.offers { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin: 14px 0; }
-.offer { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
-.offer p { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 10px 0 0; }
-.offer p strong { color: var(--fg); }
-.offer .actions { margin-top: 14px; }
-.offer .meta { margin-top: 10px; word-break: break-all; }
-.h3 { font-size: 13px; margin: 22px 0 2px; }
-.list { padding-left: 18px; }
-.list li { margin: 6px 0; }
-.check-row { display: flex; gap: 8px; margin-top: 8px; }
-.check input { flex: 1 1 auto; min-width: 0; background: #0a0c0f; color: var(--fg); border: 1px solid var(--line);
-  border-radius: 8px; padding: 9px 11px; font-size: 13px; }
-.check input:focus { outline: 2px solid var(--low); outline-offset: 1px; }
-.linkish { background: none; border: 0; padding: 0; color: var(--low); cursor: pointer; font: inherit; }
-.quote { margin: 10px 0; padding: 10px 14px; border-left: 2px solid var(--ok); color: var(--fg);
-  font-size: 13.5px; line-height: 1.65; }
-details.fold { margin-top: 10px; }
-details.fold > summary, details > summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
-.stat .n .of { font-size: 14px; color: var(--muted); font-weight: 400; }
-.rsn.free { background: rgba(78,201,165,.13); color: var(--ok); }
-h2.tag { margin: 0; font-weight: 400; }
-footer.disclaimer { margin-top: 28px; font-size: 11.5px; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
-  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+/* ---- Focus: cupel, the highest-contrast ink, never gold ---- */
+:focus-visible {
+  outline: 2px solid var(--cupel);
+  outline-offset: 3px;
+  border-radius: var(--radius);
+}
+.btn:focus-visible {
+  outline-offset: 4px;
+}
 
-/* --- P-4: the table carried 464px of fixed widths and the page scrolled sideways on a phone --- */
+/* ---- Header ---- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-h);
+  background: var(--touchstone);
+}
+.site-header__bar {
+  height: 100%;
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 2.6vw, 40px);
+}
+.site-brand {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  color: var(--cupel);
+  text-decoration: none;
+  /* A comfortable target around a small mark. */
+  padding: 8px 0;
+}
+.site-nav,
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(14px, 2vw, 28px);
+  font-size: 0.875rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.site-header__actions {
+  margin-left: auto;
+  gap: clamp(14px, 2vw, 24px);
+}
+.site-nav a,
+.site-header__actions a:not(.btn) {
+  position: relative;
+  padding: 10px 0;
+  color: var(--ash);
+  text-decoration: none;
+}
+.site-nav a:hover,
+.site-header__actions a:not(.btn):hover,
+.site-nav a[aria-current='page'] {
+  color: var(--cupel);
+}
+/* The current page is underlined with a hairline: the one mark that says "you are here". */
+.site-nav a[aria-current='page']::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  height: 1px;
+  background: currentColor;
+}
+/* The rail a route change scribes across (the view-transition rules below). At rest it is the
+   header's hairline. Sterling: it marks movement, which is never a verified value. */
+.site-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--sterling);
+  opacity: 0.18;
+  transform-origin: 0 50%;
+  pointer-events: none;
+  transition: opacity 0.9s var(--ease-out) 0.2s;
+}
+/* The landing's stage runs full-bleed under the header, so the header gives up its fill for a
+   scrim that keeps the links legible over the scene. No backdrop-filter: blurring a WebGL canvas
+   every frame is the single most expensive thing this page could do. */
+body:has(main[data-page='landing']) .site-header {
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--touchstone) 88%, transparent), transparent);
+}
+main[data-page='landing'] {
+  margin-top: calc(-1 * var(--header-h));
+}
+
+/* ---- Footer ---- */
+.site-footer {
+  margin-top: clamp(64px, 9vw, 120px);
+  border-top: 1px solid var(--hair);
+}
+.site-footer__inner {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 32px var(--gutter) 56px;
+}
+.site-footer__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  color: var(--cupel);
+}
+.site-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 0.875rem;
+}
+.site-footer__nav a {
+  padding: 6px 0;
+  color: var(--ash);
+  text-decoration: none;
+}
+.site-footer__nav a:hover {
+  color: var(--cupel);
+}
+.site-footer__disclaimer {
+  margin: 24px 0 0;
+  max-width: 92ch;
+  color: var(--ash);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+/* ---- Buttons: the punch ----
+   Pressed, the button sinks to .97 and a sterling ring is struck around it, then lifts away as it
+   is released. Transform and opacity only; colour changes are instant, through an overlay. */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--cupel);
+  --btn-bd: var(--hair-strong);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  padding: 0.72em 1.15em;
+  border: 1px solid var(--btn-bd);
+  border-radius: var(--radius);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font: 500 0.875rem/1.2 var(--sans);
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 0.35s var(--ease-out);
+}
+.btn::before,
+.btn::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+.btn::before {
+  inset: 0;
+  border-radius: inherit;
+  background: var(--cupel);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+}
+.btn:hover::before {
+  opacity: 0.07;
+}
+.btn::after {
+  inset: -5px;
+  border: 1px solid var(--sterling);
+  border-radius: calc(var(--radius) + 4px);
+  opacity: 0;
+  transform: scale(1.06);
+  transition:
+    opacity 0.35s var(--ease-out),
+    transform 0.35s var(--ease-out);
+}
+.btn:active {
+  transform: scale(0.97);
+  transition-duration: 0.08s;
+}
+.btn:active::after {
+  opacity: 0.9;
+  transform: scale(1);
+  transition: none;
+}
+.btn.primary {
+  --btn-bg: var(--cupel);
+  --btn-fg: var(--touchstone);
+  --btn-bd: var(--cupel);
+  font-weight: 600;
+}
+.btn.primary::before {
+  background: var(--touchstone);
+}
+.btn.primary:hover::before {
+  opacity: 0.1;
+}
+.btn--sm {
+  padding: 0.6em 0.95em;
+  font-size: 0.8125rem;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.btn:disabled:active {
+  transform: none;
+}
+.btn:disabled:active::after {
+  opacity: 0;
+}
+
+/* ---- Motion ---- */
+
+/* Lenis (lenis/dist/lenis.css, 1.3.26). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+.lenis.lenis-autoToggle {
+  transition-property: overflow;
+  transition-duration: 1ms;
+  transition-behavior: allow-discrete;
+}
+
+/* Reveal: each masked line clips a Bodoni italic whose swashes overhang its box. */
+.rv-line-mask {
+  padding: 0.1em 0.14em;
+  margin: -0.1em -0.14em;
+}
+
+/* Route change, "the scribe". With view transitions (TransitionLink): the old page fades out, the
+   rail scribes across left to right, the new page rises 8px into place. The header is its own
+   layer, so it holds still while the page under it changes. */
+.site-header {
+  view-transition-name: site-header;
+}
+.site-rail {
+  view-transition-name: streak-rail;
+}
+::view-transition-group(site-header),
+::view-transition-new(site-header) {
+  animation: none;
+}
+::view-transition-old(site-header),
+::view-transition-old(streak-rail) {
+  display: none;
+}
+::view-transition-new(streak-rail) {
+  transform-origin: 0 50%;
+  animation: scribe 0.7s var(--ease-out) both;
+}
+::view-transition-old(root) {
+  animation: vt-out 0.18s ease-in both;
+}
+::view-transition-new(root) {
+  animation: vt-rise 0.6s var(--ease-out) 0.12s both;
+}
+@keyframes scribe {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+/* The rail is lit only in the new frame, so the scribe draws a bright line that then settles back
+   into the hairline (the opacity transition on .site-rail). */
+html[data-nav='vt'] .site-rail {
+  opacity: 0.85;
+  transition: none;
+}
+/* Without view transitions: the rail pulses while the next route loads, and the new page rises
+   in when it commits. Soft navigations only; a full load never sets data-nav. */
+html[data-nav='pending'] .site-rail {
+  animation: rail-pulse 1.2s ease-in-out infinite;
+}
+html[data-nav='arriving'] main {
+  animation: arrive 0.55s var(--ease-out) backwards;
+}
+@keyframes rail-pulse {
+  50% {
+    opacity: 0.7;
+  }
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes arrive-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: nothing moves, things may still fade. The media query covers a visitor without
+   JS; html[data-motion] (set before paint, kept live by MotionProvider) is the same preference as
+   the landing reads it. */
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn:active,
+  .btn::after,
+  .btn:active::after {
+    transform: none;
+  }
+  html[data-nav='pending'] .site-rail {
+    animation: none;
+    opacity: 0.6;
+  }
+  html[data-nav='arriving'] main {
+    animation-name: arrive-fade;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+html[data-motion='reduced'] .btn,
+html[data-motion='reduced'] .btn:active,
+html[data-motion='reduced'] .btn::after,
+html[data-motion='reduced'] .btn:active::after {
+  transform: none;
+}
+html[data-motion='reduced'][data-nav='pending'] .site-rail {
+  animation: none;
+  opacity: 0.6;
+}
+html[data-motion='reduced'][data-nav='arriving'] main {
+  animation-name: arrive-fade;
+}
+
+/* ==========================================================================
+   The pages: the wall (an assay ledger), the finding certificate, the tariff and the 404.
+   Class names the wall used before the redesign keep their meaning. The streak rule holds here
+   too: gold marks a reproduced count or raw return bytes, never a derived figure, a price or a
+   control. Everything else is cupel, ash and sterling hairlines.
+   ========================================================================== */
+main {
+  /* Ledger rules are sterling, like the header's rail: structure, never a value. */
+  --rule: color-mix(in srgb, var(--sterling) 20%, transparent);
+  --rule-strong: color-mix(in srgb, var(--sterling) 36%, transparent);
+  /* Reading text one step below cupel: long paragraphs in full cupel glare on touchstone, and
+     ash (5.4:1) is for labels, not for prose that people have to read. ~9.5:1. */
+  --ink-2: color-mix(in srgb, var(--cupel) 76%, var(--touchstone));
+}
+
+/* ---- Page head ---- */
+header.top {
+  margin: 0 0 clamp(40px, 5vw, 64px);
+}
+.page-title {
+  font-size: clamp(2.5rem, 5.4vw, 5.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  margin: 18px 0 0;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: var(--step-label);
+  font-stretch: 112.5%;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+h2.tag {
+  margin: 0;
+}
+.lede {
+  max-width: 68ch;
+  margin: 22px 0 0;
+  color: var(--ink-2);
+  font-size: var(--step-body);
+  line-height: 1.65;
+}
+.lede strong {
+  color: var(--cupel);
+  font-weight: 600;
+}
+.lede a {
+  color: var(--cupel);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 30px;
+}
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 6px 0;
+  color: var(--ash);
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+.back:hover {
+  color: var(--cupel);
+}
+
+/* ---- Figures ----
+   One hairline grid, not six cards: the gaps are the rules. Six figures always, so the column
+   count is fixed per breakpoint and no row is ever left half empty. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  background: var(--rule);
+  border: 1px solid var(--rule);
+}
+.stat {
+  min-width: 0;
+  padding: clamp(16px, 1.7vw, 22px) clamp(14px, 1.5vw, 20px) clamp(16px, 1.6vw, 20px);
+  background: var(--touchstone);
+}
+.stat .n {
+  font-family: var(--mono);
+  font-size: clamp(1.75rem, 2.6vw, 2.45rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.stat .n .of {
+  margin-left: 0.1em;
+  color: var(--ash);
+  font-size: 0.42em;
+  letter-spacing: 0;
+}
+.stat .k {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-stretch: 112.5%;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--ash);
+}
+/* A reproduced count is the one figure that may be gold, and only when it is N of N. */
+.n--streak {
+  color: var(--streak);
+}
+/* The verifier refusing, an asset the RPC would not serve, a critical finding: aqua fortis. */
+.n--aqua {
+  color: var(--aqua);
+}
+
+/* ---- Notes: feed state, unread assets, chain notes ---- */
+.banner {
+  margin: 16px 0 0;
+  padding: 16px 20px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--slab);
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+.banner strong {
+  color: var(--cupel);
+  font-weight: 600;
+}
+.banner--aqua {
+  border-color: color-mix(in srgb, var(--aqua) 50%, transparent);
+}
+.banner__body {
+  margin-top: 10px;
+}
+.banner .meta,
+.banner .note {
+  margin-top: 10px;
+}
+/* LIVE FEED UNREACHABLE and STALE SNAPSHOT: the acid test failing, stamped in aqua outline. */
+.badge {
+  display: inline-block;
+  padding: 4px 7px 3px;
+  border: 1px solid color-mix(in srgb, var(--aqua) 60%, transparent);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--aqua);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-stretch: 112.5%;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  vertical-align: 0.12em;
+  white-space: nowrap;
+}
+
+/* ---- The ledger: every section of the wall and the tariff ----
+   A section opens on a sterling hairline. From 1024px the heading takes the left five columns and
+   its first paragraph sits beside it on the heading's baseline; everything after runs full width. */
+.ledger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: clamp(72px, 8vw, 112px);
+  padding-top: clamp(20px, 2vw, 28px);
+  border-top: 1px solid var(--rule);
+}
+.ledger > * {
+  min-width: 0;
+  margin: 0;
+}
+.ledger > * + * {
+  margin-top: 28px;
+}
+.ledger > .h2 + .sub {
+  margin-top: 16px;
+}
+.ledger > .sub + .sub {
+  margin-top: 14px;
+}
+@media (min-width: 1024px) {
+  .ledger {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    column-gap: clamp(32px, 4vw, 64px);
+    align-items: baseline;
+  }
+  .ledger > * {
+    grid-column: 1 / -1;
+  }
+  .ledger > .h2 {
+    grid-column: 1;
+  }
+  /* A heading with no paragraph to sit beside takes the full measure: held to five columns it
+     wrapped against an empty seven. */
+  .ledger > .h2:not(:has(+ .sub)) {
+    grid-column: 1 / -1;
+  }
+  .ledger > .h2 + .sub,
+  .ledger > .h2 + .sub + .sub {
+    grid-column: 2;
+  }
+  .ledger > .h2 + .sub {
+    margin-top: 0;
+  }
+  .ledger > .h2 + .sub + * {
+    margin-top: 40px;
+  }
+  .ledger > .h2 + .sub + .sub {
+    margin-top: 14px;
+  }
+  .ledger > .h2 + .sub + .sub + * {
+    margin-top: 40px;
+  }
+  .ledger > .h2 + :not(.sub) {
+    margin-top: 36px;
+  }
+}
+.h2 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 3.5vw, 3.25rem);
+  font-style: italic;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.h3 {
+  margin: 0;
+  color: var(--cupel);
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+}
+.ledger > .h3 {
+  margin-top: 56px;
+}
+.ledger > .h3 + * {
+  margin-top: 14px;
+}
+/* A paragraph after a panel, a table or code is a new thought, not that block's caption. */
+.ledger > :not(.h2, .h3, .sub) + .sub {
+  margin-top: 20px;
+}
+.sub {
+  max-width: 70ch;
+  margin: 10px 0 0;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.sub strong {
+  color: var(--cupel);
+  font-weight: 600;
+}
+.sub.note-after {
+  margin-top: 20px;
+}
+.list {
+  margin: 0;
+  padding-left: 1.15em;
+}
+.list li {
+  margin: 10px 0 0;
+  padding-left: 0.2em;
+}
+.list li::marker {
+  color: var(--ash);
+}
+
+/* Metadata is data, so it is mono. Prose asides are not, so they get .note: a 60-word paragraph
+   in a monospace face is a wall to read. */
+.meta {
+  color: var(--ash);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.75;
+}
+.meta a,
+.note a {
+  color: inherit;
+}
+.note {
+  color: var(--ash);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.note strong {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+/* Martian Mono's regular is optically heavier than Instrument Sans' regular; inside a sentence
+   an identifier should read as the same weight as the words around it, not as emphasis. */
+:is(.lede, .sub, .note, .banner, .offer p, .cert__text, .cert__statement, main footer) .mono {
+  font-weight: 350;
+}
+:is(.lede, .sub, .note, .banner, .offer p) strong .mono {
+  font-weight: 600;
+}
+
+/* ---- Panels ---- */
+.card {
+  padding: clamp(18px, 2.2vw, 28px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--slab);
+}
+.card > .sub:first-child,
+.card > .meta:first-child {
+  margin-top: 0;
+}
+pre {
+  margin: 0;
+  padding: 14px 16px;
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--touchstone);
+  color: var(--sterling);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.75;
+  tab-size: 2;
+}
+.card pre {
+  background: var(--touchstone);
+}
+.quote {
+  margin: 20px 0;
+  padding: 2px 0 2px 20px;
+  border-left: 1px solid var(--sterling);
+  color: var(--cupel);
+  font-size: 1.02rem;
+  line-height: 1.7;
+}
+
+/* ---- Tables: ledger rows ---- */
+.tscroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th {
+  padding: 0 12px 12px;
+  border-bottom: 1px solid var(--rule-strong);
+  color: var(--ash);
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-stretch: 112.5%;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.45;
+  text-align: left;
+  text-transform: uppercase;
+  vertical-align: bottom;
+}
+td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--rule);
+  line-height: 1.5;
+  vertical-align: baseline;
+}
+tbody tr:hover td {
+  background: color-mix(in srgb, var(--cupel) 3.5%, transparent);
+}
+.table--wide {
+  min-width: 640px;
+}
+.table--mid {
+  min-width: 520px;
+}
+.col-sev {
+  width: 108px;
+}
+.col-sym {
+  width: 84px;
+}
+.col-cls {
+  width: 222px;
+}
+.col-ev {
+  width: 84px;
+}
+.col-rsn {
+  width: 170px;
+}
+.row-link {
+  color: var(--cupel);
+  text-decoration: none;
+}
+.row-link:hover {
+  text-decoration: underline;
+}
+/* Severity and withholding reasons are stamps: outlined wide caps, like a mark struck in metal.
+   Only the critical one is filled, because it is the rare one. */
+.sev,
+.rsn,
+.stamp {
+  display: inline-block;
+  padding: 5px 7px 4px;
+  border: 1px solid color-mix(in srgb, currentColor 36%, transparent);
+  border-radius: var(--radius);
+  background: none;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-stretch: 112.5%;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.sev.critical {
+  border-color: color-mix(in srgb, var(--aqua) 70%, transparent);
+  background: color-mix(in srgb, var(--aqua) 13%, transparent);
+  color: var(--aqua);
+}
+.sev.high {
+  color: var(--high);
+}
+.sev.medium {
+  color: var(--cupel);
+}
+.sev.low {
+  color: var(--sterling);
+}
+.sev.info {
+  color: var(--ash);
+}
+.rsn.mismatch {
+  color: var(--aqua);
+}
+.rsn.unverifiable_here,
+.rsn.free {
+  color: var(--sterling);
+}
+.rsn.unchecked {
+  color: var(--ash);
+}
+.rsn.no_evidence {
+  color: var(--cupel);
+}
+.sym {
+  color: var(--cupel);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.cls {
+  color: var(--ash);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+}
+.verified {
+  color: var(--streak);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.verified--partial {
+  color: var(--cupel);
+}
+.withheld td {
+  color: var(--ash);
+}
+td.sub {
+  font-size: 0.875rem;
+}
+td .meta {
+  margin-top: 6px;
+}
+/* The wallet check's guard column: a live read, not a re-fetched citation, so never gold. */
+.guard-safe {
+  color: var(--cupel);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+.guard-refused {
+  color: var(--aqua);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+
+/* ---- Disclosures ---- */
+details > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 0.875rem;
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details > summary::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin: 0 2px 0 1px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.3s var(--ease-out);
+}
+details[open] > summary::before {
+  transform: translate(0, -2px) rotate(45deg);
+}
+details > summary:hover {
+  color: var(--cupel);
+}
+details.fold {
+  border-bottom: 1px solid var(--rule);
+}
+details.fold > summary {
+  display: flex;
+  padding: 18px 12px;
+}
+.ledger > details.fold {
+  margin-top: 0;
+}
+.ledger > details.fold + .sub {
+  margin-top: 20px;
+}
+details.terminal {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rule);
+}
+details.terminal > pre {
+  margin-top: 14px;
+}
+details.terminal > .note {
+  margin-top: 12px;
+}
+
+/* ---- Who holds the exposure ---- */
+.exposure__head {
+  display: block;
+  max-width: 62ch;
+  color: var(--cupel);
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.exposure__list {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+.exposure__list li {
+  margin: 0;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.exposure .note {
+  margin-top: 16px;
+}
+
+/* ---- The wallet check ---- */
+.check .tag {
+  display: block;
+}
+.check-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.check input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--touchstone);
+  color: var(--cupel);
+  font-size: 0.9rem;
+}
+.check input::placeholder {
+  color: var(--ash);
+}
+.check input:hover {
+  border-color: color-mix(in srgb, var(--sterling) 55%, transparent);
+}
+.check input:focus {
+  border-color: var(--cupel);
+  outline: none;
+}
+.check input:focus-visible {
+  outline: 2px solid var(--cupel);
+  outline-offset: 2px;
+}
+.check-row .btn {
+  min-height: 48px;
+  padding-inline: 1.6em;
+}
+.check .note {
+  margin-top: 12px;
+}
+.linkish {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cupel);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+.linkish:hover {
+  text-decoration-color: currentColor;
+}
+.linkish:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+.check-result {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.check-result .tscroll {
+  margin-top: 12px;
+}
+.check-error {
+  margin-top: 16px;
+}
+
+/* ---- Use it ---- */
+.offers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 1.6vw, 20px);
+}
+.offer {
+  display: flex;
+  flex-direction: column;
+  padding: clamp(20px, 2.4vw, 32px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--slab);
+}
+/* Price and signature on one baseline; where both do not fit, the signature drops to its own line
+   whole, carrying its separator, instead of leaving the dot stranded after the price. */
+.offer__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.35em;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.offer__cap {
+  min-width: 0;
+  white-space: pre-wrap;
+}
+.offer__price {
+  color: var(--cupel);
+  font-size: clamp(2rem, 3vw, 2.6rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.offer p {
+  margin: 14px 0 0;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+.offer .offer__head + p {
+  margin-top: 22px;
+}
+.offer p strong {
+  color: var(--cupel);
+  font-weight: 600;
+}
+.offer .actions {
+  margin-top: auto;
+  padding-top: 26px;
+}
+.offer .meta {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+  overflow-wrap: anywhere;
+}
+
+/* ---- SERV Reasoning ---- */
+.record .tag + .meta {
+  margin-top: 10px;
+}
+.record__verdict {
+  margin: 18px 0 0;
+  color: var(--cupel);
+  font-size: 0.95rem;
+}
+
+/* ---- On-chain proofs: ledger entries, each under its own rule ---- */
+.proofs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0 clamp(20px, 2.4vw, 32px);
+}
+.proof {
+  padding: 16px 0 22px;
+  border-top: 1px solid var(--rule-strong);
+}
+.proof .lbl {
+  color: var(--ash);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-stretch: 112.5%;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+.proof .val {
+  margin-top: 10px;
+  color: var(--cupel);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.proof a {
+  color: var(--cupel);
+}
+
+/* ---- The closing statement under each page ---- */
+main footer {
+  margin-top: clamp(80px, 10vw, 136px);
+  padding-top: 24px;
+  /* Full-width rule, readable measure. */
+  padding-right: max(0px, calc(100% - 92ch));
+  border-top: 1px solid var(--rule);
+  color: var(--ash);
+  font-size: 0.85rem;
+  line-height: 1.75;
+}
+main footer .mono {
+  color: var(--ink-2);
+}
+
+/* ==========================================================================
+   /f/[id]: the assay certificate. A struck hallmark heads it when every citation reproduced;
+   the evidence is a spec sheet, one ruled row per part, labels in a stub column from 960px.
+   ========================================================================== */
+.cert > .back {
+  margin-bottom: clamp(20px, 3vw, 40px);
+}
+.cert__head {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  column-gap: clamp(20px, 3vw, 40px);
+  padding-bottom: clamp(28px, 3.4vw, 44px);
+  border-bottom: 1px solid var(--rule-strong);
+}
+/* 64px: the mark is drawn on a 64-unit grid, so this is one of its exactly-sharp sizes. */
+.cert__mark {
+  padding-top: 2px;
+  color: var(--cupel);
+  line-height: 0;
+}
+.cert__mark--struck {
+  color: var(--streak);
+}
+.cert__stamp {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.cert__title {
+  max-width: 34ch;
+  margin: 16px 0 0;
+  font-size: clamp(1.85rem, 3.4vw, 3.25rem);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+}
+.cert__head .meta {
+  margin-top: 14px;
+}
+.cert__head .meta + .meta {
+  margin-top: 4px;
+}
+.cert__statement {
+  max-width: 64ch;
+  margin: 0;
+  color: var(--cupel);
+  font-size: clamp(1.05rem, 1.35vw, 1.25rem);
+  line-height: 1.65;
+}
+.cert__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 16px;
+  padding: clamp(24px, 3vw, 36px) 0;
+  border-bottom: 1px solid var(--rule);
+}
+.cert__row > * {
+  min-width: 0;
+}
+/* The statement's stub is empty: it holds the column, and only where there is a column. */
+.cert__row > :empty {
+  display: none;
+}
+@media (min-width: 960px) {
+  .cert__row {
+    grid-template-columns: 236px minmax(0, 1fr);
+    column-gap: clamp(32px, 4vw, 64px);
+  }
+  .cert__row > :first-child {
+    padding-top: 3px;
+  }
+  .cert__row > :empty {
+    display: block;
+  }
+}
+.cert__text {
+  max-width: 72ch;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+.cert__text + .meta,
+.cert__text + .note {
+  margin-top: 12px;
+}
+/* 80ch at the note's smaller size is the paragraph's 72ch above it. */
+.cert__text + .note {
+  max-width: 80ch;
+}
+/* The figure and what it measures share a baseline; the caption wraps in its own column rather
+   than under the number, and drops below it only where there is no room for a column. */
+.cert__figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.9em;
+  row-gap: 8px;
+  margin-bottom: 14px;
+}
+/* A derived figure: cupel, large, never gold. */
+.cert__figure .num {
+  flex: none;
+  color: var(--cupel);
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.cert__figure .meta {
+  flex: 1 1 0;
+  min-width: 14em;
+  max-width: 64ch;
+}
+/* The withheld page's way on: a ruled line at the foot, not a panel around two links. */
+.cert__foot {
+  margin-top: clamp(32px, 4vw, 48px);
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  color: var(--ash);
+  font-size: 0.95rem;
+}
+.cert__foot a {
+  color: var(--cupel);
+}
+.cert__evmeta {
+  margin: 0 0 4px;
+}
+.cert__text--quiet {
+  color: var(--ash);
+}
+
+/* Each citation: what it claims, where it was read, and the bytes that came back. */
+.ev {
+  margin: 0;
+  padding: 20px 0 22px;
+  border-top: 1px solid var(--rule);
+  container-type: inline-size;
+}
+.cert__evmeta + .ev {
+  margin-top: 14px;
+}
+.ev:last-child {
+  padding-bottom: 0;
+}
+.ev .claim {
+  margin-bottom: 8px;
+  color: var(--cupel);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  overflow-wrap: anywhere;
+}
+/* The decoded value, next to the bytes it was decoded from. */
+.claim__val {
+  color: var(--streak);
+}
+.ev .meta a {
+  color: var(--ink-2);
+}
+.ev--offchain .claim,
+.ev--reply .claim {
+  font-family: var(--sans);
+  font-size: 0.95rem;
+}
+.reply__text {
+  margin: 10px 0;
+  color: var(--cupel);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.reply__response {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.reply__response .cert__text {
+  margin-top: 8px;
+}
+
+/* Raw return bytes, set the way the EVM returns them: 32-byte words, one to a line, with "0x"
+   hanging in the margin so every word starts in the same column. It is one run of text broken by
+   width alone (break-all in a box exactly 64 digits wide), so copying it gives the exact string
+   `cast` prints. Where there is not room for 64, a word breaks at its 16-byte midpoint instead of
+   wherever the edge falls. Zero padding is dimmed so the significant bytes read first.
+   --digit is Martian Mono's advance at wdth 75 (600/1000 em), taken from the font, not from the
+   ch unit, which Chrome resolves narrower than the rendered glyph on this variable axis. The
+   slack is a third of a digit: enough to absorb subpixel rounding, never enough for one more. */
+.bytes {
+  --pad: 16px;
+  --digit: 0.6em;
+  --slack: 0.2em;
+  box-sizing: content-box;
+  width: calc(64 * var(--digit) + var(--slack));
+  max-width: calc(100% - 2 * var(--pad) - 2 * var(--digit) - 2px);
+  margin-top: 14px;
+  padding: 14px var(--pad) 14px calc(var(--pad) + 2 * var(--digit));
+  font-size: 0.8rem;
+  font-stretch: 75%;
+  line-height: 1.8;
+  text-indent: calc(-2 * var(--digit));
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+@container (max-width: 560px) {
+  .bytes {
+    width: calc(32 * var(--digit) + var(--slack));
+  }
+}
+.bytes--ok {
+  color: var(--streak);
+}
+.bytes--refused {
+  border-color: color-mix(in srgb, var(--aqua) 40%, transparent);
+  color: var(--aqua);
+}
+.bytes--mixed {
+  color: var(--sterling);
+}
+/* 66% keeps the dimmed zeros above 4.5:1 on touchstone. */
+.bytes__pad {
+  color: color-mix(in srgb, currentColor 66%, var(--touchstone));
+}
+
+/* Reproduce it: the commands, in a panel of their own at the foot of the certificate. */
+footer.repro {
+  margin-top: clamp(48px, 6vw, 80px);
+  padding: clamp(22px, 3vw, 40px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--slab);
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+.repro__title {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--cupel);
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 2.6vw, 2.25rem);
+  font-style: italic;
+  font-optical-sizing: auto;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+.repro__lead {
+  max-width: 80ch;
+  margin: 0;
+}
+.repro__lead strong {
+  color: var(--cupel);
+}
+.repro__cmds {
+  display: grid;
+  gap: 10px;
+  margin: 22px 0;
+}
+.repro .note {
+  max-width: 80ch;
+  margin: 0;
+}
+
+/* ==========================================================================
+   /pricing: the tariff. Cards fall into bands by status without being reordered: the free lines
+   three to a row, the two purchasable lines two to a row and larger, the roadmap dashed.
+   ========================================================================== */
+/* No margin of its own: inside a .ledger the section's rhythm sets the space under the heading
+   (a margin here out-ranked it and sat the first card on the heading's descenders on phones). */
+.tariff {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(12px, 1.4vw, 16px);
+  padding: 0;
+  list-style: none;
+}
+/* Each card is three rows of the tariff's own grid (subgrid), so name, price and description
+   line up across a band whatever each one's length. */
+.tariff__card {
+  display: grid;
+  grid-column: span 12;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: 0;
+  align-content: start;
+  min-width: 0;
+  padding: clamp(20px, 2.2vw, 28px);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--slab);
+}
+@media (min-width: 900px) {
+  .tariff__card--free,
+  .tariff__card--roadmap {
+    grid-column: span 4;
+  }
+  .tariff__card--live {
+    grid-column: span 6;
+  }
+}
+.tariff__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+/* Names are identifiers (assay_check_contract()), so they break only where a word cannot fit a
+   line on its own, never mid-name to make room for the stamp. */
+.tariff__name {
+  margin: 0;
+  color: var(--cupel);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.45;
+  overflow-wrap: break-word;
+}
+.tariff__price {
+  margin: 28px 0 22px;
+  color: var(--cupel);
+  font-family: var(--mono);
+  font-stretch: 87.5%;
+  font-size: clamp(1.9rem, 2.6vw, 2.4rem);
+  font-weight: 400;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.tariff__card--live .tariff__price {
+  font-size: clamp(2.6rem, 4.6vw, 4rem);
+}
+.tariff__what {
+  margin: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+/* Not purchasable, and drawn so: no fill, a dashed edge, the price in ash. */
+.tariff__card--roadmap {
+  border-style: dashed;
+  border-color: var(--rule-strong);
+  background: transparent;
+}
+.tariff__card--roadmap .tariff__price,
+.tariff__card--roadmap .tariff__name {
+  color: var(--ash);
+}
+.stamp--free {
+  color: var(--sterling);
+}
+.stamp--live {
+  border-color: var(--cupel);
+  color: var(--cupel);
+}
+.stamp--roadmap {
+  border-style: dashed;
+  color: var(--ash);
+}
+.tariff__card .stamp {
+  flex: none;
+}
+
+/* ==========================================================================
+   404: "Unmarked." The plaque without its A: nothing here was struck.
+   ========================================================================== */
+/* The certificate head's two columns (.cert__head), so the empty slot sits exactly where a struck
+   hallmark would. 64px and 48px are sizes the mark's grid renders sharp. */
+.unmarked {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  column-gap: clamp(20px, 3vw, 40px);
+  padding-top: clamp(40px, 7vw, 104px);
+  padding-bottom: clamp(24px, 4vw, 64px);
+}
+.unmarked__plaque {
+  padding-top: 2px;
+  color: var(--ash);
+  line-height: 0;
+}
+.unmarked__body {
+  min-width: 0;
+}
+.unmarked__body > .tag {
+  margin: 0;
+}
+.unmarked__title {
+  margin: 16px 0 0;
+  font-size: var(--step-hero);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+}
+.unmarked .lede {
+  margin-top: clamp(22px, 2.6vw, 36px);
+}
+.unmarked .lede + .note {
+  max-width: 68ch;
+  margin-top: 16px;
+}
+@media (max-width: 559px) {
+  .unmarked {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 20px;
+  }
+  .unmarked__plaque svg {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Breakpoints ---- */
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 @media (max-width: 760px) {
-  .wrap { padding: 20px 16px 64px; }
-  h1 { font-size: 23px; }
-  .lede { font-size: 14px; }
-  table { font-size: 12.5px; }
-  th, td { padding: 9px 7px; }
+  :root { --gutter: 16px; }
+  .wrap { padding: 20px var(--gutter) 24px; }
+  table { font-size: 0.85rem; }
+  th, td { padding-left: 8px; padding-right: 8px; }
   /* Class and evidence are supporting detail; severity, asset and the finding carry the page.
-     Scoped to the findings table: unscoped, this hid the pricing table's "What it is" column and
-     the withheld table's "Why it was withheld" on every phone. */
+     Scoped to the findings table: unscoped, this hid the withheld table's "Why it was withheld"
+     on every phone. */
   .findings th:nth-child(4), .findings td:nth-child(4) { display: none; }
-  .stat .n { font-size: 22px; }
-  .grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 9px; }
-  pre { font-size: 10.5px; }
-  .offers { grid-template-columns: 1fr; }
+  .offers { grid-template-columns: minmax(0, 1fr); }
+}
+/* The header keeps the mark, Wall, Pricing and the call to action; the rest is in the footer. */
+@media (max-width: 560px) {
+  :root { --header-h: 56px; }
+  .site-nav__wide { display: none; }
+  .site-header__bar { gap: 16px; }
+  .site-nav { gap: 16px; }
+}
+@media (max-width: 359px) {
+  .site-nav__mid { display: none; }
+  .site-header__bar { gap: 12px; }
+}
+@media (max-width: 559px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* On a phone the stamp and asset columns shrink to their content, so the finding keeps the width. */
+  .col-sev, .col-sym, .col-rsn { width: 1%; }
+  th, td { padding-left: 6px; padding-right: 6px; }
+  .sev, .rsn { padding: 4px 5px 3px; letter-spacing: 0.06em; }
+  .banner { padding: 14px 16px; }
+  .cert__head { grid-template-columns: minmax(0, 1fr); row-gap: 20px; }
+  .cert__mark svg { width: 48px; height: 48px; }
+  /* A phone has no room for assay_check_contract() and its stamp side by side, so every card
+     carries its stamp above the name, the same on each so the band still reads as one set. */
+  .tariff__top { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .tariff__card .stamp { order: -1; }
 }
 @media (max-width: 460px) {
   .findings th:nth-child(5), .findings td:nth-child(5) { display: none; }
   .check-row { flex-direction: column; }
+}
+
+/* Reduced motion: the disclosure chevron flips instead of turning. */
+@media (prefers-reduced-motion: reduce) {
+  details > summary::before {
+    transition: none;
+  }
+}
+html[data-motion='reduced'] details > summary::before {
+  transition: none;
 }

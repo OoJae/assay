@@ -1,0 +1,192 @@
+/* The quiet sections after the assay: one thesis line each, then plain ledger layout. Hairlines,
+   type and space do the work; nothing here moves except each heading's one reveal. */
+
+.section {
+  padding-top: clamp(96px, 14vw, 180px);
+}
+.end {
+  padding-bottom: clamp(16px, 3vw, 32px);
+}
+.wrap {
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+/* The section rule: its name on the left, the fact it is read from on the right. */
+.rule {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 24px;
+  padding-top: 14px;
+  border-top: 1px solid var(--hair);
+}
+.head {
+  max-width: 15em;
+  margin: clamp(28px, 4vw, 52px) 0 0;
+  text-wrap: balance;
+}
+.lede {
+  max-width: 40rem;
+  margin: clamp(20px, 2.5vw, 28px) 0 0;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+.call {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  font-stretch: 87.5%;
+  color: var(--cupel);
+}
+.body {
+  max-width: 36rem;
+  margin: 10px 0 0;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+.fine {
+  max-width: 62rem;
+  margin: clamp(28px, 3vw, 40px) 0 0;
+  color: var(--ash);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+.fine a,
+.more a {
+  color: var(--cupel);
+}
+.more {
+  margin: 16px 0 0;
+  font-size: 0.9rem;
+}
+
+/* ---- Who reads it wrong ---- */
+/* One tick per contract. */
+.tally {
+  display: flex;
+  gap: 3px;
+  height: 44px;
+  margin-top: clamp(40px, 5vw, 64px);
+}
+.tally span {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: 1px;
+}
+.tExposed {
+  background: var(--cupel);
+}
+.tNever {
+  background: color-mix(in srgb, var(--sterling) 40%, transparent);
+}
+.tRest {
+  background: var(--hair);
+}
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px clamp(24px, 4vw, 64px);
+  margin-top: clamp(28px, 3vw, 40px);
+}
+.side {
+  padding-top: 18px;
+  border-top: 1px solid var(--hair-strong);
+}
+.count {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: clamp(2.6rem, 5vw, 4.25rem);
+  font-stretch: 87.5%;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--cupel);
+}
+.sideHead {
+  margin: 12px 0 0;
+  font-family: var(--display);
+  font-size: var(--step-h3);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+/* ---- Use it: the tariff ---- */
+.tariff {
+  margin: clamp(36px, 5vw, 56px) 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--hair);
+}
+.item {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr) 11rem;
+  gap: 10px clamp(20px, 3vw, 40px);
+  align-items: start;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.price {
+  margin: 0;
+  padding-top: 1px;
+  font-family: var(--mono);
+  font-size: 1rem;
+  font-stretch: 87.5%;
+  color: var(--cupel);
+}
+.what {
+  min-width: 0;
+}
+.itemHead {
+  margin: 0;
+  font: 500 1.05rem/1.4 var(--sans);
+  color: var(--cupel);
+}
+.itemHead .call {
+  font-size: 0.92em;
+}
+.cmd {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  max-width: 40rem;
+  border-radius: var(--radius);
+  font-size: 0.75rem;
+  white-space: pre;
+}
+.act {
+  justify-self: end;
+}
+
+/* ---- The way in ---- */
+.endHead {
+  max-width: 11em;
+  font-size: clamp(2.75rem, 7.5vw, 7.5rem);
+  line-height: 0.95;
+}
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(28px, 3vw, 40px);
+}
+
+@media (max-width: 760px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tally {
+    gap: 2px;
+    height: 36px;
+  }
+  .item {
+    grid-template-columns: 3.75rem minmax(0, 1fr);
+    padding: 20px 0;
+  }
+  .act {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .act:empty {
+    display: none;
+  }
+}

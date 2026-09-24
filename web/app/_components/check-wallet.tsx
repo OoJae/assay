@@ -76,7 +76,7 @@ export function CheckWallet({ tokens }: { tokens: Array<{ symbol: string; token:
             {state.kind === 'loading' ? 'Reading…' : 'Check'}
           </button>
         </div>
-        <div className="meta" style={{ marginTop: 6 }}>
+        <div className="note">
           No address handy?{' '}
           <button
             type="button"
@@ -97,20 +97,20 @@ export function CheckWallet({ tokens }: { tokens: Array<{ symbol: string; token:
 
       <div aria-live="polite">
         {state.kind === 'error' ? (
-          <div className="banner" style={{ borderColor: 'var(--med)', marginBottom: 0 }}>
+          <div className="banner banner--aqua check-error">
             {state.message}
           </div>
         ) : null}
         {state.kind === 'done' ? <Result v={state.view} /> : null}
       </div>
 
-      <details style={{ marginTop: 12 }}>
+      <details className="terminal">
         <summary>The same call from a terminal</summary>
         <pre>{`cast call ${GUARD_ADDRESS} \\
   "shareEquivalents(address,address)(uint256,bool,string)" \\
   ${castToken} ${castHolder} \\
   --rpc-url ${RH_RPC_URL}`}</pre>
-        <div className="meta">
+        <div className="note">
           Returns (share-equivalents in the token&apos;s base units, safe, reason). The guard refuses with
           a reason instead of returning a number it cannot stand behind, and it reverts if the token
           address has no code, so pass a Stock Token address.
@@ -122,7 +122,7 @@ export function CheckWallet({ tokens }: { tokens: Array<{ symbol: string; token:
 
 function Result({ v }: { v: CheckView }) {
   return (
-    <div style={{ marginTop: 14 }}>
+    <div className="check-result">
       <div className="meta">
         {v.holder} · block {v.blockNumber} · {v.checked} tokens read, {v.rows.length} held, {v.zero} zero
         {v.unread.length ? `, ${v.unread.length} unread` : ''}
@@ -134,7 +134,7 @@ function Result({ v }: { v: CheckView }) {
         </p>
       ) : (
         <div className="tscroll">
-          <table>
+          <table className="table--mid">
             <caption className="sr-only">Raw balance and share-equivalents per token</caption>
             <thead>
               <tr>
@@ -151,8 +151,10 @@ function Result({ v }: { v: CheckView }) {
                   <td className="mono">{r.balance}</td>
                   <td className="mono">{r.shares ?? '—'}</td>
                   {/* null is a read that failed, not a refusal: "could not check" and "refused" are
-                      the distinction the withheld section says most tools blur. */}
-                  <td className={r.safe ? 'verified' : 'meta'}>
+                      the distinction the withheld section says most tools blur. A refusal is the
+                      acid test failing, so it is aqua; "safe" is a live read, not a re-fetched
+                      citation, so it is never gold. */}
+                  <td className={r.safe === true ? 'guard-safe' : r.safe === null ? 'meta' : 'guard-refused'}>
                     {r.safe === true ? 'safe ✓' : r.safe === null ? `unread: ${r.reason}` : `refused: ${r.reason}`}
                   </td>
                 </tr>

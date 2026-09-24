@@ -1,5 +1,6 @@
 import { SERV_EXAMPLE, SERV_HARD, SERV_HELDOUT, SERV_INJECTION, SERV_SOURCES } from '@/lib/serv-example'
 import { REPO } from '@/lib/site'
+import { Reveal } from '../_motion/reveal'
 
 /**
  * Where the sponsor's model actually does work.
@@ -12,10 +13,10 @@ import { REPO } from '@/lib/site'
 export function ServReasoning() {
   const e = SERV_EXAMPLE
   return (
-    <section aria-labelledby="serv">
-      <h2 className="h2" id="serv">
+    <section className="ledger" aria-labelledby="serv">
+      <Reveal as="h2" className="h2" id="serv">
         Where SERV Reasoning runs
-      </h2>
+      </Reveal>
       <p className="sub">
         Nothing on this page, and neither paid call, uses a model: every number is read from chain state
         and re-fetched before it is published. SERV Reasoning does the one job that needs judgement. When
@@ -44,19 +45,19 @@ export function ServReasoning() {
         </li>
       </ul>
 
-      <div className="card">
+      <div className="card record">
         <div className="tag">One recorded adjudication · {e.generatedAt.slice(0, 10)}</div>
-        <div className="meta" style={{ marginTop: 8 }}>
+        <div className="meta">
           finding {e.findingId} · {e.evidenceClaim} · {e.citations}
         </div>
         <p className="sub">
           Declared mandate (a measurement fixture, not a real subject): &ldquo;…{e.mandateExcerpt}&rdquo;
         </p>
-        <p style={{ margin: '10px 0 0', fontSize: 14 }}>
+        <p className="record__verdict">
           Verdict <span className="mono">{e.verdict}</span> ({e.severity})
         </p>
         <blockquote className="quote">{e.rationale}</blockquote>
-        <div className="meta">
+        <div className="note">
           The unsafe answer would have been <span className="mono">{e.unsafeVerdict}</span>: accusing the
           subject of a defect the evidence never shows, since &ldquo;displayed in shares&rdquo; is not
           &ldquo;computed from balanceOf()&rdquo;. input hash {e.inputHash.slice(0, 18)}… ·{' '}

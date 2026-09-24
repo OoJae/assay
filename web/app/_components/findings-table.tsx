@@ -8,17 +8,17 @@ export function FindingsTable({ findings, caption }: { findings: Finding[]; capt
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr>
-            <th scope="col" style={{ width: 84 }}>
+            <th scope="col" className="col-sev">
               Severity
             </th>
-            <th scope="col" style={{ width: 74 }}>
+            <th scope="col" className="col-sym">
               Asset read
             </th>
             <th scope="col">Finding</th>
-            <th scope="col" style={{ width: 210 }}>
+            <th scope="col" className="col-cls">
               Class
             </th>
-            <th scope="col" style={{ width: 96 }}>
+            <th scope="col" className="col-ev">
               Evidence
             </th>
           </tr>
@@ -31,12 +31,20 @@ export function FindingsTable({ findings, caption }: { findings: Finding[]; capt
               </td>
               <td className="sym">{symbolOf(f.subject)}</td>
               <td>
-                <Link href={`/f/${encodeURIComponent(f.id)}`} style={{ textDecoration: 'none' }}>
+                <Link className="row-link" href={`/f/${encodeURIComponent(f.id)}`}>
                   {f.title}
                 </Link>
               </td>
               <td className="cls">{f.defectClass}</td>
-              <td className="verified">
+              {/* Gold means every citation re-fetched and matched: N of N. A partial count is still
+                  printed, in cupel, so gold never covers a citation that was not reproduced. */}
+              <td
+                className={
+                  (f.verification?.checked ?? 0) > 0 && f.verification?.reproduced === f.verification?.checked
+                    ? 'verified'
+                    : 'verified verified--partial'
+                }
+              >
                 {f.verification?.reproduced ?? 0}/{f.verification?.checked ?? 0} ✓
               </td>
             </tr>

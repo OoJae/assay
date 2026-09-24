@@ -1,0 +1,646 @@
+/* ==========================================================================
+   The assay stage.
+
+   Two layouts from one markup, chosen before first paint by html[data-motion] (layout.tsx):
+   - static (the base rules): no JS or reduced motion. The hero, the ledger, then five steps as a
+     plain column, each poster beside its caption. Nothing is hidden and nothing moves.
+   - sticky (html[data-motion='full']): a 100svh frame, sticky in a track whose height is reserved
+     here, so there is no pin spacer and no shift when the script arrives. stage.tsx writes
+     opacity and transform only.
+   Orientation, not width, picks the composition, because it is what the scene's two camera rigs
+   follow: landscape keeps the text left and the bar right; portrait puts the bar in the top half
+   and the text under it. A landscape screen under 501px tall (a phone on its side) has no room
+   for the hero or a caption inside one frame, so it keeps the static column; FRAME_QUERY in
+   stage.tsx is the same condition, so the script never drives a layout the CSS did not choose.
+   ========================================================================== */
+
+.track {
+  position: relative;
+}
+
+/* Read by assistive tech, not drawn. Local, so the landing does not depend on a global utility. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.stage {
+  /* The site's content edge, carried out to full bleed, so text lines up with the header's mark. */
+  --gx: max(var(--gutter), calc((100% - var(--measure)) / 2));
+  position: relative;
+  background: var(--touchstone);
+}
+
+/* ---- Hero ---- */
+.hero {
+  /* Where the hero's first line sits; the ledger's first line sits level with it. */
+  --hero-top: calc(var(--header-h) + clamp(40px, 9vh, 104px));
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 32px;
+  min-height: min(100vh, 64rem);
+  min-height: min(100svh, 64rem);
+  padding: var(--hero-top) var(--gx) clamp(28px, 5vh, 48px);
+}
+.heroMain {
+  align-self: start;
+  max-width: 48rem;
+}
+.eyebrow {
+  margin: 0 0 clamp(18px, 3vh, 32px);
+}
+.thesis {
+  margin: 0;
+  /* Not balanced (the global h1 is): the dash belongs at the end of "a share", with the figure
+     free to take the next line. */
+  text-wrap: wrap;
+  font-size: clamp(3rem, min(9vw, 15.5vh), 10.5rem);
+  font-size: clamp(3rem, min(9vw, 15.5svh), 10.5rem);
+  line-height: 0.92;
+  letter-spacing: -0.025em;
+}
+.line {
+  display: block;
+}
+.dash {
+  letter-spacing: 0;
+}
+.nowrap {
+  white-space: nowrap;
+}
+/* The figure: Martian Mono in streak, set on the thesis' baseline like a serial stamped after it. */
+.fig {
+  display: inline-block;
+  font-family: var(--mono);
+  font-style: normal;
+  font-weight: 400;
+  font-size: clamp(1.1rem, 0.3em, 3.25rem);
+  font-stretch: 87.5%;
+  letter-spacing: 0;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* Landscape: the sentence ends on its dash and the figure is struck on the line under it, at its
+   own height. Left inline, it wrapped to a line as tall as the Bodoni above it at some widths and
+   ran into the bar at others. Portrait keeps it inline (see below), where it fits after the dash. */
+@media (orientation: landscape) {
+  .fig {
+    display: block;
+    width: fit-content;
+    margin-top: 0.45em;
+  }
+}
+.lede {
+  margin: clamp(22px, 4vh, 40px) 0 0;
+  max-width: 34rem;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+.call,
+.num {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  font-stretch: 87.5%;
+  color: var(--cupel);
+}
+.num:global(.streak) {
+  color: var(--streak);
+}
+.heroFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 32px;
+}
+.cue,
+.prov {
+  margin: 0;
+}
+.prov {
+  font-size: 0.68rem;
+}
+
+/* ---- The ledger rail ---- */
+.rail {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--header-h) + clamp(40px, 9vh, 104px));
+  right: var(--gx);
+  width: 12.5rem;
+  padding-left: 18px;
+  border-left: 1px solid var(--hair);
+}
+.railHead {
+  margin: 0 0 16px;
+}
+.railList {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+}
+.row dt {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-stretch: 87.5%;
+  line-height: 1.3;
+  color: var(--ash);
+}
+.row dd {
+  margin: 3px 0 0;
+  font-family: var(--mono);
+  font-size: var(--step-data);
+  font-stretch: 87.5%;
+  line-height: 1.3;
+  color: var(--cupel);
+  overflow-wrap: anywhere;
+}
+.row dd:global(.streak) {
+  color: var(--streak);
+}
+.tick {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ---- Steps (static: a column of poster and caption pairs) ---- */
+.steps {
+  display: grid;
+  gap: clamp(64px, 12vh, 140px);
+  margin: 0;
+  padding: clamp(24px, 6vh, 64px) var(--gx) 0;
+  list-style: none;
+}
+.step {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: clamp(24px, 4vw, 72px);
+  align-items: center;
+}
+.poster {
+  position: relative;
+  grid-column: 2;
+  grid-row: 1;
+  /* The landscape posters' own shape, so the static column shows each frame uncropped. */
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--touchstone);
+}
+.picture,
+.picture img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.picture img {
+  object-fit: cover;
+}
+.cap {
+  grid-column: 1;
+  grid-row: 1;
+}
+.capNum {
+  display: flex;
+  gap: 0.9em;
+  margin: 0 0 16px;
+}
+.capIdx {
+  color: var(--cupel);
+}
+.capTitle {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.1vw, 3.1rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.capData {
+  margin: 20px 0 0;
+  font-family: var(--mono);
+  font-size: var(--step-data);
+  font-stretch: 87.5%;
+  line-height: 1.6;
+  color: var(--cupel);
+  overflow-wrap: anywhere;
+}
+.capData .call {
+  font-size: 1em;
+}
+.bytes {
+  font-stretch: 75%;
+  white-space: nowrap;
+}
+.at {
+  color: var(--ash);
+}
+.derived {
+  color: var(--cupel);
+}
+.capBody {
+  margin: 12px 0 0;
+  max-width: 32rem;
+  color: var(--ash);
+  text-wrap: pretty;
+}
+
+/* ---- The line plate: the drawing under each poster ---- */
+.plate {
+  position: absolute;
+  top: 6%;
+  left: 4%;
+  width: 92%;
+  height: 88%;
+  overflow: visible;
+}
+/* One drawing per orientation, as the posters have (see Plate in steps.tsx). */
+.platePort {
+  display: none;
+}
+.plateTop,
+.plateFront,
+.plateSide,
+.platePunch rect,
+.platePunch ellipse {
+  stroke: color-mix(in srgb, var(--sterling) 55%, transparent);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.plateTop {
+  fill: var(--slab-2);
+}
+.plateFront {
+  fill: var(--slab);
+}
+.plateSide {
+  fill: #101010;
+}
+.plateScore {
+  fill: none;
+  stroke: color-mix(in srgb, var(--sterling) 50%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+  vector-effect: non-scaling-stroke;
+}
+.plateMark {
+  fill: var(--streak);
+}
+.platePunch rect,
+.platePunch ellipse {
+  fill: #121211;
+}
+.plateBench {
+  stroke: var(--hair);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.plateScan {
+  stroke: color-mix(in srgb, var(--sterling) 45%, transparent);
+  stroke-width: 1;
+  stroke-dasharray: 2 6;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Layers only the sticky stage has. */
+.canvas,
+.pulse,
+.scrim {
+  display: none;
+}
+
+@media (orientation: portrait) {
+  /* Two lines on a phone: "a token is not" over "a share — ×4.000000000". */
+  .line {
+    display: inline;
+  }
+  .line:last-child {
+    display: block;
+  }
+  .rail {
+    position: static;
+    width: auto;
+    margin: 0 var(--gx);
+    padding: 14px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--hair);
+  }
+  .railList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 20px;
+  }
+  .step {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .poster {
+    grid-column: 1;
+    aspect-ratio: 4 / 5;
+  }
+  .picture img {
+    object-position: 50% 22%;
+  }
+  .cap {
+    grid-row: 2;
+  }
+  .plateLand {
+    display: none;
+  }
+  .platePort {
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   Sticky: the frame. Not on a short landscape screen (see the top of this file).
+   ========================================================================== */
+@media (orientation: portrait), (min-height: 501px) {
+  :global(html[data-motion='full']) .track {
+    height: calc((1 + var(--hold) + var(--steps) * var(--len)) * 100vh);
+    height: calc((1 + var(--hold) + var(--steps) * var(--len)) * 100svh);
+  }
+  :global(html[data-motion='full']) .stage {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  :global(html[data-motion='full']) .hero {
+    position: absolute;
+    inset: 0;
+    min-height: 0;
+    will-change: opacity, transform;
+  }
+  :global(html[data-motion='full']) .steps {
+    position: absolute;
+    inset: 0;
+    display: block;
+    padding: 0;
+  }
+  /* No opacity, transform or z-index on the <li>: it must not become a stacking context, so its
+     poster (z 0) and caption (z 4) sit on either side of the canvas (z 1). */
+  :global(html[data-motion='full']) .step {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+  :global(html[data-motion='full']) .poster {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    aspect-ratio: auto;
+    opacity: 0;
+    will-change: opacity;
+  }
+  :global(html[data-motion='full']) .step:first-child .poster {
+    opacity: 1;
+  }
+  :global(html[data-motion='full']) .plate {
+    top: 16%;
+    left: 36%;
+    width: 60%;
+    height: 70%;
+  }
+  :global(html[data-motion='full']) .cap {
+    position: absolute;
+    z-index: 4;
+    top: 0;
+    bottom: 0;
+    left: var(--gx);
+    /* Cols 1-4: the scene's landscape rig starts the bar at about 36% of the width. */
+    width: min(27rem, 32%);
+    height: fit-content;
+    margin-block: auto;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+  /* In the frame the ledger sits top right, level with the eyebrow: the scene's landscape rig runs
+     the bar out to the right edge through the middle band, and the ledger must never sit on it. */
+  /* A soft field of stone behind each caption, so it stays legible whatever the scene puts under it
+     (the step-02 close-up fills the frame with bright metal). It belongs to the caption, so it
+     fades and moves with it and costs nothing extra per frame. */
+  :global(html[data-motion='full']) .cap::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -22% -34% -22% -30%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--touchstone) 78%, transparent) 55%, transparent);
+    pointer-events: none;
+  }
+  :global(html[data-motion='full']) .rail {
+    top: calc(var(--header-h) + clamp(40px, 9vh, 104px) - 13px);
+    width: auto;
+    padding: 12px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--hair);
+    /* It steps aside while the punch is in frame (RAIL_ASIDE in stage.tsx). */
+    will-change: opacity, transform;
+  }
+  :global(html[data-motion='full']) .railList {
+    grid-template-columns: repeat(2, max-content);
+    gap: 14px 36px;
+  }
+  /* A short landscape frame (a 1280x600 window, a 1024x600 tablet): the hero is one frame tall,
+     so its rhythm tightens before anything falls off the bottom edge. */
+  @media (orientation: landscape) and (max-height: 640px) {
+    :global(html[data-motion='full']) .hero {
+      gap: 16px;
+    }
+    :global(html[data-motion='full']) .thesis {
+      font-size: clamp(3rem, min(9vw, 13.5vh), 10.5rem);
+      font-size: clamp(3rem, min(9vw, 13.5svh), 10.5rem);
+    }
+    :global(html[data-motion='full']) .eyebrow {
+      margin-bottom: 14px;
+    }
+    :global(html[data-motion='full']) .lede {
+      margin-top: 16px;
+    }
+  }
+
+  /* The rail lights the rows the current step reads; the rest wait at low contrast. */
+  :global(html[data-motion='full']) .row {
+    opacity: 0.3;
+    transition: opacity 0.5s var(--ease-out);
+  }
+  :global(html[data-motion='full']) .stage:not([data-step]) .row[data-on~='0'],
+  :global(html[data-motion='full']) .stage[data-step='0'] .row[data-on~='0'],
+  :global(html[data-motion='full']) .stage[data-step='1'] .row[data-on~='1'],
+  :global(html[data-motion='full']) .stage[data-step='2'] .row[data-on~='2'],
+  :global(html[data-motion='full']) .stage[data-step='3'] .row[data-on~='3'],
+  :global(html[data-motion='full']) .stage[data-step='4'] .row[data-on~='4'],
+  :global(html[data-motion='full']) .stage[data-step='5'] .row[data-on~='5'] {
+    opacity: 1;
+  }
+
+  :global(html[data-motion='full']) .canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.9s var(--ease-out);
+  }
+  :global(html[data-motion='full']) .canvas[data-state='ready'] {
+    opacity: 1;
+  }
+  /* The strike's flash of light around the bar: never more than 18% cupel at its peak. */
+  :global(html[data-motion='full']) .pulse {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    background: radial-gradient(38% 34% at 64% 52%, color-mix(in srgb, var(--cupel) 18%, transparent), transparent);
+  }
+  /* Keeps the captions legible over whatever the scene draws, without a blur over the canvas. */
+  :global(html[data-motion='full']) .scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: block;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--touchstone) 92%, transparent) 0%,
+      color-mix(in srgb, var(--touchstone) 82%, transparent) 26%,
+      color-mix(in srgb, var(--touchstone) 40%, transparent) 42%,
+      transparent 60%
+    );
+  }
+
+  /* ---- The strike: the frame recoils 6px and one pulse of light, fired from store.onStrike ---- */
+  :global(html[data-motion='full']) .struck .poster,
+  :global(html[data-motion='full']) .struck .canvas {
+    animation: recoil 220ms cubic-bezier(0.3, 0.7, 0.3, 1) both;
+  }
+  :global(html[data-motion='full']) .struck .pulse {
+    animation: pulse 120ms linear both;
+  }
+  @keyframes recoil {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    28% {
+      transform: translate3d(0, 6px, 0);
+    }
+    100% {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  @keyframes pulse {
+    0% {
+      opacity: 0;
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .struck .poster,
+    .struck .canvas,
+    .struck .pulse {
+      animation: none !important;
+    }
+  }
+}
+
+/* ---- ?poster=N: the scene alone, for capturing a poster frame ---- */
+.stage[data-capture] .hero,
+.stage[data-capture] .rail,
+.stage[data-capture] .cap,
+.stage[data-capture] .poster,
+.stage[data-capture] .scrim {
+  visibility: hidden;
+}
+.stage[data-capture] .canvas {
+  transition: none;
+}
+
+/* ---- Sticky, portrait: the bar in the top half, the text under it on a stone scrim ---- */
+@media (orientation: portrait) {
+  :global(html[data-motion='full']) .hero {
+    padding-top: calc(var(--header-h) + 24px);
+    padding-bottom: calc(clamp(24px, 4vh, 40px) + env(safe-area-inset-bottom, 0px));
+  }
+  :global(html[data-motion='full']) .heroMain {
+    align-self: end;
+  }
+  /* The drawing fills the band between the header and the hero's first line, where the
+     portrait rig stands the bar. */
+  :global(html[data-motion='full']) .plate {
+    top: calc(var(--header-h) + 12px);
+    left: 0;
+    width: 100%;
+    height: 40%;
+  }
+  /* The stone under the text, as the caption's own: it starts a short fade above the label and runs
+     to the bottom of the frame, so the step-02 close-up, which carries bright metal down past the
+     middle of a short phone, can never sit behind the words. It fades with the caption, so between
+     captions the whole bar shows. */
+  :global(html[data-motion='full']) .cap::before {
+    /* Past both edges and the bottom; the stage clips it. (Not --gx: its 100% would resolve
+       against the caption here, not the stage.) */
+    inset: -64px -100vw -50vh;
+    background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--touchstone) 90%, transparent) 64px);
+  }
+  :global(html[data-motion='full']) .cap {
+    top: auto;
+    bottom: calc(clamp(28px, 5vh, 48px) + env(safe-area-inset-bottom, 0px));
+    left: var(--gx);
+    right: var(--gx);
+    width: auto;
+    height: auto;
+    margin: 0;
+  }
+  /* No ledger in the portrait frame: the bar fills the top half and the text the bottom, and
+     every caption already prints its call, its decoded value and its raw bytes. The hero keeps
+     only the thesis, the lede and the provenance, so it clears the bar on a 375 x 667 screen. */
+  :global(html[data-motion='full']) .rail,
+  :global(html[data-motion='full']) .eyebrow,
+  :global(html[data-motion='full']) .cue {
+    display: none;
+  }
+  :global(html[data-motion='full']) .hero {
+    gap: 18px;
+  }
+  :global(html[data-motion='full']) .lede {
+    margin-top: 18px;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  :global(html[data-motion='full']) .pulse {
+    background: radial-gradient(60% 26% at 50% 32%, color-mix(in srgb, var(--cupel) 18%, transparent), transparent);
+  }
+  :global(html[data-motion='full']) .scrim {
+    background: linear-gradient(
+      to top,
+      var(--touchstone) 0%,
+      color-mix(in srgb, var(--touchstone) 90%, transparent) 36%,
+      transparent 62%
+    );
+  }
+}
+
+/* The header drops its fill for a scrim only while the stage is under it (stage.tsx sets
+   data-over). Everywhere else on the page, with no JS, and in the static layout below the hero,
+   it keeps the site's opaque bar, so the sections never scroll visibly beneath the links. */
+:global(body):has(.stage:not([data-over])) :global(.site-header) {
+  background: var(--touchstone);
+}

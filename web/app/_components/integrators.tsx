@@ -28,8 +28,8 @@ export function IntegratorPanel({ agg, namedWithheld }: { agg: Integrators; name
 
   if (v.shape === 'pairs') {
     return (
-      <div className="banner" style={{ borderColor: 'var(--high)' }}>
-        <strong>
+      <div className="banner exposure">
+        <strong className="exposure__head">
           {/* "No contract" overclaimed on a board with unresolved proxies, which are exactly the ones no
               claim is made about; the distinct-shape headline already counts only resolved contracts. */}
           {v.aware === 0
@@ -41,14 +41,14 @@ export function IntegratorPanel({ agg, namedWithheld }: { agg: Integrators; name
               ? ` (${v.proxyUnresolved} proxies could not be resolved; no claim is made about them)`
               : ''}
         </strong>
-        <div style={{ marginTop: 8 }}>
+        <div className="banner__body">
           This board predates distinct counting, so its figures are (contract, token) holdings, not
           contracts: {v.notAwareHoldings} of {v.holdings} contract holdings carry at least{' '}
           <strong>{fmtUsd(v.usdNotAware)}</strong> with no <span className="mono">uiMultiplier()</span>{' '}
           selector in their bytecode. AMM pools and custody wallets, which never need the multiplier, are
           still inside that figure. The next sweep counts distinct contracts and gives them their own line.
         </div>
-        <div className="meta" style={{ marginTop: 10, lineHeight: 1.8 }}>
+        <div className="note">
           {closing}
         </div>
       </div>
@@ -57,8 +57,8 @@ export function IntegratorPanel({ agg, namedWithheld }: { agg: Integrators; name
 
   const floor = (unpriced: number) => (unpriced > 0 ? 'at least ' : '')
   return (
-    <div className="banner" style={{ borderColor: 'var(--high)' }}>
-      <strong>
+    <div className="banner exposure">
+      <strong className="exposure__head">
         {v.aware === 0 ? 'None' : v.aware} of the {v.resolved} contracts seen moving divergent-multiplier
         Stock Tokens {v.aware === 1 ? 'references' : 'reference'} <span className="mono">uiMultiplier()</span>
         .
@@ -66,7 +66,7 @@ export function IntegratorPanel({ agg, namedWithheld }: { agg: Integrators; name
           ? ` Most of the value they hold sits in pools and custody that never need it.`
           : ''}
       </strong>
-      <div style={{ marginTop: 8 }}>
+      <div className="banner__body">
         The table names the asset that was <em>read</em>; this is the other side. Of {v.scanned} addresses
         seen moving these tokens, {v.contracts} are contracts
         {v.proxyUnresolved === 1
@@ -76,7 +76,7 @@ export function IntegratorPanel({ agg, namedWithheld }: { agg: Integrators; name
             : ''}
         .
       </div>
-      <ul className="list" style={{ marginTop: 8 }}>
+      <ul className="list exposure__list">
         <li>
           <strong>
             {v.notAware} {v.notAware === 1 ? 'contract' : 'contracts'} could be exposed.
@@ -111,7 +111,7 @@ export function IntegratorPanel({ agg, namedWithheld }: { agg: Integrators; name
           {v.unreadContracts > 0 ? `; ${v.unreadContracts} whose balances could not be read` : ''}.
         </li>
       </ul>
-      <div className="meta" style={{ marginTop: 10, lineHeight: 1.8 }}>
+      <div className="note">
         Coverage: holders of {v.assetsScanned.length} tokens whose multiplier is more than{' '}
         {v.minDivergencePct ?? 0.2}% from 1.
         {v.assetsBelowCutoff.length

@@ -1,8 +1,8 @@
 import Link from 'next/link'
 import { loadSweepLive } from '@/lib/findings'
 import { PAID_ENDPOINTS, PAY_TO } from '@/lib/endpoints'
-import { REPO } from '@/lib/site'
 import { UseIt } from '../_components/use-it'
+import { Reveal } from '../_motion/reveal'
 
 export const dynamic = 'force-dynamic'
 // The layout template appends " · ASSAY"; "Pricing — ASSAY" rendered as "Pricing — ASSAY · ASSAY".
@@ -87,26 +87,21 @@ const TIERS: Array<{ name: string; price: string; state: State; what: string }> 
   },
 ]
 
+/* The status is a stamp on each tariff card: sterling for free, cupel for what can be bought, a
+   dashed ash outline for what cannot. */
 const STATUS: Record<State, { label: string; cls: string }> = {
-  free: { label: 'free', cls: 'free' },
-  live: { label: 'purchasable', cls: 'unverifiable_here' },
-  roadmap: { label: 'roadmap', cls: 'unchecked' },
+  free: { label: 'free', cls: 'stamp--free' },
+  live: { label: 'purchasable', cls: 'stamp--live' },
+  roadmap: { label: 'roadmap', cls: 'stamp--roadmap' },
 }
 
 export default async function Pricing() {
   const d = await loadSweepLive()
   return (
     <>
-      <nav className="navbar" aria-label="Site">
-        <span className="brand">ASSAY</span>
-        <Link href="/">Findings</Link>
-        <a href={REPO}>Source</a>
-        <a href="/agent-card.json">Agent card</a>
-      </nav>
-
-      <main>
+      <main id="main" className="wrap">
         <header className="top">
-          <h1>Pricing</h1>
+          <h1 className="page-title">Pricing</h1>
           <p className="lede">
             Two lines are purchasable today: the ${PAID_ENDPOINTS.truePosition.priceUsd.toFixed(2)} position
             check and the ${PAID_ENDPOINTS.checkContract.priceUsd.toFixed(2)} contract audit. Three things
@@ -121,7 +116,7 @@ export default async function Pricing() {
             <a className="btn" href={PAID_ENDPOINTS.checkContract.paywall}>
               Audit a contract · ${PAID_ENDPOINTS.checkContract.priceUsd.toFixed(2)}
             </a>
-            <Link className="btn" href="/#check">
+            <Link className="btn" href="/wall#check">
               Check a wallet · free
             </Link>
           </div>
@@ -139,51 +134,30 @@ export default async function Pricing() {
           <strong>plumbing, not demand</strong>. No external party has paid ASSAY for anything.
         </div>
 
-        <section aria-labelledby="tiers-h">
-          <h2 className="h2" id="tiers-h">
+        <section className="ledger" aria-labelledby="tiers-h">
+          <Reveal as="h2" className="h2" id="tiers-h">
             Tiers
-          </h2>
-          <div className="tscroll">
-            <table>
-              <caption className="sr-only">Every tier, its price, and whether it can be bought today</caption>
-              <thead>
-                <tr>
-                  <th scope="col" style={{ width: 210 }}>
-                    Tier
-                  </th>
-                  <th scope="col" style={{ width: 90 }}>
-                    Price
-                  </th>
-                  <th scope="col" style={{ width: 110 }}>
-                    Status
-                  </th>
-                  <th scope="col">What it is</th>
-                </tr>
-              </thead>
-              <tbody>
-                {TIERS.map((t) => (
-                  <tr key={t.name} className={t.state === 'roadmap' ? 'withheld' : undefined}>
-                    <td className="sym">{t.name}</td>
-                    <td className="mono">{t.price}</td>
-                    <td>
-                      <span className={`rsn ${STATUS[t.state].cls}`}>{STATUS[t.state].label}</span>
-                    </td>
-                    <td className="sub" style={{ margin: 0 }}>
-                      {t.what}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          </Reveal>
+          <ul className="tariff" aria-label="Every tier, its price, and whether it can be bought today">
+            {TIERS.map((t) => (
+              <li key={t.name} className={`tariff__card tariff__card--${t.state}`}>
+                <div className="tariff__top">
+                  <h3 className="tariff__name">{t.name}</h3>
+                  <span className={`stamp ${STATUS[t.state].cls}`}>{STATUS[t.state].label}</span>
+                </div>
+                <p className="tariff__price">{t.price}</p>
+                <p className="tariff__what">{t.what}</p>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <UseIt missingFeeds={d.stats?.missingFeeds} assetsScanned={d.assetsScanned} />
 
-        <section aria-labelledby="why-h">
-          <h2 className="h2" id="why-h">
+        <section className="ledger" aria-labelledby="why-h">
+          <Reveal as="h2" className="h2" id="why-h">
             Why these two prices are different
-          </h2>
+          </Reveal>
           <p className="sub">
             The OpenServ x402 marketplace listed {MARKET.listed} services on {MARKET.asOf}, {MARKET.active}{' '}
             of them active, at a median active price of ${MARKET.medianActiveUsd}; about{' '}
@@ -192,7 +166,7 @@ export default async function Pricing() {
             only pattern that makes an audit primitive load-bearing rather than occasional; that is the
             $0.01 line and it stays there.
           </p>
-          <p className="sub" style={{ marginTop: 10 }}>
+          <p className="sub">
             <span className="mono">assay_check_contract</span> is a different kind of question. It is
             asked once, about a counterparty, before deciding whether to rely on its accounting — and it
             returns a named verdict with bytecode evidence rather than a number. It is priced as a

@@ -2,6 +2,7 @@ import { PAID_ENDPOINTS, PAY_TO, curlFor } from '@/lib/endpoints'
 import { CHAINLINK_FEEDS_URL, loadPricedSymbols } from '@/lib/feeds'
 import { FEED_URL, MCP_URL, REPO } from '@/lib/site'
 import { GUARD_ADDRESS } from '@/lib/guard'
+import { Reveal } from '../_motion/reveal'
 
 /**
  * How to buy, call or integrate ASSAY, on the wall and on /pricing.
@@ -17,10 +18,10 @@ export async function UseIt({ missingFeeds, assetsScanned }: { missingFeeds?: nu
   const cc = PAID_ENDPOINTS.checkContract
 
   return (
-    <section aria-labelledby="use-it">
-      <h2 className="h2" id="use-it">
+    <section className="ledger" aria-labelledby="use-it">
+      <Reveal as="h2" className="h2" id="use-it">
         Use it
-      </h2>
+      </Reveal>
       <p className="sub">
         Free first: this wall, the wallet check, the on-chain guard and the public MCP. Pay for the full
         answer. Both paid calls are x402, settled in USDC on Base to{' '}
@@ -31,7 +32,10 @@ export async function UseIt({ missingFeeds, assetsScanned }: { missingFeeds?: nu
 
       <div className="offers">
         <div className="offer">
-          <div className="tag">${tp.priceUsd.toFixed(2)} · {tp.capability}(symbol, holder)</div>
+          <div className="offer__head">
+            <span className="offer__price">${tp.priceUsd.toFixed(2)}</span>
+            <span className="offer__cap"> · {tp.capability}(symbol, holder)</span>
+          </div>
           <p>
             <strong>Free on MCP:</strong> whether this position can be valued safely, and if not, why:
             the confidence, the refusal reason, which oracle checks completed, and any scheduled
@@ -50,7 +54,10 @@ export async function UseIt({ missingFeeds, assetsScanned }: { missingFeeds?: nu
           <div className="meta">x402 trigger · {tp.trigger}</div>
         </div>
         <div className="offer">
-          <div className="tag">${cc.priceUsd.toFixed(2)} · {cc.capability}(address)</div>
+          <div className="offer__head">
+            <span className="offer__price">${cc.priceUsd.toFixed(2)}</span>
+            <span className="offer__cap"> · {cc.capability}(address)</span>
+          </div>
           <p>
             <strong>Free on MCP:</strong> the verdict alone (NOT_AWARE, AWARE, NOT_APPLICABLE with its
             role, PROXY_UNRESOLVED, TOO_SMALL, or no code), with the code hash, the block and whether the
