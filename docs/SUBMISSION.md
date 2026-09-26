@@ -8,11 +8,10 @@ Everything here is for **Oluwademilade to post** from their own account.
   01:00 at UTC+1, the zone the commits are stamped in). "14–28 September" does not include the
   28th. Aim to have everything in by **Saturday 26 September**.
 - **The form is <https://form.typeform.com/to/A475N331>** ("SERV Hackathon #1 submission"), the
-  hackathon page's "Submit now" button. But the page's FAQ says "After posting, you must fill in
-  this form", and that link is <https://form.typeform.com/to/GyPxGqRn>, the pre-registration form.
-  Fill both. On 2026-09-26 at 11:16 and again at 11:49 UTC GyPxGqRn rendered "This typeform is now closed"; if it
-  still does after posting, screenshot that screen, so there is a record that the FAQ's form could
-  not be filled.
+  hackathon page's "Submit now" button, and the only one left to fill. The FAQ's "After posting,
+  you must fill in this form" links <https://form.typeform.com/to/GyPxGqRn>, the pre-registration
+  form: it was filled in before the hackathon started, and it has since closed (it rendered "This
+  typeform is now closed" on 2026-09-26).
 - **Data collection must be on.** The hackathon page: "To be eligible, you must enable data
   collection at console.openserv.ai/settings/organization." Check it there before filling the form.
 - **Email on the form: the address you log in to console.openserv.ai with.** The form says it must
@@ -80,8 +79,7 @@ Everything here is for **Oluwademilade to post** from their own account.
 11. [x] The posting account is **@_OoJae**; its sidebar offers "Upgrade to Premium+", which X shows to Premium subscribers. Check whether it has **X Premium**. Nothing below needs it: every post is
         280 characters or fewer as X counts them. Without Premium a video must be 2:20 or shorter.
 12. [ ] Post section 1 with its 4 images and **@openservai**. Post the video as the first reply.
-13. [ ] Fill the form (section 3), then open the FAQ's GyPxGqRn (see the top). Keep the Typeform
-        confirmation screen or email.
+13. [ ] Fill the form (section 3). Keep the Typeform confirmation screen or email.
 14. [ ] Only then, optionally, the thread in section 2, as replies under the submission post.
 
 When there is time, none of it blocking:
