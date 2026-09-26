@@ -79,7 +79,7 @@ Everything here is for **Oluwademilade to post** from their own account.
 11. [x] The posting account is **@_OoJae**; its sidebar offers "Upgrade to Premium+", which X shows to Premium subscribers. Check whether it has **X Premium**. Nothing below needs it: every post is
         280 characters or fewer as X counts them. Without Premium a video must be 2:20 or shorter.
 12. [ ] Post section 1 with its 4 images and **@openservai**. Post the video as the first reply.
-13. [ ] Fill the form (section 3). Keep the Typeform confirmation screen or email.
+13. [x] (2026-09-26 20:34 UTC: submitted with post 1, https://x.com/_OoJae/status/2103944298106355783; Typeform answered "Thank you, we have received your submission"; data collection on, 383 SERV requests on 21 to 23 Sep) Fill the form (section 3). Keep the Typeform confirmation screen or email.
 14. [ ] Only then, optionally, the thread in section 2, as replies under the submission post.
 
 When there is time, none of it blocking:
