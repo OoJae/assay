@@ -15,6 +15,7 @@ import { fmtAge, impactView } from '@/lib/present'
 import { OG_IMAGE, RIGHT_OF_REPLY_DOC, RIGHT_OF_REPLY_ISSUE } from '@/lib/site'
 import { RH_RPC_URL } from '@/lib/guard'
 import { AssayMark } from '../../_brand/mark'
+import { PaywallLink } from '../../_components/paywall-link'
 import { TransitionLink } from '../../_motion/transition-link'
 
 export const dynamic = 'force-dynamic'
@@ -120,7 +121,7 @@ function Withheld() {
           </p>
         </header>
         <div className="cert__foot">
-          <a href={cc.paywall}>Audit a contract · ${cc.priceUsd.toFixed(2)}</a> ·{' '}
+          <PaywallLink href={cc.paywall}>Audit a contract · ${cc.priceUsd.toFixed(2)}</PaywallLink> ·{' '}
           <Link href="/wall">← Back to the findings wall</Link>
         </div>
       </main>

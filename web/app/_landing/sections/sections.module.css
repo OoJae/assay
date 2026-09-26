@@ -148,10 +148,17 @@
 .cmd {
   margin: 14px 0 0;
   padding: 10px 12px;
-  max-width: 40rem;
+  max-width: 46rem;
   border-radius: var(--radius);
   font-size: 0.75rem;
-  white-space: pre;
+  /* Wrapped where it does not fit, never scrolled: the end of a command is the URL, the one part
+     a reader must not miss. A soft wrap copies as the single line it is. */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* The browser sets <code> in its own monospace; the box's Martian Mono is the site's. */
+.cmd code {
+  font: inherit;
 }
 .act {
   justify-self: end;

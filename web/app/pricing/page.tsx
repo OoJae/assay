@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { loadSweepLive } from '@/lib/findings'
 import { PAID_ENDPOINTS, PAY_TO } from '@/lib/endpoints'
+import { PaywallLink } from '../_components/paywall-link'
 import { UseIt } from '../_components/use-it'
 import { Reveal } from '../_motion/reveal'
 
@@ -36,7 +37,7 @@ const TIERS: Array<{ name: string; price: string; state: State; what: string }> 
     what: 'Every published finding, its raw return bytes, and the cast command that reproduces it; the same board as JSON.',
   },
   {
-    name: 'Public MCP (SSE)',
+    name: 'Public MCP',
     price: 'Free',
     state: 'free',
     what:
@@ -110,12 +111,12 @@ export default async function Pricing() {
             for.
           </p>
           <div className="actions">
-            <a className="btn primary" href={PAID_ENDPOINTS.truePosition.paywall}>
+            <PaywallLink className="btn primary" href={PAID_ENDPOINTS.truePosition.paywall}>
               Try the ${PAID_ENDPOINTS.truePosition.priceUsd.toFixed(2)} position check
-            </a>
-            <a className="btn" href={PAID_ENDPOINTS.checkContract.paywall}>
+            </PaywallLink>
+            <PaywallLink className="btn" href={PAID_ENDPOINTS.checkContract.paywall}>
               Audit a contract · ${PAID_ENDPOINTS.checkContract.priceUsd.toFixed(2)}
-            </a>
+            </PaywallLink>
             <Link className="btn" href="/wall#check">
               Check a wallet · free
             </Link>

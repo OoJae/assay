@@ -6,6 +6,7 @@
  * passes through ASSAY's servers and nothing is paid. Browser-safe: no node imports.
  */
 import { createPublicClient, formatUnits, getAddress, http, isAddress, parseAbi } from 'viem'
+import { robinhood } from 'viem/chains'
 import { GUARD_ADDRESS, RH_RPC_URL } from './guard'
 
 export const GUARD_ABI = parseAbi([
@@ -78,9 +79,9 @@ export function parseHolder(input: string): `0x${string}` {
 }
 
 const RPC_DOWN =
-  'The public Robinhood Chain RPC did not answer from your browser. It sometimes serves a ' +
-  'Cloudflare challenge instead of JSON for a few minutes; try again shortly, or run the cast ' +
-  'command below from a terminal.'
+  'The public Robinhood Chain RPC refused or rate-limited the request from your browser, and ' +
+  'three retries did not get through. Wait a few seconds and try again, or run the cast command ' +
+  'below from a terminal.'
 
 /**
  * Read every divergent token at ONE block: balances first, then the guard and decimals() only for
@@ -136,16 +137,23 @@ export async function checkWallet(
 }
 
 /**
- * The live reader. Batches of 25: the RPC answers HTTP 429 to a single JSON-RPC batch somewhere
- * between 51 and 100 calls (measured), and viem otherwise sends every read of a tick in one POST.
+ * The live reader. Each round of reads goes out as ONE eth_call to Multicall3 (deployed at the
+ * canonical 0xcA11…CA11 on 4663, which viem's `robinhood` chain names), so a check is three
+ * requests: the block, the balances, then the guard and decimals() for what is held. At one
+ * eth_call per read a check was ~80 calls, and back-to-back checks ran into the public RPC's rate
+ * limit. aggregate3 runs every call with allowFailure, so a token that reverts still rejects alone
+ * and is reported unread, exactly as before. 4 KB of calldata is ~110 balance reads or ~55 held
+ * tokens per eth_call; a longer list splits into a second call rather than failing.
  *
- * Two retries: in a real browser one of the four POSTs of a check came back with
- * `Access-Control-Allow-Origin: *,*`, which the browser rejects as a CORS failure, and the retry
- * went through. curl never saw the doubled header, so it is intermittent on the RPC's side.
+ * Three retries, 1s, 2s and 4s apart: the RPC answers a burst with HTTP 429 carrying
+ * `Access-Control-Allow-Origin: *,*`, which the browser rejects as a CORS failure, so the page
+ * never sees the 429, only a failed fetch, and viem retries those.
  */
 export function viemGuardReader(rpcUrl: string = RH_RPC_URL): GuardReader {
   const client = createPublicClient({
-    transport: http(rpcUrl, { batch: { batchSize: 25 }, retryCount: 2, timeout: 10_000 }),
+    chain: robinhood,
+    batch: { multicall: { batchSize: 4_096 } },
+    transport: http(rpcUrl, { retryCount: 3, retryDelay: 1_000, timeout: 10_000 }),
   })
   return {
     blockNumber: () => client.getBlockNumber({ cacheTime: 0 }),

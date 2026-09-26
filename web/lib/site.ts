@@ -2,6 +2,11 @@
 
 export const SITE = 'https://assay-steel.vercel.app'
 export const REPO = 'https://github.com/OoJae/assay'
+/**
+ * The public MCP. Streamable HTTP leads: it is the transport the MCP spec now defines, and this
+ * endpoint is stateless. SSE stays up, and listed, for clients that only speak the older one.
+ */
+export const MCP_HTTP_URL = 'https://sonar.my.id/assay-mcp/mcp'
 export const MCP_URL = 'https://sonar.my.id/assay-mcp/sse'
 export const FEED_URL = 'https://sonar.my.id/assay-mcp/findings.json'
 export const RIGHT_OF_REPLY_DOC = `${REPO}/blob/main/docs/RIGHT-OF-REPLY.md`

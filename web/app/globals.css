@@ -246,6 +246,9 @@ code,
   /* A comfortable target around a small mark. */
   padding: 8px 0;
 }
+.site-brand__mark {
+  display: none;
+}
 .site-nav,
 .site-header__actions {
   display: flex;
@@ -1786,17 +1789,30 @@ footer.repro {
      on every phone. */
   .findings th:nth-child(4), .findings td:nth-child(4) { display: none; }
   .offers { grid-template-columns: minmax(0, 1fr); }
+  /* A command wraps inside its box instead of scrolling: a scrolled box hides the end of the line,
+     which is the argument that matters. pre-wrap keeps the real line breaks, and a soft wrap
+     copies as the one line it is. */
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 }
-/* The header keeps the mark, Wall, Pricing and the call to action; the rest is in the footer. */
+/* The header sheds links as it narrows, and every one it sheds is in the footer. The free wallet
+   check and the paid call to action stay at every width: with only the paid one, a phone's one
+   way in cost money. Source and Agent card go first; the full row needs 600px. */
+@media (max-width: 639px) {
+  .site-nav__wide { display: none; }
+}
+/* A phone keeps the brand and the two ways in. "Check a wallet" lands on the wall itself. */
 @media (max-width: 560px) {
   :root { --header-h: 56px; }
-  .site-nav__wide { display: none; }
+  .site-nav { display: none; }
   .site-header__bar { gap: 16px; }
-  .site-nav { gap: 16px; }
+  .site-header__actions { gap: 16px; }
 }
+/* At 320px the lockup gives way to the mark alone, so both ways in still fit. */
 @media (max-width: 359px) {
-  .site-nav__mid { display: none; }
+  .site-brand__lockup { display: none; }
+  .site-brand__mark { display: block; }
   .site-header__bar { gap: 12px; }
+  .site-header__actions { gap: 12px; }
 }
 @media (max-width: 559px) {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1811,6 +1827,12 @@ footer.repro {
      carries its stamp above the name, the same on each so the band still reads as one set. */
   .tariff__top { flex-direction: column; align-items: flex-start; gap: 14px; }
   .tariff__card .stamp { order: -1; }
+  /* The wallet check's four columns fit a phone instead of scrolling: a share count cut off at the
+     card's edge reads as a different number, and the guard's verdict sat off screen. */
+  .check-result .table--mid { min-width: 0; }
+  .check-result th { letter-spacing: 0.04em; font-stretch: 100%; }
+  .check-result th, .check-result td { padding-left: 4px; padding-right: 4px; }
+  .check-result td.mono { font-size: 0.75rem; }
 }
 @media (max-width: 460px) {
   .findings th:nth-child(5), .findings td:nth-child(5) { display: none; }

@@ -7,6 +7,7 @@ import { GUARD_ADDRESS } from '@/lib/guard'
 import { CheckWallet } from '../_components/check-wallet'
 import { FindingsTable } from '../_components/findings-table'
 import { IntegratorPanel } from '../_components/integrators'
+import { PaywallLink } from '../_components/paywall-link'
 import { ServReasoning } from '../_components/serv-reasoning'
 import { UseIt } from '../_components/use-it'
 import { Reveal } from '../_motion/reveal'
@@ -77,12 +78,12 @@ export default async function Home() {
             <a className="btn primary" href="#check">
               Check a wallet · free
             </a>
-            <a className="btn" href={tp.paywall}>
+            <PaywallLink className="btn" href={tp.paywall}>
               Audited position · ${tp.priceUsd.toFixed(2)}
-            </a>
-            <a className="btn" href={cc.paywall}>
+            </PaywallLink>
+            <PaywallLink className="btn" href={cc.paywall}>
               Audit a contract · ${cc.priceUsd.toFixed(2)}
-            </a>
+            </PaywallLink>
             <a className="btn" href="#use-it">
               Call it from code
             </a>

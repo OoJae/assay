@@ -1,5 +1,6 @@
 import { PAID_ENDPOINTS } from '@/lib/endpoints'
-import { MCP_URL, REPO } from '@/lib/site'
+import { MCP_HTTP_URL, MCP_URL, REPO } from '@/lib/site'
+import { PaywallLink } from '../../_components/paywall-link'
 import { Reveal } from '../../_motion/reveal'
 import { TransitionLink } from '../../_motion/transition-link'
 import s from './sections.module.css'
@@ -56,8 +57,11 @@ export function UseIt() {
                 Ask whether a position can be valued safely, or whether a contract reads the multiplier. You get the
                 verdict and the reason, over MCP, with no key.
               </p>
+              {/* The fallback is a shell comment, so pasting the whole box runs the HTTP line only. */}
               <pre className={s.cmd} data-lenis-prevent="">
-                <code>claude mcp add --transport sse assay {MCP_URL}</code>
+                <code>
+                  {`claude mcp add --transport http assay ${MCP_HTTP_URL}\n# SSE-only clients: claude mcp add --transport sse assay ${MCP_URL}`}
+                </code>
               </pre>
             </div>
             <div className={s.act} />
@@ -75,9 +79,9 @@ export function UseIt() {
               </p>
             </div>
             <div className={s.act}>
-              <a className="btn btn--sm" href={tp.paywall}>
+              <PaywallLink className="btn btn--sm" href={tp.paywall}>
                 Pay {usd(tp.priceUsd)}
-              </a>
+              </PaywallLink>
             </div>
           </li>
 
@@ -94,9 +98,9 @@ export function UseIt() {
               </p>
             </div>
             <div className={s.act}>
-              <a className="btn btn--sm" href={cc.paywall}>
+              <PaywallLink className="btn btn--sm" href={cc.paywall}>
                 Pay {usd(cc.priceUsd)}
-              </a>
+              </PaywallLink>
             </div>
           </li>
 

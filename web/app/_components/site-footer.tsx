@@ -7,8 +7,8 @@ import { DISCLAIMER, REPO } from '@/lib/site'
  *
  * Robinhood Chain's terms (§5.7(b)(ii)) require it to be prominent, so it is set in the body face
  * at a size people read, never as fine print, under the full ASSAY lockup so the name it opens
- * with outranks every other name in it. The links repeat the header's for phones, where Source,
- * Agent card and the wallet check do not fit in it.
+ * with outranks every other name in it. The links repeat the header's for phones, where Wall,
+ * Pricing, Source and Agent card do not fit in it.
  */
 export function SiteFooter() {
   return (

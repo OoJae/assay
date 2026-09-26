@@ -1,8 +1,9 @@
 import { PAID_ENDPOINTS, PAY_TO, curlFor } from '@/lib/endpoints'
 import { CHAINLINK_FEEDS_URL, loadPricedSymbols } from '@/lib/feeds'
-import { FEED_URL, MCP_URL, REPO } from '@/lib/site'
+import { FEED_URL, MCP_HTTP_URL, MCP_URL, REPO } from '@/lib/site'
 import { GUARD_ADDRESS } from '@/lib/guard'
 import { Reveal } from '../_motion/reveal'
+import { PaywallLink } from './paywall-link'
 
 /**
  * How to buy, call or integrate ASSAY, on the wall and on /pricing.
@@ -47,9 +48,9 @@ export async function UseIt({ missingFeeds, assetsScanned }: { missingFeeds?: nu
             checks, with the USD value, all read at one block.
           </p>
           <div className="actions">
-            <a className="btn primary" href={tp.paywall}>
+            <PaywallLink className="btn primary" href={tp.paywall}>
               Pay ${tp.priceUsd.toFixed(2)} in the browser
-            </a>
+            </PaywallLink>
           </div>
           <div className="meta">x402 trigger · {tp.trigger}</div>
         </div>
@@ -70,9 +71,9 @@ export async function UseIt({ missingFeeds, assetsScanned }: { missingFeeds?: nu
             citations behind each number.
           </p>
           <div className="actions">
-            <a className="btn primary" href={cc.paywall}>
+            <PaywallLink className="btn primary" href={cc.paywall}>
               Pay ${cc.priceUsd.toFixed(2)} in the browser
-            </a>
+            </PaywallLink>
           </div>
           <div className="meta">x402 trigger · {cc.trigger}</div>
         </div>
@@ -120,8 +121,10 @@ export async function UseIt({ missingFeeds, assetsScanned }: { missingFeeds?: nu
       <h3 className="h3">Free, no key</h3>
       <ul className="sub list">
         <li>
-          <strong>MCP over SSE:</strong> <span className="mono">{MCP_URL}</span>, for example{' '}
-          <span className="mono">claude mcp add --transport sse assay {MCP_URL}</span>. Tools:{' '}
+          <strong>MCP over Streamable HTTP:</strong> <span className="mono">{MCP_HTTP_URL}</span>, for
+          example <span className="mono">claude mcp add --transport http assay {MCP_HTTP_URL}</span>. A
+          client that only speaks SSE connects to <span className="mono">{MCP_URL}</span> with{' '}
+          <span className="mono">--transport sse</span>. Tools:{' '}
           <span className="mono">assay_findings</span>, <span className="mono">assay_check_symbol</span>,
           and the verdict-only <span className="mono">assay_check_contract</span> and{' '}
           <span className="mono">assay_true_position</span>.

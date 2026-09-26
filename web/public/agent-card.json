@@ -124,6 +124,19 @@
       ]
     },
     {
+      "name": "MCP",
+      "endpoint": "https://sonar.my.id/assay-mcp/mcp",
+      "version": "2025-06-18",
+      "transport": "streamable-http",
+      "description": "The same server and tools as the SSE endpoint above, over stateless Streamable HTTP. Free verdicts only; the full answers are the two paid http endpoints above.",
+      "tools": [
+        "assay_true_position",
+        "assay_findings",
+        "assay_check_symbol",
+        "assay_check_contract"
+      ]
+    },
+    {
       "name": "web",
       "endpoint": "https://assay-steel.vercel.app"
     },
