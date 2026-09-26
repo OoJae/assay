@@ -408,6 +408,7 @@ compiled program, and variance between compiles was never sampled.
 | **v3** | **v0.3.0** | **easy fixture** | **1 × 16** | **15/16 = 94% [72–99%]** · 0 unsafe | **16/16 = 100% [81–100%]** · 0 unsafe |
 | **v3** | **v0.3.0** | **prompt injection** | **5 × 4** | **0/20 compromised [0–16%]** · 17/20 recognised | **0/20 compromised [0–16%]** · 20/20 recognised |
 | **v3** | **v0.4.0** | **held-out, pre-registered (SHARE + CROSS)** | **14 × 4** | 1/14 cases [1–31%] · **35 of 56 calls refused** | **13/14 cases = 93% [69–99%]** · 49/56 draws |
+| **v3** | **v0.4.0** | **held-out, pre-registered (STALE)** | **6 × 4** | **6/6 cases = 100% [61–100%]** · 24/24 draws, 0 refused | **6/6 cases = 100% [61–100%]** · 24/24 draws |
 
 Three corrections to earlier versions of this table. The v1 BRAID-off arm completed 6 runs, not 8.
 The v2 hard-set row used to read "2 independent samples, 17/23 = 74% vs 20/23 = 87%": the second
@@ -425,8 +426,7 @@ writer's labels. All three agreed on every case, and the set was committed befor
 pre-registration `b5ca947`). The rubric is pinned by hash in the harness, and an offline test fails
 if it changes, so it cannot be tuned against this set without CI saying so.
 
-On the 14 cases whose fixtures exist (the six stale-feed cases wait for a weekend board, under a
-capture rule fixed in advance), **BRAID off got 13 of 14 cases right** [69–99%], 49 of 56 draws,
+On the 14 SHARE and CROSS cases, run on 2026-09-23, **BRAID off got 13 of 14 cases right** [69–99%], 49 of 56 draws,
 with no errors ([`heldout-trials-assay-methodology-v3.0.0-assa…`](data/heldout-trials-assay-methodology-v3.0.0-assay-rh-v0.4.0-2026-09-23T20-41-02-788Z.json)). Its one missed case is the kind this tool most
 needs to catch: a card labelled "Shares held" computed as `balance × uiMultiplier / 1e18` and shown
 unscaled, which inflates the count by 10¹⁸. The model called it `BENIGN` in all four draws, so a
@@ -443,6 +443,18 @@ measures a change in SERV's BRAID layer between those two days, not these mandat
 reported rather than retried away. The adjudicator used to turn an unparseable reply into a
 synthetic `WITHHELD`; it now records a refusal as an error, kept in every denominator, which is the
 only reason this is visible at all.
+
+**The six stale-feed cases ran on 2026-09-26**, after the market closed. Their fixture was taken
+mechanically under the capture rule fixed in advance: the first `ORACLE_STALE_MARKET_CLOSED`
+finding on the first public board observed after 20:00 UTC, which was DELL's feed at 25.1 hours
+old, from the board at block 73377041 (commit `9dd9e7a`). **Both arms got 6 of 6 cases right**
+[61–100%], 24 of 24 draws each, with no errored calls, no over-accusations, no missed defects and
+no contested cases ([`heldout-trials-assay-methodology-v3.0.0-assa…`](data/heldout-trials-assay-methodology-v3.0.0-assay-rh-v0.4.0-2026-09-26T20-47-26-418Z.json)).
+BRAID on answered all 24 of its calls; the refusals of 2026-09-23 did not recur in this run. Six
+cases is a small set: every cell was unanimous, so the draws add little beyond the cases, and the
+lower bound is 61%. Across all 20 pre-registered cases, from the two runs, **BRAID off got 19 of
+20** [76–99%] and **BRAID on 7 of 20** [18–57%], most of BRAID on's misses being the 23 September
+refusals. Median latency on the stale cases was 24.2s with BRAID on and 5.1s off.
 
 Median latency with BRAID on was **18.9s vs 7.2s** off on the current easy fixture (21.6s vs 4.2s
 on the v2 easy fixture). The single-run A/B, re-run on current text, now returns `CONTROL_WEAKNESS`
@@ -502,6 +514,7 @@ pnpm inject --n=4   # prompt injection  -> data/injection-trials-<rubric>-<findi
 pnpm hard --n=4     # hard case set     -> data/hard-trials-<rubric>-<finding-text>-<run>.json
 pnpm hard --n=4 --resume=<path>         # continue that run; never a committed file
 pnpm heldout --fixtures=SHARE,CROSS     # the pre-registered held-out set -> data/heldout-trials-<rubric>-<finding-text>-<run>.json
+pnpm heldout --fixtures=STALE           # its six stale-feed cases, once the STALE fixture is captured
 npx tsx scripts/heldout-capture-stale.ts # the STALE fixture, by the pre-registered rule: only from a board observed 2026-09-26T20:00Z to 2026-09-27T12:00Z
 ```
 
