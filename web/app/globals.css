@@ -1634,9 +1634,13 @@ footer.repro {
   grid-column: span 12;
   grid-row: span 3;
   grid-template-rows: subgrid;
+  /* One column the card's width: an auto column grew to fit "ValidationRegistry" and pushed a
+     320px phone's page sideways. */
+  grid-template-columns: minmax(0, 1fr);
   row-gap: 0;
   align-content: start;
   min-width: 0;
+  overflow-wrap: break-word;
   padding: clamp(20px, 2.2vw, 28px);
   border: 1px solid var(--rule);
   border-radius: var(--radius);
