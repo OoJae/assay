@@ -1,6 +1,6 @@
 import { execFileSync, spawn } from 'node:child_process'
 import { readFileSync } from 'node:fs'
-import { createPublicClient, createWalletClient, http, defineChain, parseAbi, parseAbiItem, zeroAddress } from 'viem'
+import { createPublicClient, createWalletClient, http, defineChain, isAddress, parseAbi, parseAbiItem, zeroAddress } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 
 /**
@@ -12,6 +12,7 @@ import { privateKeyToAccount } from 'viem/accounts'
  * forward to force the staleness branch that would otherwise only be reachable at a weekend.
  *
  *   pnpm test:guard
+ *   pnpm test:guard 0x…              # or HOLDER=0x… pnpm test:guard, to test a holder you choose
  */
 const PORT = 8599
 const RPC = `http://127.0.0.1:${PORT}`
@@ -65,12 +66,22 @@ const call = <T>(fn: string, args: unknown[]) =>
 
 const balanceAbi = parseAbi(['function balanceOf(address) view returns (uint256)'])
 
-/** The most recent CRWD recipient that still holds some, read from the fork's own Transfer logs. */
+/**
+ * The most recent CRWD recipient that still holds some, read from the fork's own Transfer logs.
+ *
+ * CRWD goes quiet when its market closes, so over a weekend or a holiday the last Transfer can be
+ * millions of blocks back (4663 makes about 860k blocks a day). The search walks back in 1M-block
+ * windows, which the public RPC serves in one call, as far as 20M blocks, about three weeks.
+ */
 async function findHolder(token: `0x${string}`): Promise<`0x${string}`> {
   const transfer = parseAbiItem('event Transfer(address indexed from, address indexed to, uint256 value)')
+  const STEP = 1_000_000n
+  const DEPTH = 20_000_000n
   const head = await pub.getBlockNumber()
-  for (let to = head; to > head - 200_000n; to -= 20_000n) {
-    const logs = await pub.getLogs({ address: token, event: transfer, fromBlock: to - 20_000n, toBlock: to })
+  const floor = head > DEPTH ? head - DEPTH : 0n
+  for (let to = head; to >= floor; to -= STEP) {
+    const from = to - STEP + 1n > floor ? to - STEP + 1n : floor
+    const logs = await pub.getLogs({ address: token, event: transfer, fromBlock: from, toBlock: to })
     for (const l of logs.reverse()) {
       const who = l.args.to
       if (!who || who === zeroAddress) continue
@@ -78,9 +89,14 @@ async function findHolder(token: `0x${string}`): Promise<`0x${string}`> {
       if (bal > 0n) return who
     }
   }
-  throw new Error('no CRWD holder found in the last 200,000 blocks of Transfer logs')
+  throw new Error('no CRWD holder found in the last 20,000,000 blocks of Transfer logs; pass one as HOLDER=0x… or an argument')
 }
-const HOLDER = await findHolder(CRWD)
+
+/** A holder given on the command line or in HOLDER is used as is; it must hold CRWD on the fork. */
+const override = process.argv.slice(2).find((a) => a.startsWith('0x')) ?? (process.env.HOLDER || undefined)
+if (override !== undefined && !isAddress(override)) throw new Error(`holder is not a valid address: ${override}`)
+const HOLDER = override ?? (await findHolder(CRWD))
+console.log(`holder: ${override ? 'given' : 'latest CRWD recipient still holding'}\n`)
 
 console.log('corrected numbers:')
 const [crwdShares, crwdSafe] = await call<[bigint, boolean, string]>('shareEquivalents', [CRWD, HOLDER])
