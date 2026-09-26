@@ -29,6 +29,11 @@ web/.next
 # and still 404 in production.
 /*.png
 docs/scratch/*.png
+# Demo video takes and voice-over recorded into the repo root; `git add -A` would publish them.
+/*.mp4
+/*.m4a
+/*.mov
+/*.wav
 
 web/tsconfig.tsbuildinfo
 data/findings.scoped.json

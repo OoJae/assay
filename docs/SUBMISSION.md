@@ -7,9 +7,14 @@ Everything here is for **Oluwademilade to post** from their own account.
 - **Hard close: 2026-09-28 00:00 UTC**, which is the **end of Sunday 27 September UTC** (Monday
   01:00 at UTC+1, the zone the commits are stamped in). "14–28 September" does not include the
   28th. Aim to have everything in by **Saturday 26 September**.
-- **The form is <https://form.typeform.com/to/A475N331>** ("SERV Hackathon #1 submission"). The
-  pre-registration form GyPxGqRn, which this file used to link, is **closed and not required**:
-  eligibility needs data collection on, not pre-registration.
+- **The form is <https://form.typeform.com/to/A475N331>** ("SERV Hackathon #1 submission"), the
+  hackathon page's "Submit now" button. But the page's FAQ says "After posting, you must fill in
+  this form", and that link is <https://form.typeform.com/to/GyPxGqRn>, the pre-registration form.
+  Fill both. On 2026-09-26 at 11:16 and again at 11:49 UTC GyPxGqRn rendered "This typeform is now closed"; if it
+  still does after posting, screenshot that screen, so there is a record that the FAQ's form could
+  not be filled.
+- **Data collection must be on.** The hackathon page: "To be eligible, you must enable data
+  collection at console.openserv.ai/settings/organization." Check it there before filling the form.
 - **Email on the form: the address you log in to console.openserv.ai with.** The form says it must
   be, because that is how OpenServ matches the entry to the org whose SERV usage it checks. It is
   not your usual address; check the console's Organization page before typing it.
@@ -28,8 +33,11 @@ Everything here is for **Oluwademilade to post** from their own account.
        lists as `??`: the CI workflow, `src/lib/redact.ts`, `src/lib/endpoints.ts`, new tests and
        wall components. Stage those too. Without the workflow the README's CI badge and thread 23/
        are false, so its first run on GitHub must be green before anything is posted.
-3. [ ] **The redesign is live in production and checked**, before anything below is recorded or
-       posted: the demo opens on the landing, and two of the images come from it. From `web/`,
+3. [x] (2026-09-26: `/`, `/wall`, `/f/CRM-share-count` and `/pricing` 200, `/f/nope` 404, no
+       `LIVE FEED UNREACHABLE`, the card and the three attestation files identical to git at
+       `5508fbe`, `/#check` lands on `/wall#check`, Monitor runs green) **The redesign is live in
+       production and checked**, before anything below is recorded or posted: the demo opens on
+       the landing, and two of the images come from it. From `web/`,
        `vercel --prod`, then every check under "The website" in `deploy/RUNBOOK.md`: `/`, `/wall`,
        a finding page and `/pricing` answer 200, `/f/nope` answers 404, `/wall` shows no
        `LIVE FEED UNREACHABLE`, and `agent-card.json` and the three attestation files are
@@ -39,14 +47,16 @@ Everything here is for **Oluwademilade to post** from their own account.
        (<https://assay-steel.vercel.app/wall>) minutes before posting. They are written here from the
        committed board, block 70789445 (2026-09-23 20:11 UTC), and the live board moves every 8
        minutes.
-5. [ ] Test counts re-run: `ASSAY_OFFLINE_ONLY=1 npx vitest run`, then `npx vitest run`. Written
-       below as 521 offline in 26 files and 541 in all 29 files, both from runs on 2026-09-24 after
-       the redesign added `test/landing-data.test.ts` and `test/landing-pose.test.ts`. A test added
-       after that changes both, and the README's Usage block with them.
-6. [ ] `npx tsx scripts/test-guard.ts` passes (needs `anvil`).
+5. [x] (2026-09-26: 521 offline in 26 files and 541 in 29 files, all passing) Test counts re-run:
+       `ASSAY_OFFLINE_ONLY=1 npx vitest run`, then `npx vitest run`. Written below as 521 offline in
+       26 files and 541 in all 29 files, first from runs on 2026-09-24 after the redesign added
+       `test/landing-data.test.ts` and `test/landing-pose.test.ts`. A test added after that changes
+       both, and the README's Usage block with them.
+6. [x] (2026-09-26: every check, including the refusal after +3 days) `npx tsx scripts/test-guard.ts` passes (needs `anvil`).
 7. [x] `npx tsx scripts/verify-attestation.ts` returns VERIFIES (now for the 95374 attestation; 95265 still verifies too).
-8. [ ] The landing (`/`), the wall (`/wall`), `/pricing`, a finding page and a missing page all
-       load; the free wallet check returns rows for `0x000000000000000000000000000000000000dEaD`.
+8. [x] (2026-09-26: 39 tokens read, 22 rows held, every guard `safe`) The landing (`/`), the wall
+       (`/wall`), `/pricing`, a finding page and a missing page all load; the free wallet check
+       returns rows for `0x000000000000000000000000000000000000dEaD`.
 9. [x] (checked 2026-09-24: 200, `fullAudit`, `fullAnswer`) The live MCP host runs this release. Each line should print what its comment says:
 
        ```bash
@@ -70,7 +80,8 @@ Everything here is for **Oluwademilade to post** from their own account.
 11. [x] The posting account is **@_OoJae**; its sidebar offers "Upgrade to Premium+", which X shows to Premium subscribers. Check whether it has **X Premium**. Nothing below needs it: every post is
         280 characters or fewer as X counts them. Without Premium a video must be 2:20 or shorter.
 12. [ ] Post section 1 with its 4 images and **@openservai**. Post the video as the first reply.
-13. [ ] Fill the form (section 3). Keep the Typeform confirmation screen or email.
+13. [ ] Fill the form (section 3), then open the FAQ's GyPxGqRn (see the top). Keep the Typeform
+        confirmation screen or email.
 14. [ ] Only then, optionally, the thread in section 2, as replies under the submission post.
 
 When there is time, none of it blocking:
@@ -327,7 +338,7 @@ Independent project; not affiliated with Robinhood or Chainlink. Not financial a
 | Link to your project | **one URL**: <https://assay-steel.vercel.app>, the landing, which leads into the wall; its header and footer link the repo |
 | Additional links | **one URL**: the demo video |
 | Logotype | `web/public/brand/assay-mark-512.png`: the hallmark, gold on touchstone, 512 × 512 |
-| Did you enable data collection? | yes. It is on for the console org, and the SERV measurement runs are the usage it checks. |
+| Did you enable data collection? | yes, once console.openserv.ai/settings/organization shows it on (look before submitting). The SERV measurement runs are the usage it checks. |
 | Experience with AI / agent development | Some hands-on experience |
 | Country, affiliation, role, profile link, OpenServ updates | optional: blank unless you say otherwise |
 | Team status | I'm joining solo |

@@ -11,24 +11,32 @@ npm i erc8056-guard viem
 
 ESM only, with TypeScript types. `viem` is a peer dependency: you pass in your own client.
 
-```ts
+Save this as `check.mjs` and run `node check.mjs` (Node 18 or later). The holder is the burn
+address, which holds some NVDA; put in the address you are valuing.
+
+```js
 import { createPublicClient, http, formatUnits } from 'viem'
 import { shareEquivalents, RPC_URL } from 'erc8056-guard'
 
-const CRWD = '0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931'   // CRWD Stock Token, chain 4663, 18 decimals
-const holder = '0x…'                                           // the address you are valuing
+const NVDA = '0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC'    // NVDA Stock Token, chain 4663, 18 decimals
+const holder = '0x000000000000000000000000000000000000dEaD'  // the address you are valuing
 
 const client = createPublicClient({ transport: http(RPC_URL) })
-const r = await shareEquivalents(client, CRWD, holder)
+const r = await shareEquivalents(client, NVDA, holder)
 
-if (!r.safe) throw new Error(r.reason)    // e.g. "oraclePaused() is true"
+if (!r.safe) throw new Error(r.reason)            // e.g. "oraclePaused() is true"
 
-formatUnits(r.rawBalance!, 18)            // what balanceOf() says, in tokens: "10" for a 10-token holder
-formatUnits(r.shareEquivalents!, 18)      // what they represent: "40" share-equivalents
-r.shareEquivalents                        // 40000000000000000000n: a bigint in the token's base units
-r.multiplier                              // 4000000000000000000n: uiMultiplier(), 1e18 fixed point
-r.blockNumber                             // the one block all three reads were made at
+console.log(formatUnits(r.rawBalance, 18))        // what balanceOf() says, in tokens
+console.log(formatUnits(r.shareEquivalents, 18))  // what they represent, in share-equivalents
+console.log(r.multiplier)                         // uiMultiplier() as a bigint, 1e18 fixed point
+console.log(r.blockNumber)                        // the one block all three reads were made at
 ```
+
+On 2026-09-26 that printed `0.497226009176632457` tokens and `0.497611438474538419`
+share-equivalents, at a multiplier of `1000775159164630595n`. For CRWD
+(`0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931`, multiplier 4.0) a 10-token holder gets `"10"` and
+`"40"`. In TypeScript, save it as `check.mts`, write `r.rawBalance!` and `r.shareEquivalents!`
+(both are typed `bigint | null`, and are set whenever `safe` is true), and run `npx tsx check.mts`.
 
 ## Why
 

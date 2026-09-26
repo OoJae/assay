@@ -22,9 +22,10 @@ before every script, and on the recording laptop that check has failed before
 (`ERR_PNPM_IGNORED_BUILDS`); an install error on camera costs more than the longer command.
 
 Have three tabs ready in this order: the landing · a terminal · Basescan. The wall opens from the
-landing, in the same tab. Pick a CRWD holder for the 0:48 beat beforehand: any **EOA** from the
-holders tab of CRWD's Blockscout page (`0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931`), never a
-contract, because a contract holding a Stock Token is exactly what ASSAY does not name.
+landing, in the same tab. Pick a CRWD holder for the 0:48 beat beforehand: any **EOA** from
+CRWD's Blockscout page (token [`0xea72…3931`](https://robinhoodchain.blockscout.com/token/0xea72Ecca2d0f6bFA1394DBBCff85b52CD4233931?tab=holders),
+Holders tab), never a contract, because a contract holding a Stock Token is exactly what ASSAY
+does not name.
 
 **Check the landing before rolling**, because the opening beat depends on all four:
 

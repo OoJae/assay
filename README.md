@@ -4,6 +4,16 @@
 
 [![CI](https://github.com/OoJae/assay/actions/workflows/ci.yml/badge.svg)](https://github.com/OoJae/assay/actions/workflows/ci.yml)
 
+**Try it in a minute.** None of it needs a clone, and only the third needs a wallet.
+
+1. **Check a wallet, free:** <https://assay-steel.vercel.app/wall#check>. Press "Try the burn address"; nothing is signed.
+2. **Ask the MCP server:** `claude mcp add --transport http assay https://sonar.my.id/assay-mcp/mcp`, then ask for
+   `assay_true_position` on CRWD at `0x000000000000000000000000000000000000dEaD`. It refuses, and says why.
+3. **Buy the figures:** the [$0.01 audited position](https://platform.openserv.ai/workspace/paywall/006ecd4add4a459d8ae92362869a42a6)
+   and the [$0.25 contract audit](https://platform.openserv.ai/workspace/paywall/a1bb2a3946d1411eb945200d43ebc740),
+   over x402 in USDC on Base, via OpenServ ([before you pay](#buy-a-call)).
+4. **Start from the landing:** <https://assay-steel.vercel.app>, which leads into the live wall.
+
 > ASSAY is an independent project. It is not affiliated with, endorsed by, or officially connected
 > with Robinhood Markets, Inc., its affiliates, or Chainlink Labs. "Robinhood Chain" and "Chainlink"
 > are trademarks of their respective owners and are used only to identify the network and data
@@ -12,8 +22,9 @@
 > not a security audit, and a finding is not a statement that any named party acted wrongly. Verify
 > independently before acting.
 
-Built for SERV Hackathon Edition 01 — track: *Mainnet & MCP* ("Robinhood Chain / MCP" on the
-form). ASSAY is the check an agent acting on Robinhood Chain calls before it values, collateralises
+Built for SERV Hackathon Edition 01, entered in three tracks: *Mainnet & MCP* ("Robinhood Chain /
+MCP" on the form), *AgentKit* ("Coinbase AgentKit", for the [action provider](#mcp)) and *Open
+Track*. ASSAY is the check an agent acting on Robinhood Chain calls before it values, collateralises
 or moves a Stock Token position — as an MCP tool, a free `view` contract on 4663, or a paid x402
 call — and the defect it catches is the one an agent hits when it mixes off-chain share prices with
 on-chain token balances.
@@ -35,7 +46,7 @@ so far is a measurement: what we measured, including a null result, is
 |---|---|
 | **Settled x402 payment** | [`0x50124847…6b96b`](https://basescan.org/tx/0x50124847a9228521b829e3b47a2b098f5688e57d147e33764232c4c8f686b96b) — 0.01 USDC, buyer `0x09f5…b5B5` → seller `0x0C3A…14B5`, method `transferWithAuthorization`. The buyer spent **zero ETH**: x402 settles via an EIP-3009 signature and a relayer pays the gas. **Four** have settled; this is the one whose reply carries the `checks` block, so the refusal-completeness fix is visible in the thing a buyer actually pays for. The seller in all four is the wallet of frozen identity `95265`, whose key was lost, so those 0.04 USDC cannot be moved; the current payTo is `0x6328…7911`, which the $0.25 settlement below paid. Both buyers are wallets this project created — that is a working rail, not demand, and [/pricing](https://assay-steel.vercel.app/pricing) says so. |
 | **ERC-8004 identity** | agent **`8453:95374`** on the IdentityRegistry `0x8004A169…a432` — [mint tx](https://basescan.org/tx/0x019ecbbcfe12f646d977c3a7d778d147d91cac9d6a348cc93a03be6d80e8356f) · [agent card](https://assay-steel.vercel.app/agent-card.json), which the token's URI points at. 8004scan has never parsed that card and shows the agent as a nameless "Agent #95374"; the card itself is served and valid. **`8453:95265` is frozen**: its signing key was lost when a local `.env` was overwritten with a copy of `.env.example`, so it can never be updated again. Everything already published under it stays true and verifiable, and the card discloses both — along with `95266`, an accidental duplicate. |
-| **On-chain guard** | [`ERC8056Guard`](https://robinhoodchain.blockscout.com/address/0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648) at `0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648` on Robinhood Chain 4663 — [deploy tx](https://robinhoodchain.blockscout.com/tx/0x30b2029209f10e015bbb5fc7a63106c7f373b3f686ade2c89ee7404f13ca3df6). Free, ownerless, storage-free, `view`-only. **Verified as an exact match on [Sourcify](https://sourcify.dev/#/lookup/0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648)** — creation and runtime bytecode, compiler settings and metadata identical to [`contracts/ERC8056Guard.sol`](contracts/ERC8056Guard.sol). Reproduce it: `cast code 0x674f9b0e… --rpc-url https://rpc.mainnet.chain.robinhood.com` against a `solc 0.8.35 --optimize --optimize-runs 200 --bin-runtime` build. |
+| **On-chain guard** | [`ERC8056Guard`](https://robinhoodchain.blockscout.com/address/0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648) at `0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648` on Robinhood Chain 4663 — [deploy tx](https://robinhoodchain.blockscout.com/tx/0x30b2029209f10e015bbb5fc7a63106c7f373b3f686ade2c89ee7404f13ca3df6). Free, ownerless, storage-free, `view`-only. **Verified as an exact match on [Sourcify](https://sourcify.dev/#/lookup/0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648)** — creation and runtime bytecode, compiler settings and metadata identical to [`contracts/ERC8056Guard.sol`](contracts/ERC8056Guard.sol). Reproduce it: `cast code 0x674f9b0ec3c3643c1f51c0a40d4837932f9c1648 --rpc-url https://rpc.mainnet.chain.robinhood.com` is byte-identical to `solc --optimize --optimize-runs 200 --bin-runtime contracts/ERC8056Guard.sol` with solc 0.8.35, run from the repo root: the source path is in the metadata hash, so compiling from another directory changes the last bytes. |
 | **Contract audit, paid** | [`0xc192e7b9…bc3b2`](https://basescan.org/tx/0xc192e7b94cdd9b1ae4c77e4602f3fad75067b96b19fd24c6d5d2441a4febc3b2) — **0.25 USDC** for an `assay_check_contract`, `transferWithAuthorization`, buyer `0xDA31…d2cB` → `0x6328…7911`. The agent answered with a verdict and its interpretation for the address the buyer supplied; both are withheld here, because nothing public names a holder contract any more ([see the disclosure](#the-other-side-of-the-trade): an earlier commit recorded both). Paid with the SDK's own vendored x402 client and an explicit ceiling equal to the price: `payWorkflow()`'s $0.10 limit is only a default. |
 | **On-chain attestation** | agent `95374` rated **CLEAN (100)** by its owner `0x6328…7911` ([request tx](https://basescan.org/tx/0x885769e81d7fb3218cf0e0659e57f1bac48469aabf950222023b14ecb47e7235), [response tx](https://basescan.org/tx/0x885d978810fbfccace75db1116897791483624c6ac68573fce96ef7a4dcaf1ee)) — `getAgentValidations(95374)` returns one entry. The `responseHash` on-chain equals `keccak256` of the exact document served at [`/attestations/95374/0x8e9f3590….json`](https://assay-steel.vercel.app/attestations/95374/0x8e9f35901bb72c4efb62d6818a14d644c523513d5ba117ed4fc8e9296ff21aeb.json); `pnpm verify:attestation` checks that live, and it is in the test suite. The earlier self-attestation under frozen `95265` (validator `0x0C3A…14B5`, [`/attestations/95265.json`](https://assay-steel.vercel.app/attestations/95265.json)) is still on-chain and still verifies. **Self-issued and not machine-adjudicated** — subject and validator are the same key, and the tag is a documented self-assessment rather than an output of the SERV adjudicator. The document says both on its face and carries no third-party findings, because ASSAY's own rule is that unsolicited statements about a named party stay off-chain. Both were issued the same way; the first under `95265`, before that identity froze. |
 | **Paid endpoints** | `assay_true_position` at $0.01 — `https://api.openserv.ai/webhooks/x402/trigger/006ecd4add4a459d8ae92362869a42a6` · [paywall](https://platform.openserv.ai/workspace/paywall/006ecd4add4a459d8ae92362869a42a6)<br>`assay_check_contract` at $0.25 — `https://api.openserv.ai/webhooks/x402/trigger/a1bb2a3946d1411eb945200d43ebc740` · [paywall](https://platform.openserv.ai/workspace/paywall/a1bb2a3946d1411eb945200d43ebc740)<br>Both pay `0x6328…7911`, a wallet this project controls. How to call them, and what to know before paying, is under [Buy a call](#buy-a-call). |
@@ -91,6 +102,12 @@ they were hardcoded once and drifted away from the artifact they described.
 | Findings rejected by the verifier | **0** — rendered on the wall with the reason, because a verification claim is only worth something if the misses are visible |
 <!-- /ASSAY:STATS -->
 
+These figures, and the committed-board counts under [the other side of the
+trade](#the-other-side-of-the-trade), are the snapshot committed with this README; the [live
+wall](https://assay-steel.vercel.app/wall) re-measures them every 8 minutes, and the holder-contract
+dollar figures move a lot between sweeps (the $289,021 above read $629, across 5 contracts, on the
+live board at block 73031408 on 2026-09-26).
+
 The 195 are every Stock Token in Robinhood's own registry, `https://api.robinhood.com/rhj/assets`,
 all of them deployed on chain 4663: the committed sweep scanned that list at the block above, and
 the registry still listed 195 on 2026-09-23 at 01:50 UTC.
@@ -129,10 +146,9 @@ scanning all 36 would not fit the 8-minute cadence, and the board lists the 27 l
 (`integrators.assetsBelowCutoff`) — it
 fetches `eth_getCode` and checks for the `uiMultiplier()` selector: a byte-verifiable absence,
 re-runnable by the verifier like any other citation. Counts are of **distinct contracts**, at most
-40 classified per asset per sweep. (Boards before that change counted (contract, token) pairs; the
-committed board is one of them, which is why its stats row says "pairs".) The paid
-single-address audit has no such budget: it checks every Stock Token whose on-chain multiplier is
-not exactly 1.0.
+40 classified per asset per sweep. (Boards before that change counted (contract, token) pairs.) The
+paid single-address audit has no such budget: it checks every Stock Token whose on-chain multiplier
+is not exactly 1.0.
 
 **Pools and custody are not "unaware".** An AMM pool, a pool manager, a custody or executor wallet
 and a merkle distributor move tokens and never turn a balance into a share count, so they get a
@@ -421,8 +437,8 @@ none was talked into `BENIGN`.
 **BRAID on mostly did not answer.** 35 of its 56 calls came back as a refusal, `"I can't share
 that."`, with no usage recorded, so only 1 of 14 cases had a modal verdict; over the 21 calls that
 did answer, 15 were right. That is new. Every one of the 122 calls in the v0.3.0 rows returned a
-verdict and usage, and a control re-run today of the easy fixture BRAID answered 16 times on
-2026-09-22 refused 1 of 2 ([`braid-trials-assay-methodology-v3.0.0-assay-…`](data/braid-trials-assay-methodology-v3.0.0-assay-rh-v0.4.0-2026-09-23T21-03-06-310Z.json)). So the BRAID-on figure
+verdict and usage, and a control re-run on 2026-09-23, of the easy fixture BRAID answered 16 times
+on 2026-09-22, refused 1 of 2 ([`braid-trials-assay-methodology-v3.0.0-assay-…`](data/braid-trials-assay-methodology-v3.0.0-assay-rh-v0.4.0-2026-09-23T21-03-06-310Z.json)). So the BRAID-on figure
 measures a change in SERV's BRAID layer between those two days, not these mandates, and it is
 reported rather than retried away. The adjudicator used to turn an unparseable reply into a
 synthetic `WITHHELD`; it now records a refusal as an error, kept in every denominator, which is the
@@ -486,7 +502,7 @@ pnpm inject --n=4   # prompt injection  -> data/injection-trials-<rubric>-<findi
 pnpm hard --n=4     # hard case set     -> data/hard-trials-<rubric>-<finding-text>-<run>.json
 pnpm hard --n=4 --resume=<path>         # continue that run; never a committed file
 pnpm heldout --fixtures=SHARE,CROSS     # the pre-registered held-out set -> data/heldout-trials-<rubric>-<finding-text>-<run>.json
-npx tsx scripts/heldout-capture-stale.ts # Sat 26 Sep after 20:00 UTC: the STALE fixture, by the pre-registered rule
+npx tsx scripts/heldout-capture-stale.ts # the STALE fixture, by the pre-registered rule: only from a board observed 2026-09-26T20:00Z to 2026-09-27T12:00Z
 ```
 
 The harness is reusable and MIT-licensed. Point it at a different rubric or model and it will tell
@@ -607,7 +623,11 @@ say where the figures behind it are sold.
 
 All four are served from one definition in `src/lib/surface.ts`, shared with the OpenServ agent and
 the AgentKit action provider. The agent sells the figures; the AgentKit provider runs the same reads
-in your own process.
+in your own process. The provider is `assayActionProviders()` in
+[`src/agentkit/assay-provider.ts`](src/agentkit/assay-provider.ts), with three actions:
+`assay_true_position`, `assay_check_symbol` and `assay_check_contract`. `pnpm agentkit`
+([`scripts/agentkit-smoke.ts`](scripts/agentkit-smoke.ts)) loads it into Coinbase AgentKit with a
+stub wallet, lists the actions and reads one position; it needs no key.
 
 **Hosted**, over SSE or Streamable HTTP:
 
@@ -623,7 +643,9 @@ under a path on an existing certificate rather than on its own subdomain, which 
 path, so a bare `/messages` would land on whatever else lives at the origin root.
 
 ```bash
-# Claude Code
+# Claude Code, over Streamable HTTP
+claude mcp add --transport http assay https://sonar.my.id/assay-mcp/mcp
+# or, as a fallback, over SSE
 claude mcp add --transport sse assay https://sonar.my.id/assay-mcp/sse
 ```
 
@@ -706,11 +728,10 @@ structural, not promised:
    the SERV Hackathon requires it. By OpenServ's own description of that setting, inputs and outputs
    may be used to train its models and retained for up to five years. Anyone requesting a verdict
    should know that before they ask for one.
-8. The methodology is versioned — `assay-rh-v0.4.0` for detection, stamped on every finding; the
-   committed board predates it and says `assay-rh-v0.3.0` — and a solicited verdict records the
-   rubric version, the model and the hash of the exact input, so a subject can inspect the inputs,
-   rubric and model that produced its grade. The model is not deterministic, so that is not a
-   promise the grade would come out the same twice.
+8. The methodology is versioned — `assay-rh-v0.4.0` for detection, stamped on every finding — and
+   a solicited verdict records the rubric version, the model and the hash of the exact input, so a
+   subject can inspect the inputs, rubric and model that produced its grade. The model is not
+   deterministic, so that is not a promise the grade would come out the same twice.
 
 The MIT license covers this repository's source code. The files under `data/` and `web/data/` hold
 values read from public chain state, Robinhood's Stock Token APIs and Chainlink feeds; no rights in
