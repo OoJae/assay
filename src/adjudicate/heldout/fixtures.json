@@ -106,6 +106,46 @@
         "dropped": [],
         "verifiedAt": "2026-09-23T20:12:10.255Z"
       }
+    },
+    "STALE": {
+      "id": "DELL-stale-feed",
+      "defectClass": "ORACLE_STALE_MARKET_CLOSED",
+      "severity": "medium",
+      "subject": "DELL feed (0x1C6c8cADBe02E19129c39dDB92281cE4c0bf206b)",
+      "affectedParty": "Any caller pricing DELL from this feed without checking updatedAt against the published 86400s heartbeat.",
+      "title": "DELL: feed 25.1h old, 1.1h past its 24h heartbeat (market closed \u2014 no on-chain signal)",
+      "statement": "latestRoundData() for DELL returns updatedAt = 1790364970, which is 90324 seconds (25.09 hours) before the current block timestamp, exceeding the feed's published heartbeat of 86400s. The call still returns a price. This feed is marked marketHours=\"us_equities_24/5\" and the US equity market is closed per the published 24/5 schedule (Friday 20:00 to Sunday 20:00 New York time, plus 15 minutes for the feeds to refresh after the reopen); 28 of the 35 24/5 equity feeds that could be read at block 73377041 (this finding cites block 73377080) are past their heartbeat so far. The cohort does not go stale together at the close: each feed's heartbeat runs from its own last update before it. The staleness is therefore EXPECTED BY DESIGN. It is reported because the contract gives callers no on-chain way to distinguish it: latestRoundData() returns a price either way, and marketHours exists only in off-chain metadata. Robinhood's documentation requires callers to check updatedAt against the heartbeat. A caller without that guard is pricing off data up to 25.1 hours old.",
+      "impact": {
+        "note": "Price 563.3759 is 25.09h stale. Any valuation, liquidation or collateral check reading this feed without a staleness guard is using data from 2026-09-25T19:36:10.000Z."
+      },
+      "evidence": [
+        {
+          "claim": "latestRoundData().updatedAt == 1790364970 (age 90324s > heartbeat 86400s)",
+          "chainId": 4663,
+          "contract": "0x1C6c8cADBe02E19129c39dDB92281cE4c0bf206b",
+          "call": "latestRoundData()",
+          "rawReturn": "0x00000000000000000000000000000000000000000000000100000000000009b00000000000000000000000000000000000000000000000000000000d1dfb62e1000000000000000000000000000000000000000000000000000000006ab6cd1e000000000000000000000000000000000000000000000000000000006ab6cd2a00000000000000000000000000000000000000000000000100000000000009b0",
+          "blockNumber": "73377080",
+          "explorerUrl": "https://robinhoodchain.blockscout.com/address/0x1C6c8cADBe02E19129c39dDB92281cE4c0bf206b",
+          "observedAt": "2026-09-26T20:41:34.000Z"
+        }
+      ],
+      "methodologyVersion": "assay-rh-v0.4.0",
+      "detectedAt": "2026-09-26T20:41:34.000Z",
+      "verification": {
+        "checked": 1,
+        "reproduced": 1,
+        "mismatched": 0,
+        "pruned": 0,
+        "dropped": [],
+        "verifiedAt": "2026-09-26T20:41:40.155Z"
+      }
     }
+  },
+  "staleCapture": {
+    "rule": "PROTOCOL.md, STALE fixture: capture rule",
+    "boardObservedAt": "2026-09-26T20:41:30.000Z",
+    "blockNumber": "73377041",
+    "capturedAt": "2026-09-26T20:45:41.281Z"
   }
 }
